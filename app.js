@@ -111,7 +111,7 @@ window.selectFirestoreDisease = function(id) {
   document.getElementById('card-fs-' + id).classList.add('active');
   window._currentFSDisease = d;
   window._currentFSMode = true;
-  switchTab('info');
+  switchTab(typeof ct !== 'undefined' ? ct : 'info');
 };
 
 window.renderFSTab = function(tab) {
