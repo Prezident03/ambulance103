@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel — Tez Tibbiy Yordam</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+
+    /* ===== LIGHT MODE ===== */
+    :root {
+      --bg: #f0f4f8;
+      --bg-card: #ffffff;
+      --bg-input: #ffffff;
+      --bg-faint: #f8f8f8;
+      --text-primary: #111111;
+      --text-secondary: #555555;
+      --text-muted: #888888;
+      --border: #e0e0e0;
+      --border2: #f0f0f0;
+      --border3: #f5f5f5;
+      --stat-border: #E24B4A;
+      --empty-color: #bbbbbb;
+    }
+
+    /* ===== DARK MODE ===== */
+    body.dark {
+      --bg: #0f0f1a;
+      --bg-card: #1a1a2e;
+      --bg-input: #252535;
+      --bg-faint: #1e1e30;
+      --text-primary: #e0e0e0;
+      --text-secondary: #aaaaaa;
+      --text-muted: #777777;
+      --border: #2e2e45;
+      --border2: #252535;
+      --border3: #2a2a3e;
+      --stat-border: #E24B4A;
+      --empty-color: #555555;
+    }
+
+    body{font-family:Arial,sans-serif;background:var(--bg);min-height:100vh;transition:background 0.3s,color 0.3s}
+    .topbar{background:#E24B4A;color:white;padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
+    .topbar h1{font-size:18px}
+    .topbar-right{display:flex;gap:10px;align-items:center}
+    .topbar span{font-size:13px;opacity:.85}
+    .btn{padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:600}
+    .btn-white{background:white;color:#E24B4A}
+    .btn-outline{background:rgba(255,255,255,.2);color:white}
+    .btn-dark-top{background:rgba(255,255,255,.15);color:white;font-size:16px;padding:6px 10px}
+    .container{max-width:900px;margin:0 auto;padding:20px}
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:20px}
+    .stat-card{background:var(--bg-card);border-radius:12px;padding:16px;text-align:center;border-left:4px solid #E24B4A}
+    .stat-card .num{font-size:28px;font-weight:700;color:#E24B4A}
+    .stat-card .label{font-size:12px;color:var(--text-muted);margin-top:4px}
+    .admin-tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+    .admin-tab{padding:10px 18px;border-radius:10px;border:2px solid var(--border);background:var(--bg-card);font-size:13px;font-weight:600;cursor:pointer;color:var(--text-muted)}
+    .admin-tab.active{border-color:#E24B4A;color:#E24B4A;background:var(--bg-card)}
+    .form-card{background:var(--bg-card);border-radius:14px;padding:20px;margin-bottom:16px}
+    .form-card h2{font-size:16px;margin-bottom:16px;color:var(--text-primary)}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .form-group{margin-bottom:12px}
+    .form-group label{font-size:12px;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:5px}
+    .form-group input,.form-group textarea,.form-group select{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;outline:none;font-family:Arial;background:var(--bg-input);color:var(--text-primary);transition:all 0.3s}
+    .form-group input:focus,.form-group textarea:focus{border-color:#E24B4A}
+    .form-group textarea{height:75px;resize:vertical}
+    .form-group.full{grid-column:1/-1}
+
+    /* ICON PICKER */
+    .icon-pick-btn{display:flex;align-items:center;gap:12px;background:var(--bg-faint);border:2px solid var(--border);border-radius:10px;padding:10px 14px;cursor:pointer;transition:all .15s;width:100%}
+    .icon-pick-btn:hover{border-color:#E24B4A}
+    .icon-pick-btn .preview{width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:var(--bg-card);border-radius:8px;border:1px solid var(--border)}
+    .icon-pick-btn .preview img{width:32px;height:32px}
+    .icon-pick-btn .info{flex:1;text-align:left}
+    .icon-pick-btn .info span{font-size:13px;color:var(--text-secondary);display:block}
+    .icon-pick-btn .info strong{font-size:14px;color:var(--text-primary)}
+    .icon-pick-btn .arrow{color:var(--text-muted);font-size:18px}
+
+    /* ICON MODAL */
+    .icon-modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:1000;align-items:center;justify-content:center;padding:16px}
+    .icon-modal.open{display:flex}
+    .icon-modal-content{background:var(--bg-card);border-radius:16px;width:100%;max-width:600px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden}
+    .icon-modal-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+    .icon-modal-header h3{font-size:16px;font-weight:700;color:var(--text-primary)}
+    .icon-modal-close{background:var(--bg-faint);border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;color:var(--text-secondary)}
+    .icon-modal-search{padding:12px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
+    .icon-modal-search input{width:100%;padding:9px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:var(--bg-input);color:var(--text-primary)}
+    .icon-modal-search input:focus{border-color:#E24B4A}
+    .icon-modal-cats{display:flex;gap:6px;padding:10px 16px;overflow-x:auto;border-bottom:1px solid var(--border);flex-shrink:0}
+    .icon-cat-btn{padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);background:var(--bg-card);font-size:12px;cursor:pointer;white-space:nowrap;color:var(--text-secondary)}
+    .icon-cat-btn.active{border-color:#E24B4A;color:#E24B4A;background:var(--bg-card);font-weight:600}
+    .icon-modal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:8px;padding:16px;overflow-y:auto;flex:1}
+    .icon-modal-item{display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px 4px;border-radius:10px;cursor:pointer;border:2px solid transparent;transition:all .1s}
+    .icon-modal-item:hover{background:var(--bg-faint);border-color:#E24B4A}
+    .icon-modal-item.selected{border-color:#E24B4A;box-shadow:0 0 0 2px #E24B4A}
+    .icon-modal-item img{width:36px;height:36px;filter:invert(27%) sepia(89%) saturate(1000%) hue-rotate(330deg) brightness(90%)}
+    .icon-modal-item span{font-size:10px;color:var(--text-muted);text-align:center;line-height:1.2}
+    .icon-empty{text-align:center;padding:40px;color:var(--empty-color);font-size:14px;grid-column:1/-1}
+
+    /* BLOK */
+    .block-section{margin-bottom:16px}
+    .block-section-label{font-size:12px;font-weight:700;color:var(--text-secondary);display:block;margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em}
+    .blocks-container{margin-bottom:8px;min-height:10px}
+    .add-btns{display:flex;gap:8px}
+    .add-box-btn{flex:1;background:var(--bg-card);border:2px dashed #378ADD;color:#378ADD;padding:8px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer}
+    .add-box-btn:hover{background:var(--bg-faint)}
+    .add-step-btn{flex:1;background:var(--bg-card);border:2px dashed #E24B4A;color:#E24B4A;padding:8px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer}
+    .add-step-btn:hover{background:var(--bg-faint)}
+    .drag-handle{cursor:grab;padding:4px 6px;color:var(--text-muted);font-size:18px;line-height:1;flex-shrink:0;user-select:none}
+    .block-item{border:1.5px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;background:var(--bg-faint)}
+    .block-item.dragging{opacity:.5}
+    .block-item.drag-over{border-color:#E24B4A}
+    .block-top{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+    .block-color-select{padding:6px 8px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;outline:none;background:var(--bg-input);color:var(--text-primary)}
+    .block-title-input{flex:1;padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:var(--bg-input);color:var(--text-primary)}
+    .block-title-input:focus{border-color:#E24B4A}
+    .block-del-btn{background:#FCEBEB;color:#E24B4A;border:none;padding:6px 10px;border-radius:8px;font-size:12px;cursor:pointer}
+    .block-text{width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;outline:none;font-family:Arial;height:65px;resize:vertical;background:var(--bg-input);color:var(--text-primary)}
+    .block-text:focus{border-color:#E24B4A}
+    .step-item{border:1.5px solid #ffd0cc;border-radius:10px;padding:12px;margin-bottom:8px;background:var(--bg-faint);display:flex;gap:10px;align-items:flex-start}
+    body.dark .step-item{border-color:#5a2a2a}
+    .step-item.dragging{opacity:.5}
+    .step-item.drag-over{border-color:#E24B4A}
+    .step-num-badge{width:28px;height:28px;border-radius:50%;background:#E24B4A;color:white;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+    .step-inputs{flex:1}
+    .step-title-input{width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;outline:none;margin-bottom:6px;font-weight:600;background:var(--bg-input);color:var(--text-primary)}
+    .step-title-input:focus{border-color:#E24B4A}
+    .step-desc-input{width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;outline:none;color:var(--text-secondary);font-family:Arial;height:55px;resize:vertical;background:var(--bg-input)}
+    .step-desc-input:focus{border-color:#E24B4A}
+    .step-del-btn{background:#FCEBEB;color:#E24B4A;border:none;padding:6px 10px;border-radius:8px;font-size:12px;cursor:pointer}
+
+    .btn-row{display:flex;gap:10px;margin-top:16px}
+    .btn-add{background:#E24B4A;color:white;border:none;padding:11px 24px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer}
+    .btn-cancel{background:var(--bg-faint);color:var(--text-secondary);border:none;padding:11px 24px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;display:none}
+
+    .preview-box{border-radius:8px;padding:8px 12px;margin-bottom:4px;font-size:12px}
+    .preview-box.blue{background:#E6F1FB;color:#0C447C;border-left:3px solid #378ADD}
+    .preview-box.red{background:#FCEBEB;color:#791F1F;border-left:3px solid #E24B4A}
+    .preview-box.green{background:#EAF3DE;color:#27500A;border-left:3px solid #639922}
+    .preview-box.amber{background:#FAEEDA;color:#633806;border-left:3px solid #BA7517}
+
+    .item-card{background:var(--bg-card);border-radius:12px;padding:16px;margin-bottom:10px;border:1px solid var(--border)}
+    .item-top{display:flex;justify-content:space-between;align-items:flex-start}
+    .item-info h3{font-size:15px;color:var(--text-primary);margin-bottom:4px;display:flex;align-items:center;gap:8px}
+    .item-info h3 img{width:24px;height:24px;filter:invert(27%) sepia(89%) saturate(1000%) hue-rotate(330deg) brightness(90%)}
+    .item-badge{font-size:11px;background:#E6F1FB;color:#185FA5;border-radius:4px;padding:2px 8px;display:inline-block;margin-top:4px}
+    body.dark .item-badge{background:#1a2a3a;color:#7abfff}
+    .item-actions{display:flex;gap:8px;flex-shrink:0}
+    .btn-del{background:#FCEBEB;color:#E24B4A;border:none;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer}
+    .btn-edit{background:#EAF3DE;color:#639922;border:none;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer}
+    body.dark .btn-edit{background:#1a2e10;color:#88cc44}
+    .item-preview{margin-top:8px;padding-top:8px;border-top:1px solid var(--border3)}
+
+    .admin-add-form{background:var(--bg-card);border-radius:14px;padding:20px;margin-bottom:16px}
+    .admin-add-form h2{font-size:16px;margin-bottom:14px;color:var(--text-primary)}
+    .admin-input-row{display:flex;gap:10px}
+    .admin-email-input{flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;outline:none;background:var(--bg-input);color:var(--text-primary)}
+    .admin-email-input:focus{border-color:#E24B4A}
+    .admin-add-btn{background:#E24B4A;color:white;border:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
+    .admin-card{background:var(--bg-card);border-radius:12px;padding:14px 18px;margin-bottom:10px;display:flex;align-items:center;gap:14px;border:1px solid var(--border)}
+    .admin-avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#E24B4A,#c0392b);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;flex-shrink:0}
+    .admin-info h4{font-size:14px;color:var(--text-primary);margin-bottom:2px}
+    .admin-info p{font-size:12px;color:var(--text-muted)}
+    .admin-badge{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;margin-left:auto}
+    .badge-super{background:#FCEBEB;color:#E24B4A}
+    .badge-admin-g{background:#EAF3DE;color:#27500A}
+    body.dark .badge-admin-g{background:#1a2e10;color:#88cc44}
+    .admin-del-btn{background:#FCEBEB;color:#E24B4A;border:none;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer}
+    .admin-info-box{background:#E6F1FB;color:#0C447C;border-radius:10px;padding:12px 16px;font-size:13px;margin-bottom:14px;border-left:3px solid #378ADD}
+    body.dark .admin-info-box{background:#0f1f35;color:#99ccff}
+
+    .user-card{background:var(--bg-card);border-radius:12px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:14px;border:1px solid var(--border)}
+    .user-avatar{width:40px;height:40px;border-radius:50%;background:#E24B4A;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex-shrink:0}
+    .user-info h4{font-size:14px;color:var(--text-primary)}
+    .user-info p{font-size:12px;color:var(--text-muted)}
+    .user-badge{margin-left:auto;font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;background:#EAF3DE;color:#639922}
+    body.dark .user-badge{background:#1a2e10;color:#88cc44}
+
+    .empty{text-align:center;padding:40px;color:var(--empty-color);font-size:14px}
+    .section{display:none}
+    .section.active{display:block}
+    .success-box{background:#EAF3DE;color:#27500A;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none}
+    body.dark .success-box{background:#1a2e10;color:#88cc44}
+    .edit-banner{background:#FFF3E0;border:1px solid #FF9800;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none;color:#E65100}
+    body.dark .edit-banner{background:#2a1a05;color:#ffaa55;border-color:#aa6600}
+    .section-divider{border:none;border-top:1px solid var(--border);margin:16px 0}
+  </style>
+</head>
+<body>
+
+<!-- ICON MODAL -->
+<div class="icon-modal" id="iconModal" onclick="closeIconModalOutside(event)">
+  <div class="icon-modal-content">
+    <div class="icon-modal-header">
+      <h3>🏥 Healthicons — Tibbiy ikonkalar</h3>
+      <button class="icon-modal-close" onclick="closeIconModal()">✕</button>
+    </div>
+    <div class="icon-modal-search">
+      <input type="text" id="iconModalSearch" placeholder="🔍 Qidirish: heart, brain, lung, blood..." oninput="filterModalIcons(this.value)">
+    </div>
+    <div class="icon-modal-cats" id="iconCats"></div>
+    <div class="icon-modal-grid" id="iconModalGrid"></div>
+  </div>
+</div>
+
+<div class="topbar">
+  <h1>🚑 Admin Panel</h1>
+  <div class="topbar-right">
+    <span id="adminName"></span>
+    <button class="btn btn-dark-top" id="darkBtn" onclick="toggleDark()" title="Tungi rejim">🌙</button>
+    <button class="btn btn-white" onclick="goHome()">Saytga qaytish</button>
+    <button class="btn btn-outline" onclick="logoutAdmin()">Chiqish</button>
+  </div>
+</div>
+
+<div class="container">
+  <div class="stats-grid">
+    <div class="stat-card"><div class="num" id="statUsers">—</div><div class="label">Foydalanuvchilar</div></div>
+    <div class="stat-card"><div class="num" id="statDiseases">—</div><div class="label">Kasalliklar</div></div>
+    <div class="stat-card"><div class="num" id="statDrugs">—</div><div class="label">Dorilar</div></div>
+    <div class="stat-card"><div class="num" id="statAdmins">—</div><div class="label">Adminlar</div></div>
+  </div>
+
+  <div class="admin-tabs">
+    <button class="admin-tab active" onclick="showAdminTab('diseases')">🦠 Kasalliklar</button>
+    <button class="admin-tab" onclick="showAdminTab('drugs')">💊 Dorilar</button>
+    <button class="admin-tab" onclick="showAdminTab('users')">👥 Foydalanuvchilar</button>
+    <button class="admin-tab" onclick="showAdminTab('admins')" id="adminsTabBtn" style="display:none">🔐 Adminlar</button>
+  </div>
+
+  <!-- KASALLIKLAR -->
+  <div class="section active" id="section-diseases">
+    <div class="form-card">
+      <h2 id="diseaseFormTitle">Yangi kasallik qo'shish</h2>
+      <div id="diseaseSuccess" class="success-box"></div>
+      <div id="diseaseEditBanner" class="edit-banner">✏️ Tahrirlash rejimi</div>
+      <input type="hidden" id="editDiseaseId">
+      <input type="hidden" id="dIcon" value="https://cdn.jsdelivr.net/gh/resolvetosavelives/healthicons/public/icons/svg/filled/body/heart.svg">
+      <input type="hidden" id="dIconName" value="Heart">
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Kasallik nomi</label>
+          <input type="text" id="dName" placeholder="Gipertonik kriz">
+        </div>
+        <div class="form-group">
+          <label>Kategoriya</label>
+          <select id="dCategory">
+            <option>Yurak-qon tomir</option><option>Nevrologik</option>
+            <option>Allergiya</option><option>Endokrin</option>
+            <option>Nafas yo'llari</option><option>Jarohatlar</option><option>Boshqa</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label>Ikonka tanlang</label>
+          <button type="button" class="icon-pick-btn" onclick="openIconModal()">
+            <div class="preview">
+              <img id="iconPreviewImg" src="https://cdn.jsdelivr.net/gh/resolvetosavelives/healthicons/public/icons/svg/filled/body/heart.svg" alt="icon">
+            </div>
+            <div class="info">
+              <span>Tanlangan ikonka</span>
+              <strong id="iconPreviewName">Heart</strong>
+            </div>
+            <span class="arrow">▼ Bosing va tanlang</span>
+          </button>
+        </div>
+      </div>
+
+      <hr class="section-divider">
+      <div class="block-section">
+        <span class="block-section-label">📋 Ma'lumot bo'limi</span>
+        <div class="blocks-container" id="infoBlocks"></div>
+        <div class="add-btns">
+          <button class="add-box-btn" onclick="addBox('infoBlocks')">🔵 + Quticha</button>
+          <button class="add-step-btn" onclick="addStep('infoBlocks')">🔴 + Qadam</button>
+        </div>
+      </div>
+      <hr class="section-divider">
+      <div class="block-section">
+        <span class="block-section-label">🩺 Belgilar bo'limi</span>
+        <div class="blocks-container" id="symptomsBlocks"></div>
+        <div class="add-btns">
+          <button class="add-box-btn" onclick="addBox('symptomsBlocks')">🔵 + Quticha</button>
+          <button class="add-step-btn" onclick="addStep('symptomsBlocks')">🔴 + Qadam</button>
+        </div>
+      </div>
+      <hr class="section-divider">
+      <div class="block-section">
+        <span class="block-section-label">🩹 Yordam bo'limi</span>
+        <div class="blocks-container" id="aidBlocks"></div>
+        <div class="add-btns">
+          <button class="add-box-btn" onclick="addBox('aidBlocks')">🔵 + Quticha</button>
+          <button class="add-step-btn" onclick="addStep('aidBlocks')">🔴 + Qadam</button>
+        </div>
+      </div>
+      <hr class="section-divider">
+      <div class="block-section">
+        <span class="block-section-label">💊 Dorilar bo'limi</span>
+        <div class="blocks-container" id="drugsBlocks"></div>
+        <div class="add-btns">
+          <button class="add-box-btn" onclick="addBox('drugsBlocks')">🔵 + Quticha</button>
+          <button class="add-step-btn" onclick="addStep('drugsBlocks')">🔴 + Qadam</button>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-add" id="diseaseSubmitBtn" onclick="submitDisease()">+ Kasallik qo'shish</button>
+        <button class="btn-cancel" id="diseaseCancelBtn" onclick="cancelDiseaseEdit()">Bekor qilish</button>
+      </div>
+    </div>
+    <div id="diseaseList"><div class="empty">Yuklanmoqda...</div></div>
+  </div>
+
+  <!-- DORILAR -->
+  <div class="section" id="section-drugs">
+    <div class="form-card">
+      <h2 id="drugFormTitle">Yangi dori qo'shish</h2>
+      <div id="drugSuccess" class="success-box"></div>
+      <div id="drugEditBanner" class="edit-banner">✏️ Tahrirlash rejimi</div>
+      <input type="hidden" id="editDrugId">
+      <div class="form-grid">
+        <div class="form-group"><label>Dori nomi</label><input type="text" id="drugName" placeholder="Atenolol"></div>
+        <div class="form-group"><label>Dozasi</label><input type="text" id="drugDose" placeholder="25/50/100 mg"></div>
+        <div class="form-group"><label>Guruh</label><input type="text" id="drugGroup" placeholder="Beta-blokator"></div>
+        <div class="form-group"><label>Yo'li</label>
+          <select id="drugRoute">
+            <option>V/I (vena ichiga)</option><option>M/I (mushak ichiga)</option>
+            <option>T/O (teri ostiga)</option><option>Oral (og'iz orqali)</option>
+            <option>Til osti</option><option>Tashqi</option>
+          </select>
+        </div>
+        <div class="form-group full"><label>Farmakodinamika</label><textarea id="drugMech" placeholder="Dori qanday ishlaydi..."></textarea></div>
+        <div class="form-group full"><label>Ko'rsatmalar</label><textarea id="drugKorsatma" placeholder="Qachon ishlatiladi..."></textarea></div>
+        <div class="form-group full"><label>Qarshi ko'rsatmalar</label><textarea id="drugQarshi" placeholder="Qachon ishlatilmaydi..."></textarea></div>
+        <div class="form-group full"><label>Yon ta'sirlar</label><textarea id="drugYon" placeholder="Mumkin bo'lgan yon ta'sirlar..."></textarea></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-add" id="drugSubmitBtn" onclick="submitDrug()">+ Dori qo'shish</button>
+        <button class="btn-cancel" id="drugCancelBtn" onclick="cancelDrugEdit()">Bekor qilish</button>
+      </div>
+    </div>
+    <div id="drugList"><div class="empty">Yuklanmoqda...</div></div>
+  </div>
+
+  <!-- FOYDALANUVCHILAR -->
+  <div class="section" id="section-users">
+    <div id="userList"><div class="empty">Yuklanmoqda...</div></div>
+  </div>
+
+  <!-- ADMINLAR -->
+  <div class="section" id="section-admins">
+    <div class="admin-add-form">
+      <h2>🔐 Adminlar boshqaruvi</h2>
+      <div class="admin-info-box">ℹ️ Yangi admin qo'shsangiz — u kasallik va dori qo'sha oladi, lekin adminlarni boshqara olmaydi.</div>
+      <div id="adminAddSuccess" class="success-box"></div>
+      <label style="font-size:12px;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:8px">Yangi admin qo'shish</label>
+      <div class="admin-input-row">
+        <input type="email" class="admin-email-input" id="newAdminEmail" placeholder="admin@gmail.com">
+        <button class="admin-add-btn" onclick="addAdmin()">+ Admin qo'shish</button>
+      </div>
+    </div>
+    <div id="adminList"><div class="empty">Yuklanmoqda...</div></div>
+  </div>
+</div>
+
+<script type="module">
+import { auth, db } from './firebase.js';
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, serverTimestamp, orderBy, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// ===== DARK MODE =====
+function applyDark(dark) {
+  document.body.classList.toggle('dark', dark);
+  document.getElementById('darkBtn').textContent = dark ? '☀️' : '🌙';
+}
+const savedDark = localStorage.getItem('darkMode') === 'true';
+applyDark(savedDark);
+window.toggleDark = () => {
+  const now = !document.body.classList.contains('dark');
+  localStorage.setItem('darkMode', now);
+  applyDark(now);
+};
+
+const SUPER_ADMIN = "abdurasul1406z@gmail.com";
+let blockCount = 0;
+let dragSrcEl = null;
+let currentUserEmail = '';
+let selectedIconUrl = 'https://cdn.jsdelivr.net/gh/resolvetosavelives/healthicons/public/icons/svg/filled/body/heart.svg';
+let selectedIconName = 'Heart';
+
+// ===== HEALTHICONS =====
+const HEALTH_ICONS = [
+  {n:'Heart',u:'body/heart',c:'body'},{n:'Brain',u:'body/brain',c:'body'},
+  {n:'Lungs',u:'body/lungs',c:'body'},{n:'Kidneys',u:'body/kidneys',c:'body'},
+  {n:'Liver',u:'body/liver',c:'body'},{n:'Stomach',u:'body/stomach',c:'body'},
+  {n:'Eye',u:'body/eye',c:'body'},{n:'Ear',u:'body/ear',c:'body'},
+  {n:'Nose',u:'body/nose',c:'body'},{n:'Tooth',u:'body/tooth',c:'body'},
+  {n:'Bone',u:'body/skeleton',c:'body'},{n:'Head',u:'body/head',c:'body'},
+  {n:'Body',u:'body/body',c:'body'},{n:'Blood Cells',u:'body/blood_cells',c:'body'},
+  {n:'Blood Drop',u:'body/blood_drop',c:'body'},{n:'DNA',u:'body/dna',c:'body'},
+  {n:'Spine',u:'body/spine',c:'body'},{n:'Intestine',u:'body/intestine',c:'body'},
+  {n:'Bladder',u:'body/bladder',c:'body'},{n:'Pancreas',u:'body/pancreas',c:'body'},
+  {n:'Thyroid',u:'body/thyroid',c:'body'},{n:'Spleen',u:'body/spleen',c:'body'},
+  {n:'Gallbladder',u:'body/gallbladder',c:'body'},{n:'Foot',u:'body/foot',c:'body'},
+  {n:'Arm',u:'body/arm',c:'body'},{n:'Leg',u:'body/leg',c:'body'},
+  {n:'Fever',u:'conditions/fever',c:'conditions'},{n:'Headache',u:'conditions/headache',c:'conditions'},
+  {n:'Coughing',u:'conditions/coughing',c:'conditions'},{n:'Vomiting',u:'conditions/vomiting',c:'conditions'},
+  {n:'Nausea',u:'conditions/nausea',c:'conditions'},{n:'Diarrhea',u:'conditions/diarrhea',c:'conditions'},
+  {n:'Allergy',u:'conditions/allergies',c:'conditions'},{n:'Pneumonia',u:'conditions/pneumonia',c:'conditions'},
+  {n:'Tuberculosis',u:'conditions/tuberculosis',c:'conditions'},{n:'HIV',u:'conditions/hiv',c:'conditions'},
+  {n:'Back Pain',u:'conditions/back_pain',c:'conditions'},{n:'Sweating',u:'conditions/sweating',c:'conditions'},
+  {n:'Overweight',u:'conditions/overweight',c:'conditions'},{n:'Underweight',u:'conditions/underweight',c:'conditions'},
+  {n:'Stethoscope',u:'devices/stethoscope',c:'devices'},{n:'Syringe',u:'devices/syringe',c:'devices'},
+  {n:'Thermometer',u:'devices/thermometer_digital',c:'devices'},{n:'Microscope',u:'devices/microscope',c:'devices'},
+  {n:'X-ray',u:'devices/x-ray',c:'devices'},{n:'Wheelchair',u:'devices/wheelchair',c:'devices'},
+  {n:'Hospital Bed',u:'devices/hospital_bed',c:'devices'},{n:'Blood Pressure',u:'devices/blood_pressure_monitor',c:'devices'},
+  {n:'Glucometer',u:'devices/glucometer',c:'devices'},{n:'Inhaler',u:'devices/inhaler',c:'devices'},
+  {n:'Ventilator',u:'devices/ventilator',c:'devices'},{n:'Defibrillator',u:'devices/defibrillator',c:'devices'},
+  {n:'Oxygen Tank',u:'devices/oxygen_tank',c:'devices'},{n:'IV Bag',u:'devices/intravenous_bag',c:'devices'},
+  {n:'Weight Scale',u:'devices/weight_scale',c:'devices'},{n:'Pulse Oximeter',u:'devices/pulse_oximeter_1',c:'devices'},
+  {n:'Pills',u:'medications/medicines',c:'medications'},{n:'Pill 1',u:'medications/pill_1',c:'medications'},
+  {n:'Pill 2',u:'medications/pill_2',c:'medications'},{n:'Pill 3',u:'medications/pill_3',c:'medications'},
+  {n:'Doctor',u:'people/doctor',c:'people'},{n:'Nurse',u:'people/person_nurse_1',c:'people'},
+  {n:'Pregnant',u:'people/pregnant',c:'people'},{n:'Elderly Man',u:'people/elderly_man',c:'people'},
+  {n:'Elderly Woman',u:'people/elderly_woman',c:'people'},{n:'Baby',u:'people/baby_2-3_months',c:'people'},
+  {n:'Diabetes Person',u:'people/diabetes',c:'people'},{n:'Symptoms',u:'people/symptoms',c:'people'},
+  {n:'Heart',u:'symbols/heart',c:'symbols'},{n:'Heartbeat',u:'symbols/heartbeat',c:'symbols'},
+  {n:'Cardiogram',u:'symbols/cardiogram',c:'symbols'},{n:'Virus',u:'symbols/virus',c:'symbols'},
+  {n:'Health Shield',u:'symbols/health_shield',c:'symbols'},{n:'Mental Health',u:'symbols/mental_health',c:'symbols'},
+  {n:'Pharmacy',u:'symbols/pharmacy',c:'symbols'},{n:'Alert',u:'symbols/alert_circle',c:'symbols'},
+  {n:'Hazardous',u:'symbols/hazardous',c:'symbols'},{n:'Death',u:'symbols/death',c:'symbols'},
+  {n:'Outbreak',u:'symbols/outbreak',c:'symbols'},{n:'Diabetes',u:'symbols/diabetes',c:'symbols'},
+  {n:'Ambulance',u:'vehicles/ambulance',c:'vehicles'},{n:'Helicopter',u:'vehicles/helicopter',c:'vehicles'},
+  {n:'Hospital',u:'places/hospital',c:'places'},{n:'Clinic',u:'places/clinic',c:'places'},
+  {n:'Home',u:'places/home_1',c:'places'},{n:'Field Hospital',u:'places/field_hospital',c:'places'},
+  {n:'Fever Face',u:'emotions/fever',c:'emotions'},{n:'Dizzy',u:'emotions/dizzy',c:'emotions'},
+  {n:'Nauseous',u:'emotions/nauseous',c:'emotions'},{n:'Pain',u:'emotions/bandage',c:'emotions'},
+  {n:'Calm',u:'emotions/calm',c:'emotions'},{n:'Nervous',u:'emotions/nervous',c:'emotions'},
+  {n:'Cardiology',u:'specialties/cardiology',c:'specialties'},{n:'Neurology',u:'specialties/neurosurgery_1',c:'specialties'},
+  {n:'Pediatrics',u:'specialties/pediatrics',c:'specialties'},{n:'Pharmacy Spec',u:'specialties/pharmacy',c:'specialties'},
+  {n:'Radiology',u:'specialties/radiology',c:'specialties'},{n:'ICU',u:'specialties/intensive_care_unit',c:'specialties'},
+  {n:'Oncology',u:'specialties/oncology',c:'specialties'},{n:'Gynecology',u:'specialties/gynecology',c:'specialties'},
+  {n:'Emergency',u:'specialties/accident_and_emergency_1',c:'specialties'},{n:'Nephrology',u:'specialties/nephrology',c:'specialties'},
+];
+
+const ICON_BASE = 'https://cdn.jsdelivr.net/gh/resolvetosavelives/healthicons/public/icons/svg/filled/';
+const CATS = ['Barchasi','body','conditions','devices','medications','people','symbols','vehicles','places','emotions','specialties'];
+
+let currentCat = 'Barchasi';
+let currentSearch = '';
+
+function getIconUrl(u) { return ICON_BASE + u + '.svg'; }
+
+function buildIconModal() {
+  const catEl = document.getElementById('iconCats');
+  catEl.innerHTML = CATS.map(c => `<button class="icon-cat-btn ${c===currentCat?'active':''}" onclick="filterByCat('${c}')">${c==='Barchasi'?'🌐 Barchasi':c}</button>`).join('');
+  const grid = document.getElementById('iconModalGrid');
+  let filtered = HEALTH_ICONS;
+  if (currentCat !== 'Barchasi') filtered = filtered.filter(i => i.c === currentCat);
+  if (currentSearch) {
+    const q = currentSearch.toLowerCase();
+    filtered = filtered.filter(i => i.n.toLowerCase().includes(q) || i.u.toLowerCase().includes(q));
+  }
+  if (filtered.length === 0) { grid.innerHTML = '<div class="icon-empty">Ikonka topilmadi</div>'; return; }
+  grid.innerHTML = filtered.map(icon => {
+    const url = getIconUrl(icon.u);
+    const sel = url === selectedIconUrl ? ' selected' : '';
+    return `<div class="icon-modal-item${sel}" onclick="selectHealthIcon('${url}','${icon.n}')" title="${icon.n}"><img src="${url}" alt="${icon.n}" onerror="this.style.display='none'"><span>${icon.n}</span></div>`;
+  }).join('');
+}
+
+window.openIconModal = function() { document.getElementById('iconModal').classList.add('open'); buildIconModal(); };
+window.closeIconModal = function() { document.getElementById('iconModal').classList.remove('open'); };
+window.closeIconModalOutside = function(e) { if (e.target === document.getElementById('iconModal')) closeIconModal(); };
+window.filterByCat = function(cat) { currentCat = cat; buildIconModal(); };
+window.filterModalIcons = function(q) { currentSearch = q; buildIconModal(); };
+window.selectHealthIcon = function(url, name) {
+  selectedIconUrl = url; selectedIconName = name;
+  document.getElementById('dIcon').value = url;
+  document.getElementById('dIconName').value = name;
+  document.getElementById('iconPreviewImg').src = url;
+  document.getElementById('iconPreviewName').textContent = name;
+  closeIconModal();
+};
+
+// ===== AUTH =====
+onAuthStateChanged(auth, async (user) => {
+  if (!user) { window.location.href = 'login.html'; return; }
+  currentUserEmail = user.email;
+  if (user.email === SUPER_ADMIN) {
+    document.getElementById('adminsTabBtn').style.display = 'inline-block';
+  } else {
+    const snap = await getDocs(query(collection(db, 'admins'), where('email', '==', user.email)));
+    if (snap.empty) { window.location.href = 'index.html'; return; }
+  }
+  document.getElementById('adminName').textContent = user.displayName || user.email;
+  loadAll();
+});
+
+async function loadAll() {
+  const tasks = [loadDiseases(), loadDrugs(), loadUsers()];
+  if (currentUserEmail === SUPER_ADMIN) tasks.push(loadAdmins());
+  await Promise.all(tasks);
+}
+
+function showSuccess(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = '✅ ' + msg;
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 3000);
+}
+
+// ===== DRAG & DROP =====
+function enableDrag(el) {
+  el.setAttribute('draggable', true);
+  el.addEventListener('dragstart', (e) => { dragSrcEl = el; el.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; });
+  el.addEventListener('dragend', () => { el.classList.remove('dragging'); document.querySelectorAll('.drag-over').forEach(x => x.classList.remove('drag-over')); if (el.parentElement) updateStepNumbers(el.parentElement.id); });
+  el.addEventListener('dragover', (e) => { e.preventDefault(); if (dragSrcEl && dragSrcEl !== el && el.parentElement === dragSrcEl.parentElement) el.classList.add('drag-over'); });
+  el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+  el.addEventListener('drop', (e) => {
+    e.preventDefault(); el.classList.remove('drag-over');
+    if (dragSrcEl && dragSrcEl !== el && el.parentElement === dragSrcEl.parentElement) {
+      const c = el.parentElement, all = [...c.children], si = all.indexOf(dragSrcEl), ti = all.indexOf(el);
+      c.insertBefore(dragSrcEl, si < ti ? el.nextSibling : el);
+      updateStepNumbers(c.id);
+    }
+  });
+}
+
+// ===== BLOKLAR =====
+window.addBox = function(cid, data={}) {
+  blockCount++;
+  const id = 'blk_' + blockCount;
+  const color = data.color || 'blue';
+  const div = document.createElement('div');
+  div.className = 'block-item'; div.id = id; div.dataset.type = 'box';
+  div.innerHTML = `<div class="block-top"><span class="drag-handle">⠿</span><select class="block-color-select"><option value="blue" ${color==='blue'?'selected':''}>🔵 Ko'k</option><option value="red" ${color==='red'?'selected':''}>🔴 Qizil</option><option value="green" ${color==='green'?'selected':''}>🟢 Yashil</option><option value="amber" ${color==='amber'?'selected':''}>🟡 Sariq</option></select><input type="text" class="block-title-input" placeholder="Sarlavha..." value="${data.title||''}"><button class="block-del-btn" onclick="removeBlock('${id}')">✕</button></div><textarea class="block-text" placeholder="Matn...">${data.text||''}</textarea>`;
+  document.getElementById(cid).appendChild(div);
+  enableDrag(div);
+};
+
+window.addStep = function(cid, data={}) {
+  blockCount++;
+  const id = 'blk_' + blockCount;
+  const container = document.getElementById(cid);
+  const num = container.querySelectorAll('[data-type="step"]').length + 1;
+  const div = document.createElement('div');
+  div.className = 'step-item'; div.id = id; div.dataset.type = 'step';
+  div.innerHTML = `<span class="drag-handle">⠿</span><div class="step-num-badge">${num}</div><div class="step-inputs"><input type="text" class="step-title-input" placeholder="Qadam nomi..." value="${data.title||''}"><textarea class="step-desc-input" placeholder="Qo'shimcha izoh...">${data.desc||''}</textarea></div><button class="step-del-btn" onclick="removeBlock('${id}')">✕</button>`;
+  container.appendChild(div);
+  enableDrag(div);
+  updateStepNumbers(cid);
+};
+
+window.removeBlock = function(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const cid = el.parentElement.id;
+  el.remove();
+  updateStepNumbers(cid);
+};
+
+function updateStepNumbers(cid) {
+  const c = document.getElementById(cid);
+  if (!c) return;
+  let n = 1;
+  c.querySelectorAll('[data-type="step"]').forEach(item => { const b = item.querySelector('.step-num-badge'); if (b) b.textContent = n++; });
+}
+
+function getBlocks(cid) {
+  const blocks = [];
+  document.getElementById(cid).querySelectorAll('[data-type]').forEach(item => {
+    if (item.dataset.type === 'box') {
+      const text = item.querySelector('.block-text').value.trim();
+      if (text) blocks.push({ type:'box', color: item.querySelector('.block-color-select').value, title: item.querySelector('.block-title-input').value.trim(), text });
+    } else if (item.dataset.type === 'step') {
+      const title = item.querySelector('.step-title-input').value.trim();
+      if (title) blocks.push({ type:'step', title, desc: item.querySelector('.step-desc-input').value.trim() });
+    }
+  });
+  return blocks;
+}
+
+function clearBlocks(cid) { document.getElementById(cid).innerHTML = ''; }
+function loadBlocks(cid, blocks) { clearBlocks(cid); (blocks||[]).forEach(b => b.type==='step' ? addStep(cid,b) : addBox(cid,b)); }
+
+// ===== KASALLIKLAR =====
+async function loadDiseases() {
+  const snap = await getDocs(query(collection(db, 'diseases'), orderBy('createdAt', 'desc')));
+  const list = document.getElementById('diseaseList');
+  document.getElementById('statDiseases').textContent = snap.size;
+  if (snap.empty) { list.innerHTML = '<div class="empty">Hali kasallik qo\'shilmagan</div>'; return; }
+  list.innerHTML = '';
+  snap.forEach(d => {
+    const data = d.data();
+    const iconHtml = data.icon && data.icon.includes('http')
+      ? `<img src="${data.icon}" alt="icon" style="width:22px;height:22px;filter:invert(27%) sepia(89%) saturate(1000%) hue-rotate(330deg) brightness(90%)">`
+      : (data.icon || '🦠');
+    const blocks = (data.infoBlocks||[]).slice(0,2);
+    const prev = blocks.map(b => b.type==='step' ? `<div style="font-size:12px;color:var(--text-secondary);padding:2px 0">🔴 ${b.title}</div>` : `<div class="preview-box ${b.color||'blue'}">${b.title?'<strong>'+b.title+':</strong> ':''}${(b.text||'').substring(0,70)}...</div>`).join('');
+    list.innerHTML += `<div class="item-card"><div class="item-top"><div class="item-info"><h3>${iconHtml} ${data.name}</h3><span class="item-badge">${data.category}</span></div><div class="item-actions"><button class="btn-edit" onclick="editDisease('${d.id}')">✏️ Tahrirlash</button><button class="btn-del" onclick="deleteDisease('${d.id}')">🗑 O'chirish</button></div></div><div class="item-preview">${prev||'<span style="color:var(--empty-color);font-size:12px">Bloklar yo\'q</span>'}</div></div>`;
+  });
+}
+
+window.editDisease = async (id) => {
+  const snap = await getDocs(query(collection(db, 'diseases'), orderBy('createdAt', 'desc')));
+  let data = null;
+  snap.forEach(d => { if (d.id === id) data = d.data(); });
+  if (!data) return;
+  document.getElementById('editDiseaseId').value = id;
+  document.getElementById('dName').value = data.name || '';
+  document.getElementById('dCategory').value = data.category || 'Yurak-qon tomir';
+  const iconUrl = data.icon || 'https://cdn.jsdelivr.net/gh/resolvetosavelives/healthicons/public/icons/svg/filled/body/heart.svg';
+  const iconName = data.iconName || 'Heart';
+  selectedIconUrl = iconUrl; selectedIconName = iconName;
+  document.getElementById('dIcon').value = iconUrl;
+  document.getElementById('iconPreviewImg').src = iconUrl;
+  document.getElementById('iconPreviewName').textContent = iconName;
+  loadBlocks('infoBlocks', data.infoBlocks);
+  loadBlocks('symptomsBlocks', data.symptomsBlocks);
+  loadBlocks('aidBlocks', data.aidBlocks);
+  loadBlocks('drugsBlocks', data.drugsBlocks);
+  document.getElementById('diseaseFormTitle').textContent = '✏️ Kasallikni tahrirlash';
+  document.getElementById('diseaseSubmitBtn').textContent = '💾 Saqlash';
+  document.getElementById('diseaseCancelBtn').style.display = 'inline-block';
+  document.getElementById('diseaseEditBanner').style.display = 'block';
+  document.querySelector('#section-diseases .form-card').scrollIntoView({ behavior: 'smooth' });
+};
+
+window.submitDisease = async () => {
+  const id = document.getElementById('editDiseaseId').value;
+  const name = document.getElementById('dName').value.trim();
+  const category = document.getElementById('dCategory').value;
+  const icon = selectedIconUrl;
+  const iconName = selectedIconName;
+  if (!name) return alert('Kasallik nomini kiriting!');
+  const payload = { name, category, icon, iconName, infoBlocks: getBlocks('infoBlocks'), symptomsBlocks: getBlocks('symptomsBlocks'), aidBlocks: getBlocks('aidBlocks'), drugsBlocks: getBlocks('drugsBlocks') };
+  if (id) { await updateDoc(doc(db, 'diseases', id), payload); showSuccess('diseaseSuccess', 'Kasallik yangilandi!'); cancelDiseaseEdit(); }
+  else { await addDoc(collection(db, 'diseases'), { ...payload, createdAt: serverTimestamp() }); showSuccess('diseaseSuccess', 'Kasallik qo\'shildi!'); clearDiseaseForm(); }
+  loadDiseases();
+};
+
+window.cancelDiseaseEdit = () => {
+  document.getElementById('editDiseaseId').value = '';
+  document.getElementById('diseaseFormTitle').textContent = 'Yangi kasallik qo\'shish';
+  document.getElementById('diseaseSubmitBtn').textContent = '+ Kasallik qo\'shish';
+  document.getElementById('diseaseCancelBtn').style.display = 'none';
+  document.getElementById('diseaseEditBanner').style.display = 'none';
+  clearDiseaseForm();
+};
+
+function clearDiseaseForm() {
+  document.getElementById('dName').value = '';
+  selectedIconUrl = 'https://cdn.jsdelivr.net/gh/resolvetosavelives/healthicons/public/icons/svg/filled/body/heart.svg';
+  selectedIconName = 'Heart';
+  document.getElementById('iconPreviewImg').src = selectedIconUrl;
+  document.getElementById('iconPreviewName').textContent = selectedIconName;
+  ['infoBlocks','symptomsBlocks','aidBlocks','drugsBlocks'].forEach(clearBlocks);
+}
+
+window.deleteDisease = async (id) => { if (!confirm('Kasallikni o\'chirasizmi?')) return; await deleteDoc(doc(db, 'diseases', id)); loadDiseases(); };
+
+// ===== DORILAR =====
+async function loadDrugs() {
+  const snap = await getDocs(query(collection(db, 'drugs'), orderBy('createdAt', 'desc')));
+  const list = document.getElementById('drugList');
+  document.getElementById('statDrugs').textContent = snap.size;
+  if (snap.empty) { list.innerHTML = '<div class="empty">Hali dori qo\'shilmagan</div>'; return; }
+  list.innerHTML = '';
+  snap.forEach(d => {
+    const data = d.data();
+    list.innerHTML += `<div class="item-card"><div class="item-top"><div class="item-info"><h3>${data.name}</h3><span class="item-badge">${data.group||''}</span><p style="font-size:12px;color:var(--text-muted);margin-top:4px">💊 ${data.dose||''} | ${data.route||''}</p></div><div class="item-actions"><button class="btn-edit" onclick="editDrug('${d.id}')">✏️ Tahrirlash</button><button class="btn-del" onclick="deleteDrug('${d.id}')">🗑 O'chirish</button></div></div><div style="font-size:13px;color:var(--text-muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--border3)">${(data.mech||'').substring(0,100)}...</div></div>`;
+  });
+}
+
+window.editDrug = async (id) => {
+  const snap = await getDocs(query(collection(db, 'drugs'), orderBy('createdAt', 'desc')));
+  let data = null;
+  snap.forEach(d => { if (d.id === id) data = d.data(); });
+  if (!data) return;
+  document.getElementById('editDrugId').value = id;
+  document.getElementById('drugName').value = data.name || '';
+  document.getElementById('drugDose').value = data.dose || '';
+  document.getElementById('drugGroup').value = data.group || '';
+  document.getElementById('drugRoute').value = data.route || 'V/I (vena ichiga)';
+  document.getElementById('drugMech').value = data.mech || '';
+  document.getElementById('drugKorsatma').value = data.korsatma || '';
+  document.getElementById('drugQarshi').value = data.qarshi || '';
+  document.getElementById('drugYon').value = data.yon || '';
+  document.getElementById('drugFormTitle').textContent = '✏️ Dorini tahrirlash';
+  document.getElementById('drugSubmitBtn').textContent = '💾 Saqlash';
+  document.getElementById('drugCancelBtn').style.display = 'inline-block';
+  document.getElementById('drugEditBanner').style.display = 'block';
+  document.querySelector('#section-drugs .form-card').scrollIntoView({ behavior: 'smooth' });
+};
+
+window.submitDrug = async () => {
+  const id = document.getElementById('editDrugId').value;
+  const name = document.getElementById('drugName').value.trim();
+  const dose = document.getElementById('drugDose').value.trim();
+  if (!name || !dose) return alert('Nom va dozani kiriting!');
+  const payload = { name, dose, group: document.getElementById('drugGroup').value.trim(), route: document.getElementById('drugRoute').value, mech: document.getElementById('drugMech').value.trim(), korsatma: document.getElementById('drugKorsatma').value.trim(), qarshi: document.getElementById('drugQarshi').value.trim(), yon: document.getElementById('drugYon').value.trim() };
+  if (id) { await updateDoc(doc(db, 'drugs', id), payload); showSuccess('drugSuccess', 'Dori yangilandi!'); cancelDrugEdit(); }
+  else { await addDoc(collection(db, 'drugs'), { ...payload, createdAt: serverTimestamp() }); showSuccess('drugSuccess', 'Dori qo\'shildi!'); clearDrugForm(); }
+  loadDrugs();
+};
+
+window.cancelDrugEdit = () => {
+  document.getElementById('editDrugId').value = '';
+  document.getElementById('drugFormTitle').textContent = 'Yangi dori qo\'shish';
+  document.getElementById('drugSubmitBtn').textContent = '+ Dori qo\'shish';
+  document.getElementById('drugCancelBtn').style.display = 'none';
+  document.getElementById('drugEditBanner').style.display = 'none';
+  clearDrugForm();
+};
+
+function clearDrugForm() { ['drugName','drugDose','drugGroup','drugMech','drugKorsatma','drugQarshi','drugYon'].forEach(id => document.getElementById(id).value = ''); }
+window.deleteDrug = async (id) => { if (!confirm('Dorini o\'chirasizmi?')) return; await deleteDoc(doc(db, 'drugs', id)); loadDrugs(); };
+
+// ===== FOYDALANUVCHILAR =====
+async function loadUsers() {
+  const snap = await getDocs(collection(db, 'users'));
+  const list = document.getElementById('userList');
+  document.getElementById('statUsers').textContent = snap.size;
+  if (snap.empty) { list.innerHTML = '<div class="empty">Foydalanuvchilar topilmadi</div>'; return; }
+  list.innerHTML = '';
+  snap.forEach(d => {
+    const data = d.data();
+    const letter = (data.name || data.email || 'U')[0].toUpperCase();
+    const date = data.loginAt ? new Date(data.loginAt.seconds * 1000).toLocaleDateString('uz') : '';
+    list.innerHTML += `<div class="user-card"><div class="user-avatar">${letter}</div><div class="user-info"><h4>${data.name||'Nomsiz'}</h4><p>${data.email}</p><p style="font-size:11px;color:var(--text-muted);margin-top:2px">Oxirgi kirish: ${date}</p></div><span class="user-badge">Foydalanuvchi</span></div>`;
+  });
+}
+
+// ===== ADMINLAR =====
+async function loadAdmins() {
+  const snap = await getDocs(collection(db, 'admins'));
+  const list = document.getElementById('adminList');
+  document.getElementById('statAdmins').textContent = snap.size;
+  if (snap.empty) { list.innerHTML = '<div class="empty">Adminlar yo\'q</div>'; return; }
+  list.innerHTML = '';
+  snap.forEach(d => {
+    const data = d.data();
+    const isSuperAdmin = data.email === SUPER_ADMIN;
+    const letter = data.email[0].toUpperCase();
+    list.innerHTML += `<div class="admin-card"><div class="admin-avatar">${letter}</div><div class="admin-info"><h4>${data.email}</h4><p>${isSuperAdmin ? 'Barcha huquqlar' : 'Kasallik va dori qo\'shish'}</p></div><span class="admin-badge ${isSuperAdmin?'badge-super':'badge-admin-g'}">${isSuperAdmin ? '👑 Super Admin' : '🔐 Admin'}</span>${!isSuperAdmin ? `<button class="admin-del-btn" onclick="removeAdmin('${d.id}','${data.email}')">O'chirish</button>` : ''}</div>`;
+  });
+}
+
+window.addAdmin = async () => {
+  const email = document.getElementById('newAdminEmail').value.trim().toLowerCase();
+  if (!email || !email.includes('@')) return alert('To\'g\'ri email kiriting!');
+  if (email === SUPER_ADMIN) return alert('Bu allaqachon Super Admin!');
+  const existing = await getDocs(query(collection(db, 'admins'), where('email', '==', email)));
+  if (!existing.empty) return alert('Bu email allaqachon admin!');
+  await addDoc(collection(db, 'admins'), { email, addedBy: currentUserEmail, addedAt: serverTimestamp() });
+  document.getElementById('newAdminEmail').value = '';
+  showSuccess('adminAddSuccess', `${email} admin qilindi!`);
+  loadAdmins();
+};
+
+window.removeAdmin = async (id, email) => {
+  if (!confirm(`${email} ni adminlikdan o'chirasizmi?`)) return;
+  await deleteDoc(doc(db, 'admins', id));
+  loadAdmins();
+};
+
+window.showAdminTab = (tab) => {
+  const tabs = ['diseases','drugs','users','admins'];
+  document.querySelectorAll('.admin-tab').forEach((b,i) => b.classList.toggle('active', tabs[i]===tab));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('section-'+tab).classList.add('active');
+};
+
+window.goHome = () => window.location.href = 'index.html';
+window.logoutAdmin = async () => { await signOut(auth); window.location.href = 'login.html'; };
+</script>
+</body>
+</html>
