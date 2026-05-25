@@ -106,6 +106,19 @@
     .add-box-btn:hover{background:var(--bg-faint)}
     .add-step-btn{flex:1;background:var(--bg-card);border:2px dashed #E24B4A;color:#E24B4A;padding:8px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer}
     .add-step-btn:hover{background:var(--bg-faint)}
+    .add-drug-btn{flex:1;background:var(--bg-card);border:2px dashed #639922;color:#639922;padding:8px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer}
+    .add-drug-btn:hover{background:var(--bg-faint)}
+    .drug-card-item{border:1.5px solid #c3e6a0;border-radius:10px;padding:12px;margin-bottom:8px;background:var(--bg-faint);display:flex;gap:10px;align-items:flex-start}
+    body.dark .drug-card-item{border-color:#2a4a1a}
+    .drug-card-item.dragging{opacity:.5}
+    .drug-card-item.drag-over{border-color:#639922}
+    .drug-card-inputs{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+    .drug-card-inputs input,.drug-card-inputs textarea,.drug-card-inputs select{padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:var(--bg-input);color:var(--text-primary);font-family:Arial;width:100%}
+    .drug-card-inputs input:focus,.drug-card-inputs textarea:focus{border-color:#639922}
+    .drug-card-inputs .dc-full{grid-column:1/-1}
+    .drug-card-inputs textarea{height:55px;resize:vertical}
+    .drug-card-del{background:#FCEBEB;color:#E24B4A;border:none;padding:6px 10px;border-radius:8px;font-size:12px;cursor:pointer;flex-shrink:0}
+    .drug-badge-green{width:28px;height:28px;border-radius:6px;background:#639922;color:white;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
     .drag-handle{cursor:grab;padding:4px 6px;color:var(--text-muted);font-size:18px;line-height:1;flex-shrink:0;user-select:none}
     .block-item{border:1.5px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;background:var(--bg-faint)}
     .block-item.dragging{opacity:.5}
@@ -300,6 +313,7 @@
         <div class="add-btns">
           <button class="add-box-btn" onclick="addBox('drugsBlocks')">🔵 + Quticha</button>
           <button class="add-step-btn" onclick="addStep('drugsBlocks')">🔴 + Qadam</button>
+          <button class="add-drug-btn" onclick="addDrugCard('drugsBlocks')">💊 + Dori kartasi</button>
         </div>
       </div>
 
@@ -528,6 +542,32 @@ function enableDrag(el) {
 }
 
 // ===== BLOKLAR =====
+window.addDrugCard = function(cid, data={}) {
+  blockCount++;
+  const id = 'blk_' + blockCount;
+  const div = document.createElement('div');
+  div.className = 'drug-card-item'; div.id = id; div.dataset.type = 'drug';
+  div.innerHTML = `
+    <span class="drag-handle">⠿</span>
+    <div class="drug-badge-green">💊</div>
+    <div class="drug-card-inputs">
+      <input type="text" class="dc-name" placeholder="Dori nomi... (Dibazol)" value="${data.name||''}">
+      <input type="text" class="dc-dose" placeholder="Doza... (0,5% — 6–8 ml)" value="${data.dose||''}">
+      <select class="dc-route">
+        <option ${(data.route||'')==='V/I'?'selected':''}>V/I</option>
+        <option ${(data.route||'')==='M/I'?'selected':''}>M/I</option>
+        <option ${(data.route||'')==='T/O'?'selected':''}>T/O</option>
+        <option ${(data.route||'')==='Oral'?'selected':''}>Oral</option>
+        <option ${(data.route||'')==='Til osti'?'selected':''}>Til osti</option>
+        <option ${(data.route||'')==='Tashqi'?'selected':''}>Tashqi</option>
+      </select>
+      <textarea class="dc-mech dc-full" placeholder="Mexanizm... (Spazmolitik → tomir bo'shashadi → AQB tushadi)">${data.mech||''}</textarea>
+    </div>
+    <button class="drug-card-del" onclick="removeBlock('${id}')">✕</button>`;
+  document.getElementById(cid).appendChild(div);
+  enableDrag(div);
+};
+
 window.addBox = function(cid, data={}) {
   blockCount++;
   const id = 'blk_' + blockCount;
@@ -576,13 +616,16 @@ function getBlocks(cid) {
     } else if (item.dataset.type === 'step') {
       const title = item.querySelector('.step-title-input').value.trim();
       if (title) blocks.push({ type:'step', title, desc: item.querySelector('.step-desc-input').value.trim() });
+    } else if (item.dataset.type === 'drug') {
+      const name = item.querySelector('.dc-name').value.trim();
+      if (name) blocks.push({ type:'drug', name, dose: item.querySelector('.dc-dose').value.trim(), route: item.querySelector('.dc-route').value, mech: item.querySelector('.dc-mech').value.trim() });
     }
   });
   return blocks;
 }
 
 function clearBlocks(cid) { document.getElementById(cid).innerHTML = ''; }
-function loadBlocks(cid, blocks) { clearBlocks(cid); (blocks||[]).forEach(b => b.type==='step' ? addStep(cid,b) : addBox(cid,b)); }
+function loadBlocks(cid, blocks) { clearBlocks(cid); (blocks||[]).forEach(b => b.type==='step' ? addStep(cid,b) : b.type==='drug' ? addDrugCard(cid,b) : addBox(cid,b)); }
 
 // ===== KASALLIKLAR =====
 async function loadDiseases() {
