@@ -58,16 +58,6 @@ function blocksToHtml(blocks) {
         </div>`;
       stepNum++;
       return html;
-    } else if (b.type === 'drug') {
-      return `
-        <div class="drug-card">
-          <div class="drug-header">
-            <div class="drug-name">${b.name}</div>
-            <div class="drug-route">${b.route || ''}</div>
-          </div>
-          ${b.dose ? `<div class="drug-dose">💊 ${b.dose}</div>` : ''}
-          ${b.mech ? `<div class="drug-mech">${b.mech}</div>` : ''}
-        </div>`;
     } else {
       return `
         <div class="info-box ${b.color || 'blue'}">
@@ -105,8 +95,11 @@ function addFirestoreDiseasesToGrid() {
     div.className = 'disease-card';
     div.id = 'card-fs-' + d.id;
     div.onclick = () => selectFirestoreDisease(d.id);
+    const iconHtml = d.icon && d.icon.startsWith('http')
+      ? `<img src="${d.icon}" style="width:28px;height:28px;display:block;margin:0 auto 6px;filter:invert(27%) sepia(89%) saturate(1000%) hue-rotate(330deg) brightness(90%)" alt="icon">`
+      : `<span style="font-size:26px;display:block;margin-bottom:6px">${d.icon || '🦠'}</span>`;
     div.innerHTML = `
-      <span style="font-size:26px;display:block;margin-bottom:6px">${d.icon || '🦠'}</span>
+      ${iconHtml}
       <div class="dc-name">${d.name}</div>
       <div class="dc-tag">${d.category || 'Boshqa'}</div>
     `;
@@ -121,7 +114,7 @@ window.selectFirestoreDisease = function(id) {
   document.getElementById('card-fs-' + id).classList.add('active');
   window._currentFSDisease = d;
   window._currentFSMode = true;
-  switchTab('info');
+  switchTab(typeof ct !== 'undefined' ? ct : 'info');
 };
 
 window.renderFSTab = function(tab) {
