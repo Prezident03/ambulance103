@@ -89,7 +89,28 @@
     .disease-card .dc-name{font-size:13px;font-weight:600;color:var(--text-primary)}
     .disease-card .dc-tag{font-size:11px;background:var(--dc-tag-bg);color:var(--dc-tag-color);border-radius:4px;padding:2px 7px;margin-top:5px;display:inline-block}
 
-    /* DETAIL PANEL */
+    /* DETAIL VIEW */
+    .grid-view{display:block}
+    .detail-view{display:none}
+    .detail-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+    .back-btn{background:var(--bg-card);border:1.5px solid var(--border);border-radius:10px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text-primary);display:flex;align-items:center;gap:6px;flex-shrink:0;transition:all .15s}
+    .back-btn:hover{border-color:#E24B4A;color:#E24B4A}
+    .detail-search-wrap{flex:1;position:relative}
+    .detail-search-wrap input{width:100%;padding:9px 14px;border-radius:10px;border:1.5px solid var(--border);font-size:13px;background:var(--bg-search);color:var(--text-primary);outline:none;transition:all 0.2s}
+    .detail-search-wrap input:focus{border-color:#E24B4A}
+    .detail-search-wrap input::placeholder{color:var(--text-faint)}
+    .search-dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--bg-card);border:1.5px solid var(--border);border-radius:12px;z-index:100;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.12);display:none}
+    .search-dropdown.open{display:block}
+    .search-item{padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border2);transition:background .1s}
+    .search-item:last-child{border-bottom:none}
+    .search-item:hover{background:var(--bg-tab)}
+    .search-item i,.search-item .si-icon{font-size:18px;color:#E24B4A;flex-shrink:0}
+    .search-item .si-name{font-size:13px;font-weight:600;color:var(--text-primary)}
+    .search-item .si-tag{font-size:11px;color:var(--text-faint);margin-left:auto}
+    .disease-name-bar{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px}
+    .disease-name-bar .d-icon{font-size:28px;color:#E24B4A;flex-shrink:0}
+    .disease-name-bar .d-info h2{font-size:17px;font-weight:700;color:var(--text-primary)}
+    .disease-name-bar .d-info span{font-size:11px;background:var(--dc-tag-bg);color:var(--dc-tag-color);border-radius:4px;padding:2px 8px;display:inline-block;margin-top:4px}
     .detail-panel{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
     .tabs{display:flex;background:var(--bg-tab);border-bottom:1px solid var(--border)}
     .tab{flex:1;padding:11px 6px;font-size:13px;text-align:center;cursor:pointer;color:var(--text-faint);border-bottom:2px solid transparent}
@@ -203,18 +224,35 @@
     <button class="nav-btn" onclick="showSection('dorilar')" id="nav-dorilar"><i class="ti ti-pill"></i> Dorilar (36)</button>
   </div>
 
-  <!-- KASALLIKLAR -->
-  <div class="kasalliklar-section" id="kasalliklar-section">
+  <!-- KASALLIKLAR: GRID VIEW -->
+  <div class="kasalliklar-section grid-view" id="grid-view">
     <div class="search-bar"><input type="text" placeholder="🔍 Kasallik qidirish..." id="searchInput" oninput="filterDiseases(this.value)"></div>
     <div class="disease-grid" id="diseaseGrid">
-      <div class="disease-card active" onclick="selectDisease('htn')" id="card-htn"><i class="ti ti-heart-rate-monitor"></i><div class="dc-name">Gipertonik kriz</div><div class="dc-tag">Yurak-qon tomir</div></div>
-      <div class="disease-card" onclick="selectDisease('mi')" id="card-mi"><i class="ti ti-heart"></i><div class="dc-name">Miokard infarkti</div><div class="dc-tag">Yurak-qon tomir</div></div>
-      <div class="disease-card" onclick="selectDisease('stroke')" id="card-stroke"><i class="ti ti-brain"></i><div class="dc-name">Insult</div><div class="dc-tag">Nevrologik</div></div>
-      <div class="disease-card" onclick="selectDisease('anaphylaxis')" id="card-anaphylaxis"><i class="ti ti-alert-triangle"></i><div class="dc-name">Anafilaksiya</div><div class="dc-tag">Allergiya</div></div>
-      <div class="disease-card" onclick="selectDisease('diabetes')" id="card-diabetes"><i class="ti ti-droplet"></i><div class="dc-name">Diabetik koma</div><div class="dc-tag">Endokrin</div></div>
-      <div class="disease-card" onclick="selectDisease('epilepsy')" id="card-epilepsy"><i class="ti ti-bolt"></i><div class="dc-name">Epilepsiya</div><div class="dc-tag">Nevrologik</div></div>
+      <div class="disease-card" onclick="openDisease('htn')" id="card-htn"><i class="ti ti-heart-rate-monitor"></i><div class="dc-name">Gipertonik kriz</div><div class="dc-tag">Yurak-qon tomir</div></div>
+      <div class="disease-card" onclick="openDisease('mi')" id="card-mi"><i class="ti ti-heart"></i><div class="dc-name">Miokard infarkti</div><div class="dc-tag">Yurak-qon tomir</div></div>
+      <div class="disease-card" onclick="openDisease('stroke')" id="card-stroke"><i class="ti ti-brain"></i><div class="dc-name">Insult</div><div class="dc-tag">Nevrologik</div></div>
+      <div class="disease-card" onclick="openDisease('anaphylaxis')" id="card-anaphylaxis"><i class="ti ti-alert-triangle"></i><div class="dc-name">Anafilaksiya</div><div class="dc-tag">Allergiya</div></div>
+      <div class="disease-card" onclick="openDisease('diabetes')" id="card-diabetes"><i class="ti ti-droplet"></i><div class="dc-name">Diabetik koma</div><div class="dc-tag">Endokrin</div></div>
+      <div class="disease-card" onclick="openDisease('epilepsy')" id="card-epilepsy"><i class="ti ti-bolt"></i><div class="dc-name">Epilepsiya</div><div class="dc-tag">Nevrologik</div></div>
     </div>
+  </div>
 
+  <!-- KASALLIKLAR: DETAIL VIEW -->
+  <div class="kasalliklar-section detail-view" id="detail-view">
+    <div class="detail-header">
+      <button class="back-btn" onclick="goBack()">← Orqaga</button>
+      <div class="detail-search-wrap">
+        <input type="text" id="detailSearch" placeholder="🔍 Boshqa kasallik..." oninput="filterDetailSearch(this.value)" onfocus="openDropdown()" onblur="closeDropdownDelay()">
+        <div class="search-dropdown" id="searchDropdown"></div>
+      </div>
+    </div>
+    <div class="disease-name-bar" id="diseaseNameBar">
+      <div class="d-icon" id="dIcon"></div>
+      <div class="d-info">
+        <h2 id="dName"></h2>
+        <span id="dTag"></span>
+      </div>
+    </div>
     <div class="detail-panel">
       <div class="tabs">
         <div class="tab active" onclick="switchTab('info')" id="tab-info"><i class="ti ti-info-circle"></i> Ma'lumot</div>
@@ -353,11 +391,129 @@ function showSection(s){
 }
 
 // ===== KASALLIKLAR =====
-let cd='htn',ct='info';
-function selectDisease(id){document.querySelectorAll('.disease-card').forEach(c=>c.classList.remove('active'));document.getElementById('card-'+id).classList.add('active');cd=id;window._currentFSMode=false;window._currentFSDisease=null;renderTab(ct);}
-function switchTab(t){document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));document.getElementById("tab-"+t).classList.add("active");ct=t;if(window._currentFSMode){window.renderFSTab(t);}else{renderTab(t);}}
-function renderTab(t){document.getElementById('tabContent').innerHTML=diseases[cd][t];}
-function filterDiseases(q){const n={htn:'Gipertonik kriz',mi:'Miokard infarkti',stroke:'Insult',anaphylaxis:'Anafilaksiya',diabetes:'Diabetik koma',epilepsy:'Epilepsiya'};Object.keys(n).forEach(id=>{const c=document.getElementById('card-'+id);c.style.display=(!q||n[id].toLowerCase().includes(q.toLowerCase()))?'':'none';});}
+let cd='htn', ct='info';
+
+// Barcha kasalliklar ro'yxati (qidiruv uchun)
+const allDiseases = [
+  {id:'htn', name:'Gipertonik kriz', tag:'Yurak-qon tomir', icon:'<i class="ti ti-heart-rate-monitor"></i>'},
+  {id:'mi', name:'Miokard infarkti', tag:'Yurak-qon tomir', icon:'<i class="ti ti-heart"></i>'},
+  {id:'stroke', name:'Insult', tag:'Nevrologik', icon:'<i class="ti ti-brain"></i>'},
+  {id:'anaphylaxis', name:'Anafilaksiya', tag:'Allergiya', icon:'<i class="ti ti-alert-triangle"></i>'},
+  {id:'diabetes', name:'Diabetik koma', tag:'Endokrin', icon:'<i class="ti ti-droplet"></i>'},
+  {id:'epilepsy', name:'Epilepsiya', tag:'Nevrologik', icon:'<i class="ti ti-bolt"></i>'},
+];
+
+function openDisease(id) {
+  cd = id; ct = 'info';
+  window._currentFSMode = false; window._currentFSDisease = null;
+  // Grid → Detail
+  document.getElementById('grid-view').style.display = 'none';
+  document.getElementById('detail-view').style.display = 'block';
+  // Kasallik ma'lumotlarini ko'rsat
+  const d = diseases[id];
+  const meta = allDiseases.find(x=>x.id===id) || {name:d?.name||id, tag:'', icon:'🦠'};
+  document.getElementById('dName').textContent = meta.name;
+  document.getElementById('dTag').textContent = meta.tag;
+  document.getElementById('dIcon').innerHTML = meta.icon;
+  // Tab reset
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.getElementById('tab-info').classList.add('active');
+  renderTab('info');
+  document.getElementById('detailSearch').value = '';
+}
+
+function openFSDisease(d) {
+  window._currentFSMode = true; window._currentFSDisease = d; ct = 'info';
+  document.getElementById('grid-view').style.display = 'none';
+  document.getElementById('detail-view').style.display = 'block';
+  const iconHtml = d.icon && d.icon.startsWith('http')
+    ? `<img src="${d.icon}" style="width:28px;height:28px;filter:invert(27%) sepia(89%) saturate(1000%) hue-rotate(330deg) brightness(90%)" alt="">`
+    : (d.icon || '🦠');
+  document.getElementById('dName').textContent = d.name;
+  document.getElementById('dTag').textContent = d.category || 'Boshqa';
+  document.getElementById('dIcon').innerHTML = iconHtml;
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.getElementById('tab-info').classList.add('active');
+  window.renderFSTab('info');
+  document.getElementById('detailSearch').value = '';
+}
+
+function goBack() {
+  document.getElementById('detail-view').style.display = 'none';
+  document.getElementById('grid-view').style.display = 'block';
+  document.getElementById('searchInput').value = '';
+  filterDiseases('');
+  closeDropdown();
+}
+
+function switchTab(t) {
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.getElementById('tab-'+t).classList.add('active');
+  ct = t;
+  if (window._currentFSMode) { window.renderFSTab(t); } else { renderTab(t); }
+}
+function renderTab(t) { document.getElementById('tabContent').innerHTML = diseases[cd][t]; }
+
+function filterDiseases(q) {
+  const n = {htn:'Gipertonik kriz',mi:'Miokard infarkti',stroke:'Insult',anaphylaxis:'Anafilaksiya',diabetes:'Diabetik koma',epilepsy:'Epilepsiya'};
+  Object.keys(n).forEach(id => {
+    const c = document.getElementById('card-'+id);
+    if(c) c.style.display = (!q || n[id].toLowerCase().includes(q.toLowerCase())) ? '' : 'none';
+  });
+  // Firestore kasalliklarni ham filter
+  (window._firestoreDiseases||[]).forEach(d => {
+    const c = document.getElementById('card-fs-'+d.id);
+    if(c) c.style.display = (!q || d.name.toLowerCase().includes(q.toLowerCase())) ? '' : 'none';
+  });
+}
+
+// Detail view ichidagi qidiruv
+function filterDetailSearch(q) {
+  const dropdown = document.getElementById('searchDropdown');
+  if (!q.trim()) { dropdown.classList.remove('open'); dropdown.innerHTML=''; return; }
+  const hardcoded = allDiseases.filter(d => d.name.toLowerCase().includes(q.toLowerCase()));
+  const firestore = (window._firestoreDiseases||[]).filter(d => d.name.toLowerCase().includes(q.toLowerCase()));
+  const total = [...hardcoded.map(d=>({...d,type:'hard'})), ...firestore.map(d=>({...d,type:'fs'}))];
+  if (total.length===0) { dropdown.innerHTML='<div style="padding:14px;text-align:center;color:var(--text-faint);font-size:13px">Topilmadi</div>'; dropdown.classList.add('open'); return; }
+  dropdown.innerHTML = total.map(d => {
+    const iconHtml = d.type==='fs'
+      ? (d.icon && d.icon.startsWith('http') ? `<img src="${d.icon}" style="width:18px;height:18px;filter:invert(27%) sepia(89%) saturate(1000%) hue-rotate(330deg) brightness(90%)">` : `<span>${d.icon||'🦠'}</span>`)
+      : `<span class="si-icon">${d.icon||''}</span>`;
+    return `<div class="search-item" onmousedown="${d.type==='fs'?`switchFSDisease('${d.id}')`:`switchHardDisease('${d.id}')`}">
+      ${iconHtml}
+      <span class="si-name">${d.name}</span>
+      <span class="si-tag">${d.tag||d.category||''}</span>
+    </div>`;
+  }).join('');
+  dropdown.classList.add('open');
+}
+
+function openDropdown() {
+  const q = document.getElementById('detailSearch').value;
+  if (q.trim()) filterDetailSearch(q);
+}
+function closeDropdown() { document.getElementById('searchDropdown').classList.remove('open'); }
+function closeDropdownDelay() { setTimeout(closeDropdown, 150); }
+
+window.switchHardDisease = function(id) {
+  cd = id; ct = 'info'; window._currentFSMode = false; window._currentFSDisease = null;
+  const meta = allDiseases.find(x=>x.id===id);
+  document.getElementById('dName').textContent = meta.name;
+  document.getElementById('dTag').textContent = meta.tag;
+  document.getElementById('dIcon').innerHTML = meta.icon;
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.getElementById('tab-info').classList.add('active');
+  renderTab('info');
+  document.getElementById('detailSearch').value='';
+  closeDropdown();
+};
+
+window.switchFSDisease = function(id) {
+  const d = (window._firestoreDiseases||[]).find(x=>x.id===id);
+  if(d) openFSDisease(d);
+  document.getElementById('detailSearch').value='';
+  closeDropdown();
+};
 
 // ===== DORILAR =====
 let cur_drug=drugsData[0].id,cur_dtab='umumiy';
@@ -394,7 +550,6 @@ function filterDrugs(q){
 }
 
 buildDrugCards();
-renderTab('info');
 renderDrugTab('umumiy');
 </script>
 </body>

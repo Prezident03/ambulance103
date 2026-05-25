@@ -104,7 +104,10 @@ function addFirestoreDiseasesToGrid() {
     const div = document.createElement('div');
     div.className = 'disease-card';
     div.id = 'card-fs-' + d.id;
-    div.onclick = () => selectFirestoreDisease(d.id);
+    div.onclick = () => {
+      if (typeof openFSDisease === 'function') { openFSDisease(d); }
+      else { selectFirestoreDisease(d.id); }
+    };
     const iconHtml = d.icon && d.icon.startsWith('http')
       ? `<img src="${d.icon}" style="width:28px;height:28px;display:block;margin:0 auto 6px;filter:invert(27%) sepia(89%) saturate(1000%) hue-rotate(330deg) brightness(90%)" alt="icon">`
       : `<span style="font-size:26px;display:block;margin-bottom:6px">${d.icon || '🦠'}</span>`;
@@ -120,6 +123,8 @@ function addFirestoreDiseasesToGrid() {
 window.selectFirestoreDisease = function(id) {
   const d = window._firestoreDiseases.find(x => x.id === id);
   if (!d) return;
+  if (typeof openFSDisease === 'function') { openFSDisease(d); return; }
+  // fallback
   document.querySelectorAll('.disease-card').forEach(c => c.classList.remove('active'));
   document.getElementById('card-fs-' + id).classList.add('active');
   window._currentFSDisease = d;
