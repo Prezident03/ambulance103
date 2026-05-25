@@ -58,6 +58,16 @@ function blocksToHtml(blocks) {
         </div>`;
       stepNum++;
       return html;
+    } else if (b.type === 'drug') {
+      return `
+        <div class="drug-card">
+          <div class="drug-header">
+            <div class="drug-name">${b.name}</div>
+            <div class="drug-route">${b.route || ''}</div>
+          </div>
+          ${b.dose ? `<div class="drug-dose">💊 ${b.dose}</div>` : ''}
+          ${b.mech ? `<div class="drug-mech">${b.mech}</div>` : ''}
+        </div>`;
     } else {
       return `
         <div class="info-box ${b.color || 'blue'}">
