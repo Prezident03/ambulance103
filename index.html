@@ -304,6 +304,29 @@
       .hero-btn-primary,.hero-btn-secondary{padding:8px 12px;font-size:11px}
     }
 
+
+    /* ===== KATEGORIYALAR ===== */
+    .categories-section{margin-bottom:16px;}
+    .cat-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+    .cat-title{font-size:15px;font-weight:700;color:#222;}
+    body.dark .cat-title{color:#eee;}
+    .cat-scroll{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none;}
+    .cat-scroll::-webkit-scrollbar{display:none;}
+    .cat-card{
+      flex-shrink:0;width:100px;background:#fff;border-radius:16px;
+      padding:14px 10px;text-align:center;cursor:pointer;
+      box-shadow:0 2px 12px rgba(0,0,0,0.07);
+      transition:transform .2s,box-shadow .2s;
+      border:2px solid transparent;
+    }
+    body.dark .cat-card{background:#16213e;box-shadow:0 2px 12px rgba(0,0,0,0.3);}
+    .cat-card:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(0,0,0,0.13);}
+    .cat-card.active{border-color:currentColor;}
+    .cat-icon{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-size:24px;}
+    .cat-name{font-size:11px;font-weight:600;color:#333;line-height:1.3;}
+    body.dark .cat-name{color:#ccc;}
+    .cat-count{font-size:10px;color:#888;margin-top:3px;}
+    body.dark .cat-count{color:#666;}
     /* ===== SECTION MODAL ===== */
     .section-modal-overlay{
       display:none;position:fixed;inset:0;z-index:1000;
@@ -432,6 +455,40 @@
     </div>
   </div>
 
+
+  <!-- KATEGORIYALAR -->
+  <div class="categories-section">
+    <div class="cat-header">
+      <div class="cat-title">📂 Asosiy kategoriyalar</div>
+    </div>
+    <div class="cat-scroll" id="catScroll">
+      <div class="cat-card" onclick="openSectionModal('kasalliklar')" style="color:#e74c3c">
+        <div class="cat-icon" style="background:#ffeaea"><i class="ti ti-heart-rate-monitor" style="color:#e74c3c;font-size:26px"></i></div>
+        <div class="cat-name">Yurak va qon-tomir</div>
+        <div class="cat-count" id="cat-yurak">—</div>
+      </div>
+      <div class="cat-card" onclick="openSectionModal('kasalliklar')" style="color:#8e44ad">
+        <div class="cat-icon" style="background:#f5eaff"><i class="ti ti-brain" style="color:#8e44ad;font-size:26px"></i></div>
+        <div class="cat-name">Nerv tizimi</div>
+        <div class="cat-count" id="cat-nerv">—</div>
+      </div>
+      <div class="cat-card" onclick="openSectionModal('kasalliklar')" style="color:#2980b9">
+        <div class="cat-icon" style="background:#eaf4ff"><i class="ti ti-lungs" style="color:#2980b9;font-size:26px"></i></div>
+        <div class="cat-name">Nafas olish tizimi</div>
+        <div class="cat-count" id="cat-nafas">—</div>
+      </div>
+      <div class="cat-card" onclick="openSectionModal('kasalliklar')" style="color:#27ae60">
+        <div class="cat-icon" style="background:#eafff2"><i class="ti ti-gut" style="color:#27ae60;font-size:26px"></i></div>
+        <div class="cat-name">Hazm qilish tizimi</div>
+        <div class="cat-count" id="cat-hazm">—</div>
+      </div>
+      <div class="cat-card" onclick="openSectionModal('kasalliklar')" style="color:#e67e22">
+        <div class="cat-icon" style="background:#fff5ea"><i class="ti ti-droplet" style="color:#e67e22;font-size:26px"></i></div>
+        <div class="cat-name">Siydik ajratish tizimi</div>
+        <div class="cat-count" id="cat-siydik">—</div>
+      </div>
+    </div>
+  </div>
 </div><!-- end main -->
 
 <!-- SECTION MODAL -->
@@ -1190,6 +1247,50 @@ window.switchFSDrug = function(id) {
 
 buildDrugCards();
 renderDrugTab('umumiy');
+
+// ===== KATEGORIYALAR =====
+async function loadCategoryCounts() {
+  try {
+    const { db } = await import('./firebase.js');
+    const { collection, getDocs } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+    const snap = await getDocs(collection(db, 'diseases'));
+    const counts = {};
+    snap.forEach(doc => {
+      const d = doc.data();
+      const cat = (d.category || '').toLowerCase();
+      counts[cat] = (counts[cat] || 0) + 1;
+    });
+    // Hardcoded kasalliklarni ham hisoblash
+    const hardcoded = {
+      'yurak-qon tomir': 2, // htn, mi
+      'nevrologik': 3,      // stroke, epilepsy, hushdan ketish
+      'allergiya': 1,       // anaphylaxis
+      'endokrin': 1         // diabetes
+    };
+    const catMap = {
+      'cat-yurak': ['yurak-qon tomir', 'yurak', 'kardiologiya'],
+      'cat-nerv': ['nevrologik', 'nerv', 'nevrологik'],
+      'cat-nafas': ['nafas', 'o'pka', 'pulmonologiya'],
+      'cat-hazm': ['hazm', 'gastro', 'oshqozon'],
+      'cat-siydik': ['siydik', 'buyrak', 'urologiya']
+    };
+    Object.entries(catMap).forEach(([elId, keys]) => {
+      let total = 0;
+      keys.forEach(k => {
+        total += (counts[k] || 0) + (hardcoded[k] || 0);
+      });
+      // yurak uchun hardcoded
+      if (elId === 'cat-yurak') total = Math.max(total, 2);
+      if (elId === 'cat-nerv') total = Math.max(total, 3);
+      const el = document.getElementById(elId);
+      if (el) el.textContent = total > 0 ? total + ' ta kasallik' : '—';
+    });
+  } catch(e) {
+    console.log('Cat counts:', e.message);
+  }
+}
+loadCategoryCounts();
+
 </script>
 </body>
 </html>
