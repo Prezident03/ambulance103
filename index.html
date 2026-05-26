@@ -634,17 +634,14 @@ window.uploadAvatar = async function(input) {
   if (file.size > 500 * 1024) return showPmError('Rasm 500KB dan kichik bo\'lsin!');
   showPmSuccess('Rasm siqilmoqda...');
   try {
-    // Rasmni siqish (canvas orqali)
     const dataUrl = await compressImage(file, 200);
     const { auth, db } = await import('./firebase.js');
     const { doc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
-    const { updateProfile } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
-    // Firestorega saqlash
+    // Faqat Firestorega saqlash (Auth ga tegmaymiz)
     await setDoc(doc(db, 'users', auth.currentUser.uid), {
       photoBase64: dataUrl
     }, { merge: true });
-    // Profil URL ni ham yangilash
-    await updateProfile(auth.currentUser, { photoURL: dataUrl });
+    // UI yangilash
     const imgHtml = `<img src="${dataUrl}">`;
     document.getElementById('pmAvatar').innerHTML = imgHtml;
     document.getElementById('pdAvatar').innerHTML = imgHtml;
