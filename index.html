@@ -632,23 +632,24 @@ window.uploadAvatar = async function(input) {
   const file = input.files[0];
   if (!file) return;
   if (file.size > 2 * 1024 * 1024) return showPmError('Rasm 2MB dan kichik bo\'lsin!');
-  const reader = new FileReader();
-  reader.onload = async (e) => {
-    const dataUrl = e.target.result;
-    try {
-      const { auth } = await import('./firebase.js');
-      const { updateProfile } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
-      await updateProfile(auth.currentUser, { photoURL: dataUrl });
-      const imgHtml = `<img src="${dataUrl}">`;
-      document.getElementById('pmAvatar').innerHTML = imgHtml;
-      document.getElementById('pdAvatar').innerHTML = imgHtml;
-      document.getElementById('profileBtnText').innerHTML = `<img src="${dataUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
-      showPmSuccess('Rasm yangilandi!');
-    } catch (e) {
-      showPmError('Rasm saqlashda xatolik!');
-    }
-  };
-  reader.readAsDataURL(file);
+  showPmSuccess('Rasm yuklanmoqda...');
+  try {
+    const { auth } = await import('./firebase.js');
+    const { getStorage, ref, uploadBytes, getDownloadURL } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js");
+    const { updateProfile } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
+    const storage = getStorage();
+    const storageRef = ref(storage, 'avatars/' + auth.currentUser.uid);
+    await uploadBytes(storageRef, file);
+    const downloadURL = await getDownloadURL(storageRef);
+    await updateProfile(auth.currentUser, { photoURL: downloadURL });
+    const imgHtml = `<img src="${downloadURL}">`;
+    document.getElementById('pmAvatar').innerHTML = imgHtml;
+    document.getElementById('pdAvatar').innerHTML = imgHtml;
+    document.getElementById('profileBtnText').innerHTML = `<img src="${downloadURL}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    showPmSuccess('Rasm muvaffaqiyatli yangilandi!');
+  } catch (e) {
+    showPmError('Xatolik: ' + e.message);
+  }
 };
 
 const diseases={
