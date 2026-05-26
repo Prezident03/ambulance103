@@ -551,12 +551,12 @@ function buildIconModal() {
   if (filtered.length === 0) { grid.innerHTML = '<div class="icon-empty">Ikonka topilmadi</div>'; return; }
   grid.innerHTML = filtered.map(icon => {
     const url = getIconUrl(icon.u);
-    const sel = url === selectedIconUrl ? ' selected' : '';
+    const currentSel = iconModalTarget === 'cat' ? selectedCatIconUrl : selectedIconUrl;
+    const sel = url === currentSel ? ' selected' : '';
     return `<div class="icon-modal-item${sel}" onclick="selectHealthIcon('${url}','${icon.n}')" title="${icon.n}"><img src="${url}" alt="${icon.n}" onerror="this.style.display='none'"><span>${icon.n}</span></div>`;
   }).join('');
 }
 
-window.openIconModal = function() { document.getElementById('iconModal').classList.add('open'); buildIconModal(); };
 window.closeIconModal = function() { document.getElementById('iconModal').classList.remove('open'); };
 window.closeIconModalOutside = function(e) { if (e.target === document.getElementById('iconModal')) closeIconModal(); };
 window.filterByCat = function(cat) { currentCat = cat; buildIconModal(); };
@@ -898,7 +898,7 @@ window.removeAdmin = async (id, email) => {
 };
 
 window.showAdminTab = (tab) => {
-  const tabs = ['diseases','drugs','users','admins','categories'];
+  const tabs = ['diseases','drugs','users','categories','admins'];
   document.querySelectorAll('.admin-tab').forEach((b,i) => b.classList.toggle('active', tabs[i]===tab));
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById('section-'+tab).classList.add('active');
@@ -939,7 +939,7 @@ async function loadCategories() {
     if (currentVal) sel.value = currentVal;
 
     if (snap.empty) {
-      list.innerHTML = '<div class="empty">Hali kategoriya qo'shilmagan. Yuqoridan qo'shing!</div>';
+      list.innerHTML = `<div class="empty">Hali kategoriya qo'shilmagan. Yuqoridan qo'shing!</div>`;
       return;
     }
     list.innerHTML = '';
@@ -1000,7 +1000,7 @@ window.submitCategory = async () => {
     cancelCatEdit();
   } else {
     await addDoc(collection(db, 'categories'), { ...payload, createdAt: serverTimestamp() });
-    showSuccess('catSuccess', 'Kategoriya qo'shildi!');
+    showSuccess('catSuccess', "Kategoriya qo'shildi!");
     clearCatForm();
   }
   loadCategories();
@@ -1039,8 +1039,8 @@ window.deleteCategory = async (id) => {
 
 window.cancelCatEdit = () => {
   document.getElementById('editCatId').value = '';
-  document.getElementById('catFormTitle').textContent = 'Yangi kategoriya qo'shish';
-  document.getElementById('catSubmitBtn').textContent = '+ Kategoriya qo'shish';
+  document.getElementById('catFormTitle').textContent = "Yangi kategoriya qo'shish";
+  document.getElementById('catSubmitBtn').textContent = "+ Kategoriya qo'shish";
   document.getElementById('catCancelBtn').style.display = 'none';
   document.getElementById('catEditBanner').style.display = 'none';
   clearCatForm();
