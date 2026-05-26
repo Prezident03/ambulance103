@@ -15,18 +15,24 @@ onAuthStateChanged(auth, async (user) => {
     loginAt: serverTimestamp()
   }, { merge: true });
 
-  document.getElementById('userName').textContent = user.displayName || user.email.split('@')[0];
+  const name = user.displayName || user.email.split('@')[0];
+  const un = document.getElementById('userName');
+  if (un) un.textContent = name;
   if (typeof window._setProfileUser === 'function') window._setProfileUser(user);
 
   // Super admin yoki oddiy admin tekshirish
+  let isAdmin = false;
   if (user.email === SUPER_ADMIN) {
-    document.getElementById('adminBtn').style.display = 'inline-block';
+    isAdmin = true;
   } else {
-    // admins kolleksiyasidan tekshirish
     const snap = await getDocs(query(collection(db, 'admins'), where('email', '==', user.email)));
-    if (!snap.empty) {
-      document.getElementById('adminBtn').style.display = 'inline-block';
-    }
+    if (!snap.empty) isAdmin = true;
+  }
+  if (isAdmin) {
+    const adminBtn = document.getElementById('adminBtn');
+    if (adminBtn) adminBtn.style.display = 'inline-block';
+    const pdAdminBtn = document.getElementById('pdAdminBtn');
+    if (pdAdminBtn) pdAdminBtn.style.display = 'flex';
   }
 
   loadFromFirestore();

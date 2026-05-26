@@ -222,6 +222,43 @@
     .dose-table th{background:var(--dose-th-bg);padding:8px 10px;text-align:left;font-weight:600;color:var(--dose-th-color);font-size:12px}
     .dose-table td{padding:8px 10px;border-bottom:1px solid var(--border2);color:var(--text-secondary)}
 
+    /* PROFIL MODAL */
+    .pmodal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.55);z-index:2000;align-items:center;justify-content:center;padding:16px}
+    .pmodal.open{display:flex}
+    .pmodal-box{background:var(--bg-card);border-radius:20px;width:100%;max-width:400px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.25)}
+    .pmodal-top{background:linear-gradient(135deg,#E24B4A,#c0392b);padding:28px 20px 20px;text-align:center;position:relative}
+    .pmodal-close{position:absolute;top:12px;right:14px;background:rgba(255,255,255,0.2);border:none;color:white;width:30px;height:30px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+    .pmodal-close:hover{background:rgba(255,255,255,0.35)}
+    .pmodal-avatar-wrap{position:relative;display:inline-block;margin-bottom:10px}
+    .pmodal-avatar{width:80px;height:80px;border-radius:50%;border:3px solid rgba(255,255,255,0.6);background:rgba(255,255,255,0.2);color:white;font-size:32px;font-weight:700;display:flex;align-items:center;justify-content:center;overflow:hidden;margin:0 auto}
+    .pmodal-avatar img{width:100%;height:100%;object-fit:cover}
+    .pmodal-avatar-edit{position:absolute;bottom:2px;right:2px;width:26px;height:26px;background:#E24B4A;border:2px solid white;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px}
+    .pmodal-avatar-edit:hover{background:#c0392b}
+    .pmodal-top h3{color:white;font-size:17px;font-weight:700;margin-bottom:2px}
+    .pmodal-top p{color:rgba(255,255,255,0.75);font-size:12px}
+    .pmodal-body{padding:20px}
+    .pm-group{margin-bottom:14px}
+    .pm-group label{font-size:12px;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:6px}
+    .pm-group input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;outline:none;background:var(--bg-search);color:var(--text-primary);transition:border-color .2s}
+    .pm-group input:focus{border-color:#E24B4A}
+    .pm-group input:disabled{background:var(--bg-tab);color:var(--text-faint);cursor:not-allowed}
+    .pm-group .pm-hint{font-size:11px;color:var(--text-faint);margin-top:4px}
+    .pm-divider{height:1px;background:var(--border);margin:16px 0}
+    .pm-section-title{font-size:12px;font-weight:700;color:var(--text-faint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px}
+    .pm-save-btn{width:100%;padding:12px;background:#E24B4A;color:white;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:background .2s;margin-bottom:8px}
+    .pm-save-btn:hover{background:#c0392b}
+    .pm-pass-btn{width:100%;padding:11px;background:var(--bg-tab);color:var(--text-primary);border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;margin-bottom:8px}
+    .pm-pass-btn:hover{border-color:#E24B4A;color:#E24B4A}
+    .pm-logout-btn{width:100%;padding:11px;background:transparent;color:#E24B4A;border:1.5px solid #E24B4A;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;margin-top:4px}
+    .pm-logout-btn:hover{background:#FCEBEB}
+    body.dark .pm-logout-btn:hover{background:#3a1515}
+    .pm-success{background:#EAF3DE;color:#27500A;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:12px;display:none}
+    body.dark .pm-success{background:#0f2210;color:#99dd77}
+    .pm-error{background:#FCEBEB;color:#791F1F;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:12px;display:none}
+    body.dark .pm-error{background:#3a1515;color:#ffaaaa}
+    /* parol section yashirin boshlanadi */
+    .pm-pass-section{display:none}
+
     /* MODAL */
     .modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:16px}
     .modal-content{background:var(--bg-card);border-radius:16px;width:100%;max-width:500px;max-height:80vh;overflow-y:auto}
@@ -262,6 +299,12 @@
         <i class="ti ti-shield-lock"></i>
         <span>Admin panel</span>
         <span class="pd-badge">Admin</span>
+      </button>
+
+      <!-- Profil ma'lumotlari -->
+      <button class="pd-item" onclick="openProfileModal()">
+        <i class="ti ti-user-circle"></i>
+        <span>Profil ma'lumotlari</span>
       </button>
 
       <div class="pd-divider"></div>
@@ -369,6 +412,64 @@
   </div>
 </div>
 
+<!-- PROFIL MODAL -->
+<div class="pmodal" id="profileModal" onclick="closeProfileModalOutside(event)">
+  <div class="pmodal-box">
+    <div class="pmodal-top">
+      <button class="pmodal-close" onclick="closeProfileModal()">✕</button>
+      <div class="pmodal-avatar-wrap">
+        <div class="pmodal-avatar" id="pmAvatar">👤</div>
+        <label class="pmodal-avatar-edit" title="Rasm o'zgartirish">
+          ✏️
+          <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
+        </label>
+      </div>
+      <h3 id="pmName">—</h3>
+      <p id="pmEmail">—</p>
+    </div>
+    <div class="pmodal-body">
+      <div id="pmSuccess" class="pm-success"></div>
+      <div id="pmError" class="pm-error"></div>
+
+      <!-- Ism tahrirlash -->
+      <div class="pm-group">
+        <label>Ism Familiya</label>
+        <input type="text" id="pmNameInput" placeholder="Abdurasul Zokirov">
+      </div>
+
+      <!-- Gmail (read-only) -->
+      <div class="pm-group">
+        <label>Gmail (o'zgartirib bo'lmaydi)</label>
+        <input type="email" id="pmEmailInput" disabled>
+        <div class="pm-hint">🔒 Email Firebase orqali boshqariladi</div>
+      </div>
+
+      <button class="pm-save-btn" onclick="saveProfile()">💾 Saqlash</button>
+
+      <div class="pm-divider"></div>
+      <div class="pm-section-title">🔐 Parolni o'zgartirish</div>
+
+      <!-- Parol toggle -->
+      <button class="pm-pass-btn" onclick="togglePassSection(this)">🔑 Parolni o'zgartirish</button>
+
+      <div class="pm-pass-section" id="pmPassSection">
+        <div class="pm-group">
+          <label>Yangi parol</label>
+          <input type="password" id="pmNewPass" placeholder="Kamida 6 ta belgi">
+        </div>
+        <div class="pm-group">
+          <label>Parolni tasdiqlang</label>
+          <input type="password" id="pmConfPass" placeholder="Takrorlang">
+        </div>
+        <button class="pm-save-btn" onclick="savePassword()">🔐 Parolni saqlash</button>
+      </div>
+
+      <div class="pm-divider"></div>
+      <button class="pm-logout-btn" onclick="doLogout()">🚪 Hisobdan chiqish</button>
+    </div>
+  </div>
+</div>
+
 <script type="module" src="app.js"></script>
 <script>
 // ===== DARK MODE =====
@@ -431,13 +532,124 @@ window._setProfileUser = function(user) {
   if (un) un.textContent = name;
 };
 
-// adminBtn ko'rinishi → pd ga ham
-const _origAdminBtn = document.getElementById('adminBtn');
-const observer = new MutationObserver(() => {
-  const visible = _origAdminBtn.style.display !== 'none';
-  document.getElementById('pdAdminBtn').style.display = visible ? 'flex' : 'none';
-});
-observer.observe(_origAdminBtn, { attributes: true, attributeFilter: ['style'] });
+// adminBtn ko'rinishi app.js da boshqariladi
+
+// ===== PROFIL MODAL =====
+window.openProfileModal = function() {
+  document.getElementById('profileDropdown').classList.remove('open');
+  const modal = document.getElementById('profileModal');
+  modal.classList.add('open');
+  // Ma'lumotlarni to'ldirish
+  const name = document.getElementById('pdName').textContent;
+  const email = document.getElementById('pdEmail').textContent;
+  document.getElementById('pmNameInput').value = name !== '—' ? name : '';
+  document.getElementById('pmEmailInput').value = email !== '—' ? email : '';
+  // Avatar
+  const pdAv = document.getElementById('pdAvatar');
+  const pmAv = document.getElementById('pmAvatar');
+  pmAv.innerHTML = pdAv.innerHTML;
+  document.getElementById('pmName').textContent = name;
+  document.getElementById('pmEmail').textContent = email;
+  hidePmMessages();
+};
+
+window.closeProfileModal = function() {
+  document.getElementById('profileModal').classList.remove('open');
+  document.getElementById('pmPassSection').style.display = 'none';
+};
+
+window.closeProfileModalOutside = function(e) {
+  if (e.target === document.getElementById('profileModal')) closeProfileModal();
+};
+
+function hidePmMessages() {
+  document.getElementById('pmSuccess').style.display = 'none';
+  document.getElementById('pmError').style.display = 'none';
+}
+function showPmSuccess(msg) {
+  const el = document.getElementById('pmSuccess');
+  el.textContent = '✅ ' + msg;
+  el.style.display = 'block';
+  document.getElementById('pmError').style.display = 'none';
+  setTimeout(() => el.style.display = 'none', 3000);
+}
+function showPmError(msg) {
+  const el = document.getElementById('pmError');
+  el.textContent = '❌ ' + msg;
+  el.style.display = 'block';
+  document.getElementById('pmSuccess').style.display = 'none';
+}
+
+window.togglePassSection = function(btn) {
+  const sec = document.getElementById('pmPassSection');
+  const open = sec.style.display === 'block';
+  sec.style.display = open ? 'none' : 'block';
+  btn.textContent = open ? '🔑 Parolni o\'zgartirish' : '🔼 Yopish';
+};
+
+window.saveProfile = async function() {
+  const newName = document.getElementById('pmNameInput').value.trim();
+  if (!newName) return showPmError('Ism bo\'sh bo\'lmasin!');
+  try {
+    const { auth } = await import('./firebase.js');
+    const { updateProfile } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
+    await updateProfile(auth.currentUser, { displayName: newName });
+    // UI yangilash
+    document.getElementById('pmName').textContent = newName;
+    document.getElementById('pdName').textContent = newName;
+    document.getElementById('profileBtnText').textContent = newName[0].toUpperCase();
+    document.getElementById('pdAvatar').textContent = newName[0].toUpperCase();
+    showPmSuccess('Ism muvaffaqiyatli saqlandi!');
+  } catch (e) {
+    showPmError('Xatolik: ' + e.message);
+  }
+};
+
+window.savePassword = async function() {
+  const newPass = document.getElementById('pmNewPass').value;
+  const confPass = document.getElementById('pmConfPass').value;
+  if (!newPass || newPass.length < 6) return showPmError('Parol kamida 6 ta belgi!');
+  if (newPass !== confPass) return showPmError('Parollar mos kelmadi!');
+  try {
+    const { auth } = await import('./firebase.js');
+    const { updatePassword } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
+    await updatePassword(auth.currentUser, newPass);
+    document.getElementById('pmNewPass').value = '';
+    document.getElementById('pmConfPass').value = '';
+    document.getElementById('pmPassSection').style.display = 'none';
+    document.querySelector('.pm-pass-btn').textContent = '🔑 Parolni o\'zgartirish';
+    showPmSuccess('Parol muvaffaqiyatli o\'zgartirildi!');
+  } catch (e) {
+    if (e.code === 'auth/requires-recent-login') {
+      showPmError('Qayta kiring, keyin parolni o\'zgartiring!');
+    } else {
+      showPmError('Xatolik: ' + e.message);
+    }
+  }
+};
+
+window.uploadAvatar = async function(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) return showPmError('Rasm 2MB dan kichik bo\'lsin!');
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const dataUrl = e.target.result;
+    try {
+      const { auth } = await import('./firebase.js');
+      const { updateProfile } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
+      await updateProfile(auth.currentUser, { photoURL: dataUrl });
+      const imgHtml = `<img src="${dataUrl}">`;
+      document.getElementById('pmAvatar').innerHTML = imgHtml;
+      document.getElementById('pdAvatar').innerHTML = imgHtml;
+      document.getElementById('profileBtnText').innerHTML = `<img src="${dataUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+      showPmSuccess('Rasm yangilandi!');
+    } catch (e) {
+      showPmError('Rasm saqlashda xatolik!');
+    }
+  };
+  reader.readAsDataURL(file);
+};
 
 const diseases={
   htn:{name:"Gipertonik kriz",
