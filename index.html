@@ -488,12 +488,7 @@
   <div class="kasalliklar-section grid-view" id="grid-view">
     <div class="search-bar"><input type="text" placeholder="🔍 Kasallik qidirish..." id="searchInput" oninput="filterDiseases(this.value)"></div>
     <div class="disease-grid" id="diseaseGrid">
-      <div class="disease-card" onclick="openDisease('htn')" id="card-htn"><i class="ti ti-heart-rate-monitor"></i><div class="dc-name">Gipertonik kriz</div><div class="dc-tag">Yurak-qon tomir</div></div>
-      <div class="disease-card" onclick="openDisease('mi')" id="card-mi"><i class="ti ti-heart"></i><div class="dc-name">Miokard infarkti</div><div class="dc-tag">Yurak-qon tomir</div></div>
-      <div class="disease-card" onclick="openDisease('stroke')" id="card-stroke"><i class="ti ti-brain"></i><div class="dc-name">Insult</div><div class="dc-tag">Nevrologik</div></div>
-      <div class="disease-card" onclick="openDisease('anaphylaxis')" id="card-anaphylaxis"><i class="ti ti-alert-triangle"></i><div class="dc-name">Anafilaksiya</div><div class="dc-tag">Allergiya</div></div>
-      <div class="disease-card" onclick="openDisease('diabetes')" id="card-diabetes"><i class="ti ti-droplet"></i><div class="dc-name">Diabetik koma</div><div class="dc-tag">Endokrin</div></div>
-      <div class="disease-card" onclick="openDisease('epilepsy')" id="card-epilepsy"><i class="ti ti-bolt"></i><div class="dc-name">Epilepsiya</div><div class="dc-tag">Nevrologik</div></div>
+      <!-- Kasalliklar Firebase dan yuklanadi -->
     </div>
   </div>
 
@@ -962,14 +957,8 @@ function showSection(s){
 let cd='htn', ct='info';
 
 // Barcha kasalliklar ro'yxati (qidiruv uchun)
-const allDiseases = [
-  {id:'htn', name:'Gipertonik kriz', tag:'Yurak-qon tomir', icon:'<i class="ti ti-heart-rate-monitor"></i>'},
-  {id:'mi', name:'Miokard infarkti', tag:'Yurak-qon tomir', icon:'<i class="ti ti-heart"></i>'},
-  {id:'stroke', name:'Insult', tag:'Nevrologik', icon:'<i class="ti ti-brain"></i>'},
-  {id:'anaphylaxis', name:'Anafilaksiya', tag:'Allergiya', icon:'<i class="ti ti-alert-triangle"></i>'},
-  {id:'diabetes', name:'Diabetik koma', tag:'Endokrin', icon:'<i class="ti ti-droplet"></i>'},
-  {id:'epilepsy', name:'Epilepsiya', tag:'Nevrologik', icon:'<i class="ti ti-bolt"></i>'},
-];
+// Kasalliklar faqat Firebase dan yuklanadi
+const allDiseases = [];
 
 function openDisease(id) {
   cd = id; ct = 'info';
@@ -1022,16 +1011,21 @@ function switchTab(t) {
 }
 function renderTab(t) { document.getElementById('tabContent').innerHTML = diseases[cd][t]; }
 
+function normStr(s) {
+  return (s||'').toLowerCase().replace(/[-\s]+/g,' ').trim();
+}
 function filterDiseases(q) {
-  const n = {htn:'Gipertonik kriz',mi:'Miokard infarkti',stroke:'Insult',anaphylaxis:'Anafilaksiya',diabetes:'Diabetik koma',epilepsy:'Epilepsiya'};
-  Object.keys(n).forEach(id => {
-    const c = document.getElementById('card-'+id);
-    if(c) c.style.display = (!q || n[id].toLowerCase().includes(q.toLowerCase())) ? '' : 'none';
-  });
-  // Firestore kasalliklarni ham filter
+  const nq = normStr(q);
+  // Faqat Firebase kasalliklar
   (window._firestoreDiseases||[]).forEach(d => {
     const c = document.getElementById('card-fs-'+d.id);
-    if(c) c.style.display = (!q || d.name.toLowerCase().includes(q.toLowerCase())) ? '' : 'none';
+    if(c) {
+      const match = !nq ||
+        normStr(d.name).includes(nq) ||
+        normStr(d.category).includes(nq) ||
+        nq.includes(normStr(d.category).split(' ')[0]);
+      c.style.display = match ? '' : 'none';
+    }
   });
 }
 
@@ -1039,9 +1033,8 @@ function filterDiseases(q) {
 function filterDetailSearch(q) {
   const dropdown = document.getElementById('searchDropdown');
   if (!q.trim()) { dropdown.classList.remove('open'); dropdown.innerHTML=''; return; }
-  const hardcoded = allDiseases.filter(d => d.name.toLowerCase().includes(q.toLowerCase()));
   const firestore = (window._firestoreDiseases||[]).filter(d => d.name.toLowerCase().includes(q.toLowerCase()));
-  const total = [...hardcoded.map(d=>({...d,type:'hard'})), ...firestore.map(d=>({...d,type:'fs'}))];
+  const total = [...firestore.map(d=>({...d,type:'fs'}))];
   if (total.length===0) { dropdown.innerHTML='<div style="padding:14px;text-align:center;color:var(--text-faint);font-size:13px">Topilmadi</div>'; dropdown.classList.add('open'); return; }
   dropdown.innerHTML = total.map(d => {
     const iconHtml = d.type==='fs'
@@ -1247,8 +1240,7 @@ async function loadCategories() {
     const scroll = document.getElementById('catScroll');
 
     if (catSnap.empty) {
-      // Default kategoriyalar
-      scroll.innerHTML = buildDefaultCats(catCounts);
+      scroll.innerHTML = `<div style="color:#aaa;font-size:13px;padding:10px">Kategoriyalar hali qo'shilmagan</div>`;
       return;
     }
 
@@ -1267,28 +1259,10 @@ async function loadCategories() {
     });
   } catch(e) {
     console.log('loadCategories error:', e.message);
-    // Default ko'rsatamiz
-    document.getElementById('catScroll').innerHTML = buildDefaultCats({});
   }
 }
 
-function buildDefaultCats(counts) {
-  const defaults = [
-    {name:'Yurak va qon-tomir', color:'#e74c3c', bg:'#ffeaea', icon:'ti ti-heart-rate-monitor'},
-    {name:'Nerv tizimi', color:'#8e44ad', bg:'#f5eaff', icon:'ti ti-brain'},
-    {name:'Nafas olish tizimi', color:'#2980b9', bg:'#eaf4ff', icon:'ti ti-lungs'},
-    {name:'Hazm qilish tizimi', color:'#27ae60', bg:'#eafff2', icon:'ti ti-gut'},
-    {name:'Siydik ajratish tizimi', color:'#e67e22', bg:'#fff5ea', icon:'ti ti-droplet'},
-  ];
-  return defaults.map(d => {
-    const count = counts[d.name] || 0;
-    return `<div class="cat-card" onclick="filterByCategory('${d.name}')" style="color:${d.color}">
-      <div class="cat-icon" style="background:${d.bg}"><i class="${d.icon}" style="color:${d.color};font-size:26px"></i></div>
-      <div class="cat-name">${d.name}</div>
-      <div class="cat-count">${count > 0 ? count + ' ta kasallik' : '—'}</div>
-    </div>`;
-  }).join('');
-}
+
 
 window.filterByCategory = function(catName) {
   openSectionModal('kasalliklar');
