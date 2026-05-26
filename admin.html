@@ -189,6 +189,20 @@
     .user-badge{margin-left:auto;font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;background:#EAF3DE;color:#639922}
     body.dark .user-badge{background:#1a2e10;color:#88cc44}
 
+
+    /* ===== KATEGORIYALAR ===== */
+    .cat-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .color-picker-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+    .color-chip{width:32px;height:32px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all .15s}
+    .color-chip.selected{border-color:var(--text-primary);transform:scale(1.15)}
+    .cat-list-item{background:var(--bg-card);border-radius:12px;padding:14px 18px;margin-bottom:10px;display:flex;align-items:center;gap:14px;border:1px solid var(--border)}
+    .cat-list-icon{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .cat-list-icon img{width:28px;height:28px;filter:brightness(0) invert(1)}
+    .cat-list-info{flex:1}
+    .cat-list-info h4{font-size:14px;color:var(--text-primary);margin-bottom:3px}
+    .cat-list-info p{font-size:12px;color:var(--text-muted)}
+    .cat-count-badge{font-size:11px;background:#E6F1FB;color:#185FA5;border-radius:4px;padding:2px 8px;margin-left:8px}
+    body.dark .cat-count-badge{background:#1a2a3a;color:#7abfff}
     .empty{text-align:center;padding:40px;color:var(--empty-color);font-size:14px}
     .section{display:none}
     .section.active{display:block}
@@ -232,12 +246,14 @@
     <div class="stat-card"><div class="num" id="statDiseases">—</div><div class="label">Kasalliklar</div></div>
     <div class="stat-card"><div class="num" id="statDrugs">—</div><div class="label">Dorilar</div></div>
     <div class="stat-card"><div class="num" id="statAdmins">—</div><div class="label">Adminlar</div></div>
+    <div class="stat-card"><div class="num" id="statCategories">—</div><div class="label">Kategoriyalar</div></div>
   </div>
 
   <div class="admin-tabs">
     <button class="admin-tab active" onclick="showAdminTab('diseases')">🦠 Kasalliklar</button>
     <button class="admin-tab" onclick="showAdminTab('drugs')">💊 Dorilar</button>
     <button class="admin-tab" onclick="showAdminTab('users')">👥 Foydalanuvchilar</button>
+    <button class="admin-tab" onclick="showAdminTab('categories')">📂 Kategoriyalar</button>
     <button class="admin-tab" onclick="showAdminTab('admins')" id="adminsTabBtn" style="display:none">🔐 Adminlar</button>
   </div>
 
@@ -259,14 +275,18 @@
         <div class="form-group">
           <label>Kategoriya</label>
           <select id="dCategory">
-            <option>Yurak-qon tomir</option><option>Nevrologik</option>
-            <option>Allergiya</option><option>Endokrin</option>
-            <option>Nafas yo'llari</option><option>Jarohatlar</option><option>Boshqa</option>
+            <option value="Yurak-qon tomir">Yurak-qon tomir</option>
+            <option value="Nevrologik">Nevrologik</option>
+            <option value="Allergiya">Allergiya</option>
+            <option value="Endokrin">Endokrin</option>
+            <option value="Nafas yo'llari">Nafas yo'llari</option>
+            <option value="Jarohatlar">Jarohatlar</option>
+            <option value="Boshqa">Boshqa</option>
           </select>
         </div>
         <div class="form-group full">
           <label>Ikonka tanlang</label>
-          <button type="button" class="icon-pick-btn" onclick="openIconModal()">
+          <button type="button" class="icon-pick-btn" onclick="openIconModal('disease')">
             <div class="preview">
               <img id="iconPreviewImg" src="https://cdn.jsdelivr.net/gh/resolvetosavelives/healthicons/public/icons/svg/filled/body/heart.svg" alt="icon">
             </div>
@@ -374,6 +394,59 @@
       </div>
     </div>
     <div id="adminList"><div class="empty">Yuklanmoqda...</div></div>
+  </div>
+
+  <!-- KATEGORIYALAR -->
+  <div class="section" id="section-categories">
+    <div class="form-card">
+      <h2 id="catFormTitle">Yangi kategoriya qo'shish</h2>
+      <div id="catSuccess" class="success-box"></div>
+      <div id="catEditBanner" class="edit-banner">✏️ Tahrirlash rejimi</div>
+      <input type="hidden" id="editCatId">
+      <input type="hidden" id="catIconUrl" value="https://cdn.jsdelivr.net/gh/resolvetosavelives/healthicons/public/icons/svg/filled/body/heart.svg">
+      <input type="hidden" id="catIconName" value="Heart">
+      <input type="hidden" id="catColor" value="#e74c3c">
+      <input type="hidden" id="catBgColor" value="#ffeaea">
+
+      <div class="cat-form-grid">
+        <div class="form-group">
+          <label>Kategoriya nomi</label>
+          <input type="text" id="catName" placeholder="Yurak va qon-tomir">
+        </div>
+        <div class="form-group">
+          <label>Rang tanlang</label>
+          <div class="color-picker-row" id="colorPickerRow">
+            <div class="color-chip selected" style="background:#e74c3c" data-color="#e74c3c" data-bg="#ffeaea" onclick="selectColor(this)"></div>
+            <div class="color-chip" style="background:#8e44ad" data-color="#8e44ad" data-bg="#f5eaff" onclick="selectColor(this)"></div>
+            <div class="color-chip" style="background:#2980b9" data-color="#2980b9" data-bg="#eaf4ff" onclick="selectColor(this)"></div>
+            <div class="color-chip" style="background:#27ae60" data-color="#27ae60" data-bg="#eafff2" onclick="selectColor(this)"></div>
+            <div class="color-chip" style="background:#e67e22" data-color="#e67e22" data-bg="#fff5ea" onclick="selectColor(this)"></div>
+            <div class="color-chip" style="background:#16a085" data-color="#16a085" data-bg="#e8fff8" onclick="selectColor(this)"></div>
+            <div class="color-chip" style="background:#c0392b" data-color="#c0392b" data-bg="#ffe8e8" onclick="selectColor(this)"></div>
+            <div class="color-chip" style="background:#2c3e50" data-color="#2c3e50" data-bg="#eaecf0" onclick="selectColor(this)"></div>
+          </div>
+        </div>
+        <div class="form-group full">
+          <label>Ikonka tanlang</label>
+          <button type="button" class="icon-pick-btn" onclick="openIconModal('cat')">
+            <div class="preview">
+              <img id="catIconPreviewImg" src="https://cdn.jsdelivr.net/gh/resolvetosavelives/healthicons/public/icons/svg/filled/body/heart.svg" alt="icon">
+            </div>
+            <div class="info">
+              <span>Tanlangan ikonka</span>
+              <strong id="catIconPreviewName">Heart</strong>
+            </div>
+            <span class="arrow">▼ Bosing va tanlang</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-add" id="catSubmitBtn" onclick="submitCategory()">+ Kategoriya qo'shish</button>
+        <button class="btn-cancel" id="catCancelBtn" onclick="cancelCatEdit()">Bekor qilish</button>
+      </div>
+    </div>
+    <div id="categoryList"><div class="empty">Yuklanmoqda...</div></div>
   </div>
 </div>
 
@@ -488,12 +561,28 @@ window.closeIconModal = function() { document.getElementById('iconModal').classL
 window.closeIconModalOutside = function(e) { if (e.target === document.getElementById('iconModal')) closeIconModal(); };
 window.filterByCat = function(cat) { currentCat = cat; buildIconModal(); };
 window.filterModalIcons = function(q) { currentSearch = q; buildIconModal(); };
+let iconModalTarget = 'disease'; // 'disease' yoki 'cat'
+
+window.openIconModal = function(target = 'disease') {
+  iconModalTarget = target;
+  document.getElementById('iconModal').classList.add('open');
+  buildIconModal();
+};
+
 window.selectHealthIcon = function(url, name) {
-  selectedIconUrl = url; selectedIconName = name;
-  document.getElementById('dIcon').value = url;
-  document.getElementById('dIconName').value = name;
-  document.getElementById('iconPreviewImg').src = url;
-  document.getElementById('iconPreviewName').textContent = name;
+  if (iconModalTarget === 'cat') {
+    selectedCatIconUrl = url; selectedCatIconName = name;
+    document.getElementById('catIconUrl').value = url;
+    document.getElementById('catIconName').value = name;
+    document.getElementById('catIconPreviewImg').src = url;
+    document.getElementById('catIconPreviewName').textContent = name;
+  } else {
+    selectedIconUrl = url; selectedIconName = name;
+    document.getElementById('dIcon').value = url;
+    document.getElementById('dIconName').value = name;
+    document.getElementById('iconPreviewImg').src = url;
+    document.getElementById('iconPreviewName').textContent = name;
+  }
   closeIconModal();
 };
 
@@ -512,7 +601,7 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 async function loadAll() {
-  const tasks = [loadDiseases(), loadDrugs(), loadUsers()];
+  const tasks = [loadDiseases(), loadDrugs(), loadUsers(), loadCategories()];
   if (currentUserEmail === SUPER_ADMIN) tasks.push(loadAdmins());
   await Promise.all(tasks);
 }
@@ -809,11 +898,165 @@ window.removeAdmin = async (id, email) => {
 };
 
 window.showAdminTab = (tab) => {
-  const tabs = ['diseases','drugs','users','admins'];
+  const tabs = ['diseases','drugs','users','admins','categories'];
   document.querySelectorAll('.admin-tab').forEach((b,i) => b.classList.toggle('active', tabs[i]===tab));
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById('section-'+tab).classList.add('active');
 };
+
+
+// ===== KATEGORIYALAR =====
+let selectedCatIconUrl = 'https://cdn.jsdelivr.net/gh/resolvetosavelives/healthicons/public/icons/svg/filled/body/heart.svg';
+let selectedCatIconName = 'Heart';
+
+window.selectColor = function(chip) {
+  document.querySelectorAll('.color-chip').forEach(c => c.classList.remove('selected'));
+  chip.classList.add('selected');
+  document.getElementById('catColor').value = chip.dataset.color;
+  document.getElementById('catBgColor').value = chip.dataset.bg;
+};
+
+async function loadCategories() {
+  try {
+    const snap = await getDocs(query(collection(db, 'categories'), orderBy('createdAt', 'desc')));
+    const list = document.getElementById('categoryList');
+    document.getElementById('statCategories').textContent = snap.size;
+
+    // dCategory select ni yangilaymiz
+    const sel = document.getElementById('dCategory');
+    const currentVal = sel.value;
+    // Firebase kategoriyalarini qo'shamiz (mavjud bo'lmasa)
+    const existingOptions = [...sel.options].map(o => o.value);
+    snap.forEach(d => {
+      const data = d.data();
+      if (!existingOptions.includes(data.name)) {
+        const opt = document.createElement('option');
+        opt.value = data.name;
+        opt.textContent = data.name;
+        sel.appendChild(opt);
+      }
+    });
+    if (currentVal) sel.value = currentVal;
+
+    if (snap.empty) {
+      list.innerHTML = '<div class="empty">Hali kategoriya qo'shilmagan. Yuqoridan qo'shing!</div>';
+      return;
+    }
+    list.innerHTML = '';
+
+    // Har bir kategoriya uchun kasalliklar sonini hisoblaymiz
+    const diseaseSnap = await getDocs(collection(db, 'diseases'));
+    const catCounts = {};
+    diseaseSnap.forEach(d => {
+      const cat = d.data().category || '';
+      catCounts[cat] = (catCounts[cat] || 0) + 1;
+    });
+
+    snap.forEach(d => {
+      const data = d.data();
+      const count = catCounts[data.name] || 0;
+      const iconBg = data.bgColor || '#f0f0f0';
+      const iconColor = data.color || '#555';
+      list.innerHTML += `
+        <div class="cat-list-item">
+          <div class="cat-list-icon" style="background:${iconBg}">
+            <img src="${data.icon}" alt="icon" style="filter:none;width:28px;height:28px;filter:invert(20%) sepia(90%) saturate(800%) hue-rotate(${getHueFromColor(iconColor)}deg) brightness(85%)">
+          </div>
+          <div class="cat-list-info">
+            <h4>${data.name} <span class="cat-count-badge">${count} ta kasallik</span></h4>
+            <p style="color:${iconColor}">●  ${data.iconName || ''}</p>
+          </div>
+          <div class="item-actions">
+            <button class="btn-edit" onclick="editCategory('${d.id}')">✏️ Tahrirlash</button>
+            <button class="btn-del" onclick="deleteCategory('${d.id}')">🗑 O'chirish</button>
+          </div>
+        </div>`;
+    });
+  } catch(e) {
+    console.error('loadCategories error:', e);
+    document.getElementById('categoryList').innerHTML = '<div class="empty">Xatolik: ' + e.message + '</div>';
+  }
+}
+
+function getHueFromColor(hex) {
+  const map = {'#e74c3c':0,'#c0392b':0,'#8e44ad':280,'#2980b9':210,'#27ae60':140,'#e67e22':30,'#16a085':170,'#2c3e50':210};
+  return map[hex] || 0;
+}
+
+window.submitCategory = async () => {
+  const id = document.getElementById('editCatId').value;
+  const name = document.getElementById('catName').value.trim();
+  if (!name) return alert('Kategoriya nomini kiriting!');
+  const payload = {
+    name,
+    icon: document.getElementById('catIconUrl').value || selectedCatIconUrl,
+    iconName: document.getElementById('catIconName').value || selectedCatIconName,
+    color: document.getElementById('catColor').value,
+    bgColor: document.getElementById('catBgColor').value
+  };
+  if (id) {
+    await updateDoc(doc(db, 'categories', id), payload);
+    showSuccess('catSuccess', 'Kategoriya yangilandi!');
+    cancelCatEdit();
+  } else {
+    await addDoc(collection(db, 'categories'), { ...payload, createdAt: serverTimestamp() });
+    showSuccess('catSuccess', 'Kategoriya qo'shildi!');
+    clearCatForm();
+  }
+  loadCategories();
+};
+
+window.editCategory = async (id) => {
+  const snap = await getDocs(collection(db, 'categories'));
+  let data = null;
+  snap.forEach(d => { if (d.id === id) data = d.data(); });
+  if (!data) return;
+  document.getElementById('editCatId').value = id;
+  document.getElementById('catName').value = data.name || '';
+  selectedCatIconUrl = data.icon || selectedCatIconUrl;
+  selectedCatIconName = data.iconName || selectedCatIconName;
+  document.getElementById('catIconUrl').value = selectedCatIconUrl;
+  document.getElementById('catIconPreviewImg').src = selectedCatIconUrl;
+  document.getElementById('catIconPreviewName').textContent = selectedCatIconName;
+  // Rangni tanlaymiz
+  document.querySelectorAll('.color-chip').forEach(c => {
+    c.classList.toggle('selected', c.dataset.color === data.color);
+  });
+  document.getElementById('catColor').value = data.color || '#e74c3c';
+  document.getElementById('catBgColor').value = data.bgColor || '#ffeaea';
+  document.getElementById('catFormTitle').textContent = '✏️ Kategoriyani tahrirlash';
+  document.getElementById('catSubmitBtn').textContent = '💾 Saqlash';
+  document.getElementById('catCancelBtn').style.display = 'inline-block';
+  document.getElementById('catEditBanner').style.display = 'block';
+  document.querySelector('#section-categories .form-card').scrollIntoView({ behavior: 'smooth' });
+};
+
+window.deleteCategory = async (id) => {
+  if (!confirm('Kategoriyani o'chirasizmi?')) return;
+  await deleteDoc(doc(db, 'categories', id));
+  loadCategories();
+};
+
+window.cancelCatEdit = () => {
+  document.getElementById('editCatId').value = '';
+  document.getElementById('catFormTitle').textContent = 'Yangi kategoriya qo'shish';
+  document.getElementById('catSubmitBtn').textContent = '+ Kategoriya qo'shish';
+  document.getElementById('catCancelBtn').style.display = 'none';
+  document.getElementById('catEditBanner').style.display = 'none';
+  clearCatForm();
+};
+
+function clearCatForm() {
+  document.getElementById('catName').value = '';
+  selectedCatIconUrl = 'https://cdn.jsdelivr.net/gh/resolvetosavelives/healthicons/public/icons/svg/filled/body/heart.svg';
+  selectedCatIconName = 'Heart';
+  document.getElementById('catIconUrl').value = selectedCatIconUrl;
+  document.getElementById('catIconPreviewImg').src = selectedCatIconUrl;
+  document.getElementById('catIconPreviewName').textContent = 'Heart';
+  document.getElementById('catColor').value = '#e74c3c';
+  document.getElementById('catBgColor').value = '#ffeaea';
+  document.querySelectorAll('.color-chip').forEach((c,i) => c.classList.toggle('selected', i===0));
+}
 
 window.goHome = () => window.location.href = 'index.html';
 window.logoutAdmin = async () => { await signOut(auth); window.location.href = 'login.html'; };

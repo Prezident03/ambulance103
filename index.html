@@ -462,30 +462,10 @@
       <div class="cat-title">📂 Asosiy kategoriyalar</div>
     </div>
     <div class="cat-scroll" id="catScroll">
-      <div class="cat-card" onclick="openSectionModal('kasalliklar')" style="color:#e74c3c">
-        <div class="cat-icon" style="background:#ffeaea"><i class="ti ti-heart-rate-monitor" style="color:#e74c3c;font-size:26px"></i></div>
-        <div class="cat-name">Yurak va qon-tomir</div>
-        <div class="cat-count" id="cat-yurak">—</div>
-      </div>
-      <div class="cat-card" onclick="openSectionModal('kasalliklar')" style="color:#8e44ad">
-        <div class="cat-icon" style="background:#f5eaff"><i class="ti ti-brain" style="color:#8e44ad;font-size:26px"></i></div>
-        <div class="cat-name">Nerv tizimi</div>
-        <div class="cat-count" id="cat-nerv">—</div>
-      </div>
-      <div class="cat-card" onclick="openSectionModal('kasalliklar')" style="color:#2980b9">
-        <div class="cat-icon" style="background:#eaf4ff"><i class="ti ti-lungs" style="color:#2980b9;font-size:26px"></i></div>
-        <div class="cat-name">Nafas olish tizimi</div>
-        <div class="cat-count" id="cat-nafas">—</div>
-      </div>
-      <div class="cat-card" onclick="openSectionModal('kasalliklar')" style="color:#27ae60">
-        <div class="cat-icon" style="background:#eafff2"><i class="ti ti-gut" style="color:#27ae60;font-size:26px"></i></div>
-        <div class="cat-name">Hazm qilish tizimi</div>
-        <div class="cat-count" id="cat-hazm">—</div>
-      </div>
-      <div class="cat-card" onclick="openSectionModal('kasalliklar')" style="color:#e67e22">
-        <div class="cat-icon" style="background:#fff5ea"><i class="ti ti-droplet" style="color:#e67e22;font-size:26px"></i></div>
-        <div class="cat-name">Siydik ajratish tizimi</div>
-        <div class="cat-count" id="cat-siydik">—</div>
+      <div class="cat-skeleton" style="display:flex;gap:12px">
+        <div style="width:100px;height:110px;background:#eee;border-radius:16px;flex-shrink:0"></div>
+        <div style="width:100px;height:110px;background:#eee;border-radius:16px;flex-shrink:0"></div>
+        <div style="width:100px;height:110px;background:#eee;border-radius:16px;flex-shrink:0"></div>
       </div>
     </div>
   </div>
@@ -1249,47 +1229,76 @@ buildDrugCards();
 renderDrugTab('umumiy');
 
 // ===== KATEGORIYALAR =====
-async function loadCategoryCounts() {
+async function loadCategories() {
   try {
     const { db } = await import('./firebase.js');
-    const { collection, getDocs } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
-    const snap = await getDocs(collection(db, 'diseases'));
-    const counts = {};
-    snap.forEach(doc => {
-      const d = doc.data();
-      const cat = (d.category || '').toLowerCase();
-      counts[cat] = (counts[cat] || 0) + 1;
+    const { collection, getDocs, query, orderBy } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+
+    // Kasalliklar sonini hisoblaymiz
+    const diseaseSnap = await getDocs(collection(db, 'diseases'));
+    const catCounts = {};
+    diseaseSnap.forEach(doc => {
+      const cat = (doc.data().category || '');
+      catCounts[cat] = (catCounts[cat] || 0) + 1;
     });
-    // Hardcoded kasalliklarni ham hisoblash
-    const hardcoded = {
-      'yurak-qon tomir': 2, // htn, mi
-      'nevrologik': 3,      // stroke, epilepsy, hushdan ketish
-      'allergiya': 1,       // anaphylaxis
-      'endokrin': 1         // diabetes
-    };
-    const catMap = {
-      'cat-yurak': ['yurak-qon tomir', 'yurak', 'kardiologiya'],
-      'cat-nerv': ['nevrologik', 'nerv', 'nevrологik'],
-      'cat-nafas': ['nafas', 'o'pka', 'pulmonologiya'],
-      'cat-hazm': ['hazm', 'gastro', 'oshqozon'],
-      'cat-siydik': ['siydik', 'buyrak', 'urologiya']
-    };
-    Object.entries(catMap).forEach(([elId, keys]) => {
-      let total = 0;
-      keys.forEach(k => {
-        total += (counts[k] || 0) + (hardcoded[k] || 0);
-      });
-      // yurak uchun hardcoded
-      if (elId === 'cat-yurak') total = Math.max(total, 2);
-      if (elId === 'cat-nerv') total = Math.max(total, 3);
-      const el = document.getElementById(elId);
-      if (el) el.textContent = total > 0 ? total + ' ta kasallik' : '—';
+
+    // Kategoriyalarni yuklaymiz
+    const catSnap = await getDocs(query(collection(db, 'categories'), orderBy('createdAt', 'asc')));
+    const scroll = document.getElementById('catScroll');
+
+    if (catSnap.empty) {
+      // Default kategoriyalar
+      scroll.innerHTML = buildDefaultCats(catCounts);
+      return;
+    }
+
+    scroll.innerHTML = '';
+    catSnap.forEach(doc => {
+      const d = doc.data();
+      const count = catCounts[d.name] || 0;
+      scroll.innerHTML += `
+        <div class="cat-card" onclick="filterByCategory('${d.name}')" style="color:${d.color||'#e74c3c'}">
+          <div class="cat-icon" style="background:${d.bgColor||'#ffeaea'}">
+            <img src="${d.icon}" alt="${d.name}" style="width:28px;height:28px;filter:none" onerror="this.style.display='none'">
+          </div>
+          <div class="cat-name">${d.name}</div>
+          <div class="cat-count">${count > 0 ? count + ' ta kasallik' : '—'}</div>
+        </div>`;
     });
   } catch(e) {
-    console.log('Cat counts:', e.message);
+    console.log('loadCategories error:', e.message);
+    // Default ko'rsatamiz
+    document.getElementById('catScroll').innerHTML = buildDefaultCats({});
   }
 }
-loadCategoryCounts();
+
+function buildDefaultCats(counts) {
+  const defaults = [
+    {name:'Yurak va qon-tomir', color:'#e74c3c', bg:'#ffeaea', icon:'ti ti-heart-rate-monitor'},
+    {name:'Nerv tizimi', color:'#8e44ad', bg:'#f5eaff', icon:'ti ti-brain'},
+    {name:'Nafas olish tizimi', color:'#2980b9', bg:'#eaf4ff', icon:'ti ti-lungs'},
+    {name:'Hazm qilish tizimi', color:'#27ae60', bg:'#eafff2', icon:'ti ti-gut'},
+    {name:'Siydik ajratish tizimi', color:'#e67e22', bg:'#fff5ea', icon:'ti ti-droplet'},
+  ];
+  return defaults.map(d => {
+    const count = counts[d.name] || 0;
+    return `<div class="cat-card" onclick="filterByCategory('${d.name}')" style="color:${d.color}">
+      <div class="cat-icon" style="background:${d.bg}"><i class="${d.icon}" style="color:${d.color};font-size:26px"></i></div>
+      <div class="cat-name">${d.name}</div>
+      <div class="cat-count">${count > 0 ? count + ' ta kasallik' : '—'}</div>
+    </div>`;
+  }).join('');
+}
+
+window.filterByCategory = function(catName) {
+  openSectionModal('kasalliklar');
+  setTimeout(() => {
+    const si = document.getElementById('searchInput');
+    if (si) { si.value = catName; filterDiseases(catName); }
+  }, 150);
+};
+
+loadCategories();
 
 </script>
 </body>
