@@ -16,6 +16,7 @@ onAuthStateChanged(auth, async (user) => {
   }, { merge: true });
 
   document.getElementById('userName').textContent = user.displayName || user.email.split('@')[0];
+  if (typeof window._setProfileUser === 'function') window._setProfileUser(user);
 
   // Super admin yoki oddiy admin tekshirish
   if (user.email === SUPER_ADMIN) {
