@@ -52,6 +52,8 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   loadFromFirestore();
+  // Har 30 soniyada yangilansin
+  setInterval(() => { loadFromFirestore(); }, 30000);
 });
 
 document.getElementById('logoutBtn').addEventListener('click', async () => {
@@ -100,6 +102,10 @@ function blocksToHtml(blocks) {
   }).join('');
 }
 
+window.reloadFirestore = async function() {
+  await loadFromFirestore();
+};
+
 async function loadFromFirestore() {
   try {
     const dSnap = await getDocs(query(collection(db, 'diseases'), orderBy('createdAt', 'desc')));
@@ -110,6 +116,17 @@ async function loadFromFirestore() {
 
     dSnap.forEach(d => window._firestoreDiseases.push({ id: d.id, ...d.data() }));
     drugSnap.forEach(d => window._firestoreDrugs.push({ id: d.id, ...d.data() }));
+
+    // Grid ni tozalab qayta yuklash
+    const grid = document.getElementById('diseaseGrid');
+    if (grid) {
+      // Faqat Firebase dan kelgan kartalarni o'chirish
+      grid.querySelectorAll('[id^="card-fs-"]').forEach(el => el.remove());
+    }
+    const drugGrid = document.getElementById('drugListGrid');
+    if (drugGrid) {
+      drugGrid.querySelectorAll('[id^="dcard-fs-"]').forEach(el => el.remove());
+    }
 
     addFirestoreDiseasesToGrid();
     addFirestoreDrugsToList();
