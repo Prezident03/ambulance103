@@ -113,6 +113,7 @@ async function loadFromFirestore() {
 
     addFirestoreDiseasesToGrid();
     addFirestoreDrugsToList();
+    window.updateCategoryCount();
   } catch (e) {
     console.log('Firestore xatolik:', e);
   }
@@ -217,4 +218,65 @@ window.renderFSDrugTab = function(tab) {
     html = d.yon ? `<ul class="di-list">${d.yon.split('\n').filter(l=>l.trim()).map(l=>`<li>${l}</li>`).join('')}</ul>` : `<div class="di-box amber">Kiritilmagan</div>`;
   }
   document.getElementById('drugDetailContent').innerHTML = html;
+};
+
+// ===== KATEGORIYALAR =====
+const CATEGORIES = [
+  { name: 'Yurak kasalliklari', key: 'Yurak-qon tomir', icon: '❤️', color: '#ff6b6b', bg: '#fff0f0' },
+  { name: 'Nevrologiya', key: 'Nevrologik', icon: '🧠', color: '#a29bfe', bg: '#f0f0ff' },
+  { name: "Nafas yo'llari", key: "Nafas yo'llari", icon: '🫁', color: '#74b9ff', bg: '#f0f8ff' },
+  { name: 'Infeksion', key: 'Infeksion', icon: '🦠', color: '#55efc4', bg: '#f0fff8' },
+  { name: 'Allergiya', key: 'Allergiya', icon: '🤧', color: '#fd79a8', bg: '#fff0f5' },
+  { name: 'Endokrin', key: 'Endokrin', icon: '🍬', color: '#fdcb6e', bg: '#fffbf0' },
+  { name: 'Jarohatlar', key: 'Jarohatlar', icon: '🩹', color: '#e17055', bg: '#fff5f0' },
+  { name: 'Boshqa', key: 'Boshqa', icon: '📋', color: '#636e72', bg: '#f5f5f5' },
+];
+
+window.updateCategoryCount = function() {
+  const diseases = window._firestoreDiseases || [];
+  const container = document.getElementById('catScroll');
+  if (!container) return;
+
+  // Har kategoriya uchun son hisoblash
+  const counts = {};
+  diseases.forEach(d => {
+    const cat = d.category || 'Boshqa';
+    counts[cat] = (counts[cat] || 0) + 1;
+  });
+
+  // Kartalar yaratish
+  container.innerHTML = '';
+  CATEGORIES.forEach(cat => {
+    const count = counts[cat.key] || 0;
+    const div = document.createElement('div');
+    div.className = 'cat-card';
+    div.style.borderColor = 'transparent';
+    div.onclick = () => filterByCategory(cat.key);
+    div.innerHTML = `
+      <div class="cat-icon" style="background:${cat.bg};color:${cat.color}">${cat.icon}</div>
+      <div class="cat-name">${cat.name}</div>
+      <div class="cat-count" id="cat-count-${cat.key.replace(/[^a-z0-9]/gi,'_')}">${count} ta kasallik</div>
+    `;
+    container.appendChild(div);
+  });
+};
+
+window.filterByCategory = function(catKey) {
+  // Kasalliklar bo'limini ochish
+  if (typeof openSectionModal === 'function') openSectionModal('kasalliklar');
+  else if (typeof showSection === 'function') showSection('kasalliklar');
+
+  // Kategoriya bo'yicha filter
+  setTimeout(() => {
+    const diseases = window._firestoreDiseases || [];
+    const grid = document.getElementById('diseaseGrid');
+    if (!grid) return;
+
+    // Barcha kartalarni ko'rsatish/yashirish
+    grid.querySelectorAll('.disease-card').forEach(card => {
+      const tag = card.querySelector('.dc-tag');
+      if (!tag) return;
+      card.style.display = tag.textContent.trim() === catKey ? '' : 'none';
+    });
+  }, 200);
 };
