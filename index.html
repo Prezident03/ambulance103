@@ -1129,7 +1129,7 @@ async function loadCategories() {
     const diseaseSnap = await getDocs(collection(db, 'diseases'));
     const catCounts = {};
     diseaseSnap.forEach(doc => {
-      const cat = (doc.data().category || '');
+      const cat = (doc.data().category || '').trim();
       catCounts[cat] = (catCounts[cat] || 0) + 1;
     });
 
@@ -1145,7 +1145,11 @@ async function loadCategories() {
     scroll.innerHTML = '';
     catSnap.forEach(doc => {
       const d = doc.data();
-      const count = catCounts[d.name] || 0;
+      // Exact + normalized matching
+      const count = catCounts[d.name] ||
+        Object.entries(catCounts).reduce((sum, [k, v]) => {
+          return sum + (normStr(k) === normStr(d.name) ? v : 0);
+        }, 0);
       scroll.innerHTML += `
         <div class="cat-card" onclick="filterByCategory('${d.name}')" style="color:${d.color||'#e74c3c'}">
           <div class="cat-icon" style="background:${d.bgColor||'#ffeaea'}">

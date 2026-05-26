@@ -275,13 +275,7 @@
         <div class="form-group">
           <label>Kategoriya</label>
           <select id="dCategory">
-            <option value="Yurak-qon tomir">Yurak-qon tomir</option>
-            <option value="Nevrologik">Nevrologik</option>
-            <option value="Allergiya">Allergiya</option>
-            <option value="Endokrin">Endokrin</option>
-            <option value="Nafas yo'llari">Nafas yo'llari</option>
-            <option value="Jarohatlar">Jarohatlar</option>
-            <option value="Boshqa">Boshqa</option>
+            <option value="">— Kategoriya tanlang —</option>
           </select>
         </div>
         <div class="form-group full">
@@ -601,7 +595,10 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 async function loadAll() {
-  const tasks = [loadDiseases(), loadDrugs(), loadUsers(), loadCategories()];
+  // Avval kategoriyalarni yuklaymiz (select to'lishi uchun)
+  await loadCategories();
+  // Keyin qolganlarni parallel
+  const tasks = [loadDiseases(), loadDrugs(), loadUsers()];
   if (currentUserEmail === SUPER_ADMIN) tasks.push(loadAdmins());
   await Promise.all(tasks);
 }
@@ -741,7 +738,7 @@ window.editDisease = async (id) => {
   if (!data) return;
   document.getElementById('editDiseaseId').value = id;
   document.getElementById('dName').value = data.name || '';
-  document.getElementById('dCategory').value = data.category || 'Yurak-qon tomir';
+  document.getElementById('dCategory').value = data.category || '';
   const iconUrl = data.icon || 'https://cdn.jsdelivr.net/gh/resolvetosavelives/healthicons/public/icons/svg/filled/body/heart.svg';
   const iconName = data.iconName || 'Heart';
   selectedIconUrl = iconUrl; selectedIconName = iconName;
@@ -922,19 +919,16 @@ async function loadCategories() {
     const list = document.getElementById('categoryList');
     document.getElementById('statCategories').textContent = snap.size;
 
-    // dCategory select ni yangilaymiz
+    // dCategory select ni Firebase dan to'ldirish
     const sel = document.getElementById('dCategory');
     const currentVal = sel.value;
-    // Firebase kategoriyalarini qo'shamiz (mavjud bo'lmasa)
-    const existingOptions = [...sel.options].map(o => o.value);
+    sel.innerHTML = '<option value="">— Kategoriya tanlang —</option>';
     snap.forEach(d => {
       const data = d.data();
-      if (!existingOptions.includes(data.name)) {
-        const opt = document.createElement('option');
-        opt.value = data.name;
-        opt.textContent = data.name;
-        sel.appendChild(opt);
-      }
+      const opt = document.createElement('option');
+      opt.value = data.name;
+      opt.textContent = data.name;
+      sel.appendChild(opt);
     });
     if (currentVal) sel.value = currentVal;
 
