@@ -878,6 +878,25 @@ window.switchFSDisease = function(id) {
   closeDropdown();
 };
 
+// ===== NAVIGATSIYA =====
+function showSection(s) {
+  const gridView = document.getElementById('grid-view');
+  const detailView = document.getElementById('detail-view');
+  const dorilarSection = document.getElementById('dorilar-section');
+  // Dorilar bo'limini ko'rsat/yashir
+  if (s === 'dorilar') {
+    if (gridView) gridView.style.display = 'none';
+    if (detailView) detailView.style.display = 'none';
+    dorilarSection.classList.add('active');
+  } else {
+    if (gridView) gridView.style.display = 'block';
+    if (detailView) detailView.style.display = 'none';
+    dorilarSection.classList.remove('active');
+  }
+  document.getElementById('nav-kasalliklar').classList.toggle('active', s === 'kasalliklar');
+  document.getElementById('nav-dorilar').classList.toggle('active', s === 'dorilar');
+}
+
 // ===== DORILAR =====
 let cur_drug=drugsData[0].id,cur_dtab='umumiy';
 function buildDrugCards(){
