@@ -381,20 +381,40 @@
     </div>
   </div>
 
-  <!-- DORILAR -->
+  <!-- DORILAR: GRID VIEW -->
   <div class="drugs-section" id="dorilar-section">
-    <div class="search-bar"><input type="text" placeholder="🔍 Dori qidirish..." oninput="filterDrugs(this.value)"></div>
-    <div class="drug-list-grid" id="drugListGrid"></div>
-    <div class="drug-detail-panel">
-      <div class="drug-detail-tabs">
-        <div class="drug-detail-tab active" onclick="switchDrugTab('umumiy')" id="dtab-umumiy">📋 Umumiy</div>
-        <div class="drug-detail-tab" onclick="switchDrugTab('mexanizm')" id="dtab-mexanizm">⚡ Mexanizm</div>
-        <div class="drug-detail-tab" onclick="switchDrugTab('doza')" id="dtab-doza">💊 Doza</div>
-        <div class="drug-detail-tab" onclick="switchDrugTab('korsatma')" id="dtab-korsatma">✅ Ko'rsatmalar</div>
-        <div class="drug-detail-tab" onclick="switchDrugTab('qarshi')" id="dtab-qarshi">🚫 Qarshi</div>
-        <div class="drug-detail-tab" onclick="switchDrugTab('yontar')" id="dtab-yontar">⚠️ Yon ta'sir</div>
+    <div class="drug-grid-view" id="drug-grid-view">
+      <div class="search-bar"><input type="text" placeholder="🔍 Dori qidirish..." id="drugSearchInput" oninput="filterDrugs(this.value)"></div>
+      <div class="drug-list-grid" id="drugListGrid"></div>
+    </div>
+
+    <!-- DORILAR: DETAIL VIEW -->
+    <div class="drug-detail-view" id="drug-detail-view" style="display:none">
+      <div class="detail-header">
+        <button class="back-btn" onclick="goBackDrug()">← Orqaga</button>
+        <div class="detail-search-wrap">
+          <input type="text" id="drugDetailSearch" placeholder="🔍 Boshqa dori..." oninput="filterDrugDetailSearch(this.value)" onfocus="openDrugDropdown()" onblur="closeDrugDropdownDelay()">
+          <div class="search-dropdown" id="drugSearchDropdown"></div>
+        </div>
       </div>
-      <div class="drug-detail-content" id="drugDetailContent"></div>
+      <div class="disease-name-bar" id="drugNameBar">
+        <div class="d-icon"><i class="ti ti-pill" style="font-size:28px;color:#E24B4A"></i></div>
+        <div class="d-info">
+          <h2 id="drugDetailName"></h2>
+          <span id="drugDetailGroup"></span>
+        </div>
+      </div>
+      <div class="detail-panel">
+        <div class="tabs" style="overflow-x:auto">
+          <div class="tab active" onclick="switchDrugTab('umumiy')" id="dtab-umumiy">📋 Umumiy</div>
+          <div class="tab" onclick="switchDrugTab('mexanizm')" id="dtab-mexanizm">⚡ Mexanizm</div>
+          <div class="tab" onclick="switchDrugTab('doza')" id="dtab-doza">💊 Doza</div>
+          <div class="tab" onclick="switchDrugTab('korsatma')" id="dtab-korsatma">✅ Ko'rsatma</div>
+          <div class="tab" onclick="switchDrugTab('qarshi')" id="dtab-qarshi">🚫 Qarshi</div>
+          <div class="tab" onclick="switchDrugTab('yontar')" id="dtab-yontar">⚠️ Yon ta'sir</div>
+        </div>
+        <div class="tab-content" id="drugDetailContent"></div>
+      </div>
     </div>
   </div>
 
@@ -883,11 +903,13 @@ function showSection(s) {
   const gridView = document.getElementById('grid-view');
   const detailView = document.getElementById('detail-view');
   const dorilarSection = document.getElementById('dorilar-section');
-  // Dorilar bo'limini ko'rsat/yashir
   if (s === 'dorilar') {
     if (gridView) gridView.style.display = 'none';
     if (detailView) detailView.style.display = 'none';
     dorilarSection.classList.add('active');
+    // Dori detail yopiq bo'lsin
+    document.getElementById('drug-grid-view').style.display = 'block';
+    document.getElementById('drug-detail-view').style.display = 'none';
   } else {
     if (gridView) gridView.style.display = 'block';
     if (detailView) detailView.style.display = 'none';
@@ -898,38 +920,112 @@ function showSection(s) {
 }
 
 // ===== DORILAR =====
-let cur_drug=drugsData[0].id,cur_dtab='umumiy';
-function buildDrugCards(){
-  const g=document.getElementById('drugListGrid');g.innerHTML='';
-  drugsData.forEach((d,i)=>{
-    const div=document.createElement('div');
-    div.className='drug-list-card'+(i===0?' active':'');
-    div.id='dcard-'+d.id;
-    div.onclick=()=>selectDrug(d.id);
-    div.innerHTML=`<i class="ti ${d.icon}"></i><div class="dl-name">${d.name}</div><div class="dl-tag">${d.group.split('/')[0]}</div>`;
+let cur_drug = drugsData[0].id, cur_dtab = 'umumiy';
+  const g = document.getElementById('drugListGrid'); g.innerHTML = '';
+  drugsData.forEach((d) => {
+    const div = document.createElement('div');
+    div.className = 'drug-list-card';
+    div.id = 'dcard-' + d.id;
+    div.onclick = () => openDrug(d.id);
+    div.innerHTML = `<i class="ti ${d.icon}"></i><div class="dl-name">${d.name}</div><div class="dl-tag">${d.group.split('/')[0]}</div>`;
     g.appendChild(div);
   });
 }
-function selectDrug(id){window._currentFSDrugMode=false;window._currentFSDrug=null;
-  document.querySelectorAll('.drug-list-card').forEach(c=>c.classList.remove('active'));
-  const c=document.getElementById('dcard-'+id);if(c)c.classList.add('active');
-  cur_drug=id;renderDrugTab(cur_dtab);
+
+function openDrug(id) {
+  window._currentFSDrugMode = false; window._currentFSDrug = null;
+  cur_drug = id; cur_dtab = 'umumiy';
+  const d = drugsData.find(x => x.id === id);
+  if (!d) return;
+  document.getElementById('drug-grid-view').style.display = 'none';
+  document.getElementById('drug-detail-view').style.display = 'block';
+  document.getElementById('drugDetailName').textContent = d.name;
+  document.getElementById('drugDetailGroup').textContent = d.group || '';
+  document.querySelectorAll('#drug-detail-view .tab').forEach(x => x.classList.remove('active'));
+  document.getElementById('dtab-umumiy').classList.add('active');
+  renderDrugTab('umumiy');
+  document.getElementById('drugDetailSearch').value = '';
 }
-function switchDrugTab(t){
-  document.querySelectorAll('.drug-detail-tab').forEach(x=>x.classList.remove('active'));
-  document.getElementById('dtab-'+t).classList.add('active');
-  cur_dtab=t;renderDrugTab(t);
+
+function openFSDrug(d) {
+  window._currentFSDrugMode = true; window._currentFSDrug = d; cur_dtab = 'umumiy';
+  document.getElementById('drug-grid-view').style.display = 'none';
+  document.getElementById('drug-detail-view').style.display = 'block';
+  document.getElementById('drugDetailName').textContent = d.name;
+  document.getElementById('drugDetailGroup').textContent = d.group || '';
+  document.querySelectorAll('#drug-detail-view .tab').forEach(x => x.classList.remove('active'));
+  document.getElementById('dtab-umumiy').classList.add('active');
+  window.renderFSDrugTab('umumiy');
+  document.getElementById('drugDetailSearch').value = '';
 }
-function renderDrugTab(t){
-  const d=drugsData.find(x=>x.id===cur_drug);
-  document.getElementById('drugDetailContent').innerHTML=d?d[t]:'';
+
+window.goBackDrug = function() {
+  document.getElementById('drug-detail-view').style.display = 'none';
+  document.getElementById('drug-grid-view').style.display = 'block';
+  document.getElementById('drugSearchInput').value = '';
+  filterDrugs('');
+  closeDrugDropdown();
+};
+
+function switchDrugTab(t) {
+  document.querySelectorAll('#drug-detail-view .tab').forEach(x => x.classList.remove('active'));
+  document.getElementById('dtab-' + t).classList.add('active');
+  cur_dtab = t;
+  if (window._currentFSDrugMode) { window.renderFSDrugTab(t); } else { renderDrugTab(t); }
 }
-function filterDrugs(q){
-  drugsData.forEach(d=>{
-    const c=document.getElementById('dcard-'+d.id);
-    if(c)c.style.display=(!q||d.name.toLowerCase().includes(q.toLowerCase()))?'':'none';
+
+function renderDrugTab(t) {
+  const d = drugsData.find(x => x.id === cur_drug);
+  if (!d) return;
+  let html = '';
+  if (t === 'umumiy') html = d.umumiy || '';
+  else if (t === 'mexanizm') html = d.mexanizm || '';
+  else if (t === 'doza') html = d.doza || '';
+  else if (t === 'korsatma') html = d.korsatma ? `<ul class="di-list">${d.korsatma.split ? d.korsatma : d.korsatma}</ul>` : d.korsatma || '';
+  else if (t === 'qarshi') html = d.qarshi || '';
+  else if (t === 'yontar') html = d.yontar || '';
+  document.getElementById('drugDetailContent').innerHTML = html;
+}
+
+function filterDrugs(q) {
+  drugsData.forEach(d => {
+    const c = document.getElementById('dcard-' + d.id);
+    if (c) c.style.display = (!q || d.name.toLowerCase().includes(q.toLowerCase())) ? '' : 'none';
+  });
+  (window._firestoreDrugs || []).forEach(d => {
+    const c = document.getElementById('dcard-fs-' + d.id);
+    if (c) c.style.display = (!q || d.name.toLowerCase().includes(q.toLowerCase())) ? '' : 'none';
   });
 }
+
+// Dori detail ichida qidiruv
+function filterDrugDetailSearch(q) {
+  const dropdown = document.getElementById('drugSearchDropdown');
+  if (!q.trim()) { dropdown.classList.remove('open'); dropdown.innerHTML = ''; return; }
+  const hard = drugsData.filter(d => d.name.toLowerCase().includes(q.toLowerCase()));
+  const fs = (window._firestoreDrugs || []).filter(d => d.name.toLowerCase().includes(q.toLowerCase()));
+  const total = [...hard.map(d => ({ ...d, type: 'hard' })), ...fs.map(d => ({ ...d, type: 'fs' }))];
+  if (total.length === 0) { dropdown.innerHTML = '<div style="padding:14px;text-align:center;color:var(--text-faint);font-size:13px">Topilmadi</div>'; dropdown.classList.add('open'); return; }
+  dropdown.innerHTML = total.map(d =>
+    `<div class="search-item" onmousedown="${d.type === 'fs' ? `switchFSDrug('${d.id}')` : `switchHardDrug('${d.id}')`}">
+      <i class="ti ${d.icon || 'ti-pill'}" style="font-size:18px;color:#E24B4A;flex-shrink:0"></i>
+      <span class="si-name">${d.name}</span>
+      <span class="si-tag">${d.group || ''}</span>
+    </div>`
+  ).join('');
+  dropdown.classList.add('open');
+}
+
+function openDrugDropdown() { const q = document.getElementById('drugDetailSearch').value; if (q.trim()) filterDrugDetailSearch(q); }
+function closeDrugDropdown() { document.getElementById('drugSearchDropdown').classList.remove('open'); }
+function closeDrugDropdownDelay() { setTimeout(closeDrugDropdown, 150); }
+
+window.switchHardDrug = function(id) { openDrug(id); document.getElementById('drugDetailSearch').value = ''; closeDrugDropdown(); };
+window.switchFSDrug = function(id) {
+  const d = (window._firestoreDrugs || []).find(x => x.id === id);
+  if (d) openFSDrug(d);
+  document.getElementById('drugDetailSearch').value = ''; closeDrugDropdown();
+};
 
 buildDrugCards();
 renderDrugTab('umumiy');

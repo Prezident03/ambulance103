@@ -175,7 +175,10 @@ function addFirestoreDrugsToList() {
     const div = document.createElement('div');
     div.className = 'drug-list-card';
     div.id = 'dcard-fs-' + d.id;
-    div.onclick = () => selectFirestoreDrug(d.id);
+    div.onclick = () => {
+      if (typeof openFSDrug === 'function') { openFSDrug(d); }
+      else { selectFirestoreDrug(d.id); }
+    };
     div.innerHTML = `
       <i class="ti ti-pill"></i>
       <div class="dl-name">${d.name}</div>
