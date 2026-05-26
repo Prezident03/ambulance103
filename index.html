@@ -273,7 +273,7 @@
 <body>
 
 <div class="topbar">
-  <div class="topbar-left">
+  <div class="topbar-left" onclick="goHome()" style="cursor:pointer" title="Bosh sahifa">
     <i class="ti ti-ambulance"></i>
     <h1>Tez Tibbiy Yordam</h1>
   </div>
@@ -899,6 +899,17 @@ window.switchFSDisease = function(id) {
 };
 
 // ===== NAVIGATSIYA =====
+function goHome() {
+  // Kasalliklar gridga qaytish
+  document.getElementById('grid-view').style.display = 'block';
+  document.getElementById('detail-view').style.display = 'none';
+  document.getElementById('dorilar-section').classList.remove('active');
+  document.getElementById('nav-kasalliklar').classList.add('active');
+  document.getElementById('nav-dorilar').classList.remove('active');
+  document.getElementById('searchInput').value = '';
+  filterDiseases('');
+}
+
 function showSection(s) {
   const gridView = document.getElementById('grid-view');
   const detailView = document.getElementById('detail-view');
