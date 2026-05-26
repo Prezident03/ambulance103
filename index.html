@@ -921,6 +921,8 @@ function showSection(s) {
 
 // ===== DORILAR =====
 let cur_drug = drugsData[0].id, cur_dtab = 'umumiy';
+
+function buildDrugCards() {
   const g = document.getElementById('drugListGrid'); g.innerHTML = '';
   drugsData.forEach((d) => {
     const div = document.createElement('div');
