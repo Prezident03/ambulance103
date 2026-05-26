@@ -303,6 +303,43 @@
       .hero-btns{gap:7px}
       .hero-btn-primary,.hero-btn-secondary{padding:8px 12px;font-size:11px}
     }
+
+    /* ===== SECTION MODAL ===== */
+    .section-modal-overlay{
+      display:none;position:fixed;inset:0;z-index:1000;
+      background:rgba(0,0,0,0.45);
+      animation:smFadeIn .2s ease;
+    }
+    .section-modal-overlay.open{display:flex;align-items:flex-end;}
+    @keyframes smFadeIn{from{opacity:0}to{opacity:1}}
+    .section-modal-box{
+      width:100%;max-height:92vh;background:#f4f6fa;
+      border-radius:24px 24px 0 0;
+      display:flex;flex-direction:column;
+      animation:smSlideUp .3s cubic-bezier(.32,1,.23,1);
+      overflow:hidden;
+    }
+    body.dark .section-modal-box{background:#1a1a2e;}
+    @keyframes smSlideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+    .section-modal-header{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:16px 20px 12px;
+      background:#fff;border-bottom:1px solid #eee;
+      border-radius:24px 24px 0 0;
+      position:sticky;top:0;z-index:2;
+      flex-shrink:0;
+    }
+    body.dark .section-modal-header{background:#16213e;border-color:#2a2a4a;}
+    .section-modal-title{font-size:16px;font-weight:700;color:#222;display:flex;align-items:center;gap:8px;}
+    body.dark .section-modal-title{color:#eee;}
+    .section-modal-close{
+      background:#f0f0f0;border:none;width:32px;height:32px;border-radius:50%;
+      cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;
+      color:#555;transition:background .2s;
+    }
+    body.dark .section-modal-close{background:#2a2a4a;color:#aaa;}
+    .section-modal-close:hover{background:#e0e0e0;}
+    .section-modal-body{overflow-y:auto;padding:12px 16px 24px;flex:1;}
   </style>
 </head>
 <body>
@@ -385,20 +422,30 @@
         <input type="text" placeholder="Kasallik yoki dori nomini yozing..." oninput="heroSearch(this.value)">
       </div>
       <div class="hero-btns">
-        <button class="hero-btn-primary" onclick="showSection('kasalliklar')">
+        <button class="hero-btn-primary" onclick="openSectionModal('kasalliklar')">
           🩺 Kasalliklarni ko'rish
         </button>
-        <button class="hero-btn-secondary" onclick="showSection('dorilar')">
+        <button class="hero-btn-secondary" onclick="openSectionModal('dorilar')">
           💊 Dorilar bazasi
         </button>
       </div>
     </div>
   </div>
 
-  <div class="main-nav">
-    <button class="nav-btn active" onclick="showSection('kasalliklar')" id="nav-kasalliklar"><i class="ti ti-stethoscope"></i> Kasalliklar</button>
-    <button class="nav-btn" onclick="showSection('dorilar')" id="nav-dorilar"><i class="ti ti-pill"></i> Dorilar (36)</button>
-  </div>
+</div><!-- end main -->
+
+<!-- SECTION MODAL -->
+<div class="section-modal-overlay" id="sectionModal" onclick="closeSectionModalOutside(event)">
+  <div class="section-modal-box">
+    <div class="section-modal-header">
+      <div class="section-modal-title" id="sectionModalTitle">📋 Kasalliklar</div>
+      <button class="section-modal-close" onclick="closeSectionModal()">✕</button>
+    </div>
+    <div class="section-modal-body">
+      <div class="main-nav" style="margin-bottom:12px">
+        <button class="nav-btn active" onclick="showSection('kasalliklar')" id="nav-kasalliklar"><i class="ti ti-stethoscope"></i> Kasalliklar</button>
+        <button class="nav-btn" onclick="showSection('dorilar')" id="nav-dorilar"><i class="ti ti-pill"></i> Dorilar (36)</button>
+      </div>
 
   <!-- KASALLIKLAR: GRID VIEW -->
   <div class="kasalliklar-section grid-view" id="grid-view">
@@ -478,7 +525,11 @@
   </div>
 
   <div class="footer">© 2026 Tez Tibbiy Yordam - Professionallar uchun <br><strong>AMBULANCE103</strong> by Abdurasul Zokirov</div>
-</div>
+    </div><!-- end section-modal-body -->
+  </div><!-- end section-modal-box -->
+</div><!-- end section-modal-overlay -->
+
+<div class="main" style="display:contents">
 
 <!-- MODAL -->
 <div class="modal" id="detailModal">
@@ -618,12 +669,38 @@ window._setProfileUser = function(user) {
 function hideBanner() { const b = document.getElementById('heroBanner'); if(b) b.style.display='none'; }
 function showBanner() { const b = document.getElementById('heroBanner'); if(b) b.style.display='block'; }
 
+// ===== SECTION MODAL =====
+window.openSectionModal = function(section) {
+  const modal = document.getElementById('sectionModal');
+  const title = document.getElementById('sectionModalTitle');
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  if (section === 'dorilar') {
+    title.textContent = '💊 Dorilar bazasi';
+    showSection('dorilar');
+  } else {
+    title.textContent = '🩺 Kasalliklar';
+    showSection('kasalliklar');
+  }
+};
+
+window.closeSectionModal = function() {
+  document.getElementById('sectionModal').classList.remove('open');
+  document.body.style.overflow = '';
+};
+
+window.closeSectionModalOutside = function(e) {
+  if (e.target === document.getElementById('sectionModal')) closeSectionModal();
+};
+
 // Banner qidiruv
 window.heroSearch = function(q) {
   if (!q.trim()) return;
-  showSection('kasalliklar');
-  const si = document.getElementById('searchInput');
-  if (si) { si.value = q; filterDiseases(q); }
+  openSectionModal('kasalliklar');
+  setTimeout(() => {
+    const si = document.getElementById('searchInput');
+    if (si) { si.value = q; filterDiseases(q); }
+  }, 100);
 };
 // ===== PROFIL MODAL =====
 window.openProfileModal = function() {
@@ -894,7 +971,7 @@ function openFSDisease(d) {
 
 function goBack() {
   document.getElementById('detail-view').style.display = 'none';
-  document.getElementById('grid-view').style.display = 'block'; showBanner();
+  document.getElementById('grid-view').style.display = 'block';
   document.getElementById('searchInput').value = '';
   filterDiseases('');
   closeDropdown();
