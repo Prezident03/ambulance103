@@ -18,7 +18,23 @@ onAuthStateChanged(auth, async (user) => {
   const name = user.displayName || user.email.split('@')[0];
   const un = document.getElementById('userName');
   if (un) un.textContent = name;
-  if (typeof window._setProfileUser === 'function') window._setProfileUser(user);
+
+  // Firestore dan avatar olish
+  try {
+    const userDoc = await getDocs(query(collection(db, 'users'), where('__name__', '==', user.uid)));
+    if (!userDoc.empty) {
+      const data = userDoc.docs[0].data();
+      if (data.photoBase64 && typeof window._setProfileUser === 'function') {
+        window._setProfileUser({ ...user, photoURL: data.photoBase64 });
+      } else if (typeof window._setProfileUser === 'function') {
+        window._setProfileUser(user);
+      }
+    } else if (typeof window._setProfileUser === 'function') {
+      window._setProfileUser(user);
+    }
+  } catch {
+    if (typeof window._setProfileUser === 'function') window._setProfileUser(user);
+  }
 
   // Super admin yoki oddiy admin tekshirish
   let isAdmin = false;
