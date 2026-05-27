@@ -472,8 +472,8 @@ let selectedIconName = 'Heart';
 // ===== HEALTHICONS =====
 const HEALTH_ICONS = [
   // ===== BODY =====
-  {n:"Yurak (anatomik)",u:'body/heart_organ',c:'body'},
-  {n:"Miya",u:'body/brain',c:'body'},
+  {n:"Yurak (anatomik)",u:'specialties/cardiology',c:'body'},
+  {n:"Miya",u:'specialties/neurosurgery_1',c:'body'},
   {n:"O'pka",u:'body/lungs',c:'body'},
   {n:"Buyrak",u:'body/kidneys',c:'body'},
   {n:"Jigar",u:'body/liver',c:'body'},
@@ -635,7 +635,11 @@ function buildIconModal() {
     const url = getIconUrl(icon.u);
     const currentSel = iconModalTarget === 'cat' ? selectedCatIconUrl : selectedIconUrl;
     const sel = url === currentSel ? ' selected' : '';
-    return `<div class="icon-modal-item${sel}" onclick="selectHealthIcon('${url}','${icon.n}')" title="${icon.n}"><img src="${url}" alt="${icon.n}" onerror="this.outerHTML='<span style=\"font-size:28px;line-height:1\">🏥</span>'"><span>${icon.n}</span></div>`;
+    const isSelected = url === (iconModalTarget === 'cat' ? selectedCatIconUrl : selectedIconUrl);
+    return `<div class="icon-modal-item${sel}" onclick="selectHealthIcon('${url}','${icon.n}')" title="${icon.n}">
+      <img src="${url}" alt="${icon.n}" onerror="this.style.opacity='0.15'" style="transition:opacity .2s">
+      <span>${icon.n}</span>
+    </div>`;
   }).join('');
 }
 
