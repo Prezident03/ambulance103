@@ -130,7 +130,7 @@ async function loadFromFirestore() {
 
     addFirestoreDiseasesToGrid();
     addFirestoreDrugsToList();
-    window.updateCategoryCount();
+    await window.updateCategoryCount();
   } catch (e) {
     console.log('Firestore xatolik:', e);
   }
@@ -139,7 +139,15 @@ async function loadFromFirestore() {
 function addFirestoreDiseasesToGrid() {
   const diseases = window._firestoreDiseases || [];
   if (diseases.length === 0) return;
+
+  // diseaseGrid ni topamiz - modal ichida yoki tashqarida bo'lishi mumkin
   const grid = document.getElementById('diseaseGrid');
+  if (!grid) {
+    // 500ms kutib qayta urinib ko'ramiz
+    setTimeout(addFirestoreDiseasesToGrid, 500);
+    return;
+  }
+
   diseases.forEach(d => {
     if (document.getElementById('card-fs-' + d.id)) return;
     const div = document.createElement('div');
@@ -160,6 +168,16 @@ function addFirestoreDiseasesToGrid() {
     grid.appendChild(div);
   });
 }
+
+// Modal ochilganda ham kasalliklarni qo'shish
+window.addFSDiseasesToGridNow = function() {
+  // Eski fs kartalarni o'chirib qayta qo'shamiz
+  const grid = document.getElementById('diseaseGrid');
+  if (!grid) return;
+  grid.querySelectorAll('[id^="card-fs-"]').forEach(el => el.remove());
+  addFirestoreDiseasesToGrid();
+  addFirestoreDrugsToList();
+};
 
 window.selectFirestoreDisease = function(id) {
   const d = window._firestoreDiseases.find(x => x.id === id);
