@@ -117,19 +117,8 @@ async function loadFromFirestore() {
     dSnap.forEach(d => window._firestoreDiseases.push({ id: d.id, ...d.data() }));
     drugSnap.forEach(d => window._firestoreDrugs.push({ id: d.id, ...d.data() }));
 
-    // Grid ni tozalab qayta yuklash
-    const grid = document.getElementById('diseaseGrid');
-    if (grid) {
-      // Faqat Firebase dan kelgan kartalarni o'chirish
-      grid.querySelectorAll('[id^="card-fs-"]').forEach(el => el.remove());
-    }
-    const drugGrid = document.getElementById('drugListGrid');
-    if (drugGrid) {
-      drugGrid.querySelectorAll('[id^="dcard-fs-"]').forEach(el => el.remove());
-    }
-
-    addFirestoreDiseasesToGrid();
-    addFirestoreDrugsToList();
+    // Ma'lumotlarni xotirada saqlaymiz
+    // Grid tozalash modal ochilganda bo'ladi
     await window.updateCategoryCount();
   } catch (e) {
     console.log('Firestore xatolik:', e);
