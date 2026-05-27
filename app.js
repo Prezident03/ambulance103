@@ -52,8 +52,6 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   loadFromFirestore();
-  // Har 30 soniyada yangilansin
-  setInterval(() => { loadFromFirestore(); }, 30000);
 });
 
 document.getElementById('logoutBtn').addEventListener('click', async () => {
@@ -102,10 +100,6 @@ function blocksToHtml(blocks) {
   }).join('');
 }
 
-window.reloadFirestore = async function() {
-  await loadFromFirestore();
-};
-
 async function loadFromFirestore() {
   try {
     const dSnap = await getDocs(query(collection(db, 'diseases'), orderBy('createdAt', 'desc')));
@@ -117,9 +111,8 @@ async function loadFromFirestore() {
     dSnap.forEach(d => window._firestoreDiseases.push({ id: d.id, ...d.data() }));
     drugSnap.forEach(d => window._firestoreDrugs.push({ id: d.id, ...d.data() }));
 
-    // Ma'lumotlarni xotirada saqlaymiz
-    // Grid tozalash modal ochilganda bo'ladi
-    await window.updateCategoryCount();
+    addFirestoreDiseasesToGrid();
+    addFirestoreDrugsToList();
   } catch (e) {
     console.log('Firestore xatolik:', e);
   }
@@ -128,15 +121,7 @@ async function loadFromFirestore() {
 function addFirestoreDiseasesToGrid() {
   const diseases = window._firestoreDiseases || [];
   if (diseases.length === 0) return;
-
-  // diseaseGrid ni topamiz - modal ichida yoki tashqarida bo'lishi mumkin
   const grid = document.getElementById('diseaseGrid');
-  if (!grid) {
-    // 500ms kutib qayta urinib ko'ramiz
-    setTimeout(addFirestoreDiseasesToGrid, 500);
-    return;
-  }
-
   diseases.forEach(d => {
     if (document.getElementById('card-fs-' + d.id)) return;
     const div = document.createElement('div');
@@ -157,16 +142,6 @@ function addFirestoreDiseasesToGrid() {
     grid.appendChild(div);
   });
 }
-
-// Modal ochilganda ham kasalliklarni qo'shish
-window.addFSDiseasesToGridNow = function() {
-  // Eski fs kartalarni o'chirib qayta qo'shamiz
-  const grid = document.getElementById('diseaseGrid');
-  if (!grid) return;
-  grid.querySelectorAll('[id^="card-fs-"]').forEach(el => el.remove());
-  addFirestoreDiseasesToGrid();
-  addFirestoreDrugsToList();
-};
 
 window.selectFirestoreDisease = function(id) {
   const d = window._firestoreDiseases.find(x => x.id === id);
@@ -242,83 +217,4 @@ window.renderFSDrugTab = function(tab) {
     html = d.yon ? `<ul class="di-list">${d.yon.split('\n').filter(l=>l.trim()).map(l=>`<li>${l}</li>`).join('')}</ul>` : `<div class="di-box amber">Kiritilmagan</div>`;
   }
   document.getElementById('drugDetailContent').innerHTML = html;
-};
-
-// ===== KATEGORIYALAR =====
-// Rangli ikonlar ketma-ketligi
-const CAT_STYLES = [
-  { icon: '❤️', color: '#ff6b6b', bg: '#fff0f0' },
-  { icon: '🧠', color: '#a29bfe', bg: '#f0f0ff' },
-  { icon: '🫁', color: '#74b9ff', bg: '#f0f8ff' },
-  { icon: '🦠', color: '#55efc4', bg: '#f0fff8' },
-  { icon: '🤧', color: '#fd79a8', bg: '#fff0f5' },
-  { icon: '🍬', color: '#fdcb6e', bg: '#fffbf0' },
-  { icon: '🩹', color: '#e17055', bg: '#fff5f0' },
-  { icon: '📋', color: '#636e72', bg: '#f5f5f5' },
-  { icon: '💊', color: '#00b894', bg: '#f0fff9' },
-  { icon: '🩺', color: '#0984e3', bg: '#f0f8ff' },
-];
-
-window.updateCategoryCount = async function() {
-  const diseases = window._firestoreDiseases || [];
-  const container = document.getElementById('catScroll');
-  if (!container) return;
-
-  // Firebase dan kategoriyalarni olish
-  let categories = [];
-  try {
-    const catSnap = await getDocs(query(collection(db, 'categories'), orderBy('createdAt', 'desc')));
-    catSnap.forEach(d => categories.push({ id: d.id, ...d.data() }));
-  } catch(e) {
-    console.log('Kategoriyalar yuklanmadi:', e);
-  }
-
-  if (categories.length === 0) {
-    container.innerHTML = '<div style="color:#bbb;font-size:13px;padding:10px">Kategoriyalar yo'q</div>';
-    return;
-  }
-
-  // Har kategoriya uchun son hisoblash
-  const counts = {};
-  diseases.forEach(d => {
-    const cat = d.category || '';
-    if (cat) counts[cat] = (counts[cat] || 0) + 1;
-  });
-
-  // Kartalar yaratish
-  container.innerHTML = '';
-  categories.forEach((cat, i) => {
-    const style = CAT_STYLES[i % CAT_STYLES.length];
-    const icon = cat.icon || style.icon;
-    const count = counts[cat.name] || 0;
-    const div = document.createElement('div');
-    div.className = 'cat-card';
-    div.onclick = () => filterByCategory(cat.name);
-    div.innerHTML = `
-      <div class="cat-icon" style="background:${style.bg};color:${style.color}">${icon}</div>
-      <div class="cat-name">${cat.name}</div>
-      <div class="cat-count">${count} ta kasallik</div>
-    `;
-    container.appendChild(div);
-  });
-};
-
-window.filterByCategory = function(catKey) {
-  // Kasalliklar bo'limini ochish
-  if (typeof openSectionModal === 'function') openSectionModal('kasalliklar');
-  else if (typeof showSection === 'function') showSection('kasalliklar');
-
-  // Kategoriya bo'yicha filter
-  setTimeout(() => {
-    const diseases = window._firestoreDiseases || [];
-    const grid = document.getElementById('diseaseGrid');
-    if (!grid) return;
-
-    // Barcha kartalarni ko'rsatish/yashirish
-    grid.querySelectorAll('.disease-card').forEach(card => {
-      const tag = card.querySelector('.dc-tag');
-      if (!tag) return;
-      card.style.display = tag.textContent.trim() === catKey ? '' : 'none';
-    });
-  }, 200);
 };

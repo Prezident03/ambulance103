@@ -714,12 +714,6 @@ window.openSectionModal = function(section) {
     title.textContent = '🩺 Kasalliklar';
     showSection('kasalliklar');
   }
-  // Firebase dan kelgan kartalarni qo'shish
-  setTimeout(() => {
-    if (typeof window.addFSDiseasesToGridNow === 'function') {
-      window.addFSDiseasesToGridNow();
-    }
-  }, 100);
 };
 
 window.closeSectionModal = function() {
