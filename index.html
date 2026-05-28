@@ -164,7 +164,7 @@
     body{font-family:Arial,sans-serif;background:var(--bg);min-height:100vh;transition:background 0.3s,color 0.3s}
 
     /* TOPBAR */
-    .topbar{background:#E24B4A;color:white;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .topbar{background:#E24B4A;color:white;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:relative;z-index:99999;}
     .topbar-left{display:flex;align-items:center;gap:10px}
     .topbar-left i{font-size:24px}
     .topbar-left h1{font-size:16px;font-weight:700}
@@ -498,6 +498,7 @@
   </style>
 </head>
 <body>
+<div class="profile-dropdown-overlay" id="profileOverlay" onclick="closeProfile()"></div>
 
 <div class="topbar">
   <div class="topbar-left" onclick="goHome()" style="cursor:pointer" title="Bosh sahifa">
@@ -896,16 +897,24 @@ window.toggleGlass = function(el) {
 
 // ===== PROFIL DROPDOWN =====
 window.toggleProfile = function() {
-  document.getElementById('profileDropdown').classList.toggle('open');
+  const dd = document.getElementById('profileDropdown');
+  const ov = document.getElementById('profileOverlay');
+  const opening = !dd.classList.contains('open');
+  dd.classList.toggle('open');
+  if(ov) ov.classList.toggle('open', opening);
 };
 window.closeProfile = function() {
   document.getElementById('profileDropdown').classList.remove('open');
+  const ov = document.getElementById('profileOverlay');
+  if(ov) ov.classList.remove('open');
 };
 document.addEventListener('click', function(e) {
   const btn = document.getElementById('profileBtn');
   const dd = document.getElementById('profileDropdown');
   if (!btn.contains(e.target) && !dd.contains(e.target)) {
     dd.classList.remove('open');
+    const ov = document.getElementById('profileOverlay');
+    if(ov) ov.classList.remove('open');
   }
 });
 window.goAdmin = function() { window.location.href = 'admin.html'; };
