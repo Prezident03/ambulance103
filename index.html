@@ -247,6 +247,42 @@
 
     .main{max-width:720px;margin:0 auto;padding:14px}
 
+    /* ===== INFO NEON CARDS — LIGHT MODE OVERRIDE ===== */
+    body:not(.dark):not(.glass) .info-neon-card {
+      background: #ffffff !important;
+      border: 1.5px solid rgba(0,0,0,0.06) !important;
+      box-shadow: 0 3px 16px rgba(0,0,0,0.07) !important;
+    }
+    body:not(.dark):not(.glass) .info-neon-card:hover {
+      box-shadow: 0 14px 32px rgba(0,0,0,0.12) !important;
+    }
+    /* Neon glow va SVG dekorlarni yashiramiz */
+    body:not(.dark):not(.glass) .info-neon-card > div[style*="radial-gradient"] { opacity: 0 !important; }
+    body:not(.dark):not(.glass) .info-neon-card > div[style*="drop-shadow"] { opacity: 0.08 !important; filter: none !important; }
+    /* Sarlavha va matnlarni qoraytiramiz */
+    body:not(.dark):not(.glass) .info-neon-card div[style*="color:#ffffff"],
+    body:not(.dark):not(.glass) .info-neon-card div[style*="color:#fff"] { color: #1a1a2e !important; text-shadow: none !important; }
+    body:not(.dark):not(.glass) .info-neon-card div[style*="rgba(180,210,255"] { color: #555555 !important; }
+    body:not(.dark):not(.glass) .info-neon-card div[style*="rgba(180,255,200"] { color: #555555 !important; }
+    body:not(.dark):not(.glass) .info-neon-card div[style*="rgba(200,225,255"] { color: #333333 !important; }
+    body:not(.dark):not(.glass) .info-neon-card div[style*="rgba(200,255,220"] { color: #333333 !important; }
+    /* Check doiralari */
+    body:not(.dark):not(.glass) .info-neon-card span[style*="rgba(37,99,235,0.4)"] {
+      background: #dbeafe !important; border-color: #93c5fd !important; color: #2563eb !important;
+    }
+    body:not(.dark):not(.glass) .info-neon-card span[style*="rgba(22,163,74,0.4)"] {
+      background: #dcfce7 !important; border-color: #86efac !important; color: #16a34a !important;
+    }
+    /* Tugmalar */
+    body:not(.dark):not(.glass) .info-neon-card button {
+      box-shadow: none !important;
+      border: none !important;
+      background: linear-gradient(135deg,#2563eb,#1d4ed8) !important;
+    }
+    body:not(.dark):not(.glass) .info-neon-card:last-child button {
+      background: linear-gradient(135deg,#16a34a,#15803d) !important;
+    }
+
     /* NAV */
     .main-nav{display:flex;gap:8px;margin-bottom:12px}
     .nav-btn{flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);background:var(--bg-card);font-size:13px;font-weight:600;cursor:pointer;color:var(--text-faint);transition:all .15s;text-align:center}
