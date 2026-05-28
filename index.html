@@ -176,17 +176,22 @@
     .profile-btn img{width:100%;height:100%;object-fit:cover;border-radius:50%}
 
     /* PROFIL DROPDOWN */
-    .profile-dropdown-overlay{
-      display:none;position:fixed;inset:0;z-index:9998;
-      background:rgba(0,0,0,0.2);
-    }
+    .profile-dropdown-overlay{display:none;position:fixed;inset:0;z-index:9990;}
     .profile-dropdown-overlay.open{display:block;}
     .profile-dropdown{
-      position:fixed;top:56px;right:12px;
-      width:268px;max-height:calc(100dvh - 68px);overflow-y:auto;
-      background:var(--bg-card);border:1px solid var(--border);
-      border-radius:22px;box-shadow:0 12px 40px rgba(0,0,0,0.25);
-      z-index:9999;display:none;
+      position:fixed;
+      top:56px;
+      right:12px;
+      width:268px;
+      max-height:calc(100dvh - 68px);
+      overflow-y:auto;
+      background:var(--bg-card);
+      border:1px solid var(--border);
+      border-radius:22px;
+      box-shadow:0 12px 40px rgba(0,0,0,0.25);
+      z-index:9999;
+      overflow:hidden;
+      display:none;
     }
     @media(max-width:400px){.profile-dropdown{right:8px;width:calc(100vw - 16px);}}
     .profile-dropdown.open{display:block}
@@ -494,6 +499,7 @@
 </head>
 <body>
 <div class="profile-dropdown-overlay" id="profileOverlay" onclick="closeProfile()"></div>
+
 <div class="topbar">
   <div class="topbar-left" onclick="goHome()" style="cursor:pointer" title="Bosh sahifa">
     <i class="ti ti-ambulance"></i>
@@ -893,9 +899,9 @@ window.toggleGlass = function(el) {
 window.toggleProfile = function() {
   const dd = document.getElementById('profileDropdown');
   const ov = document.getElementById('profileOverlay');
-  const isOpen = dd.classList.contains('open');
+  const opening = !dd.classList.contains('open');
   dd.classList.toggle('open');
-  if(ov) ov.classList.toggle('open', !isOpen);
+  if(ov) ov.classList.toggle('open', opening);
 };
 window.closeProfile = function() {
   document.getElementById('profileDropdown').classList.remove('open');
@@ -907,6 +913,8 @@ document.addEventListener('click', function(e) {
   const dd = document.getElementById('profileDropdown');
   if (!btn.contains(e.target) && !dd.contains(e.target)) {
     dd.classList.remove('open');
+    const ov = document.getElementById('profileOverlay');
+    if(ov) ov.classList.remove('open');
   }
 });
 window.goAdmin = function() { window.location.href = 'admin.html'; };
