@@ -1597,10 +1597,9 @@ async function loadSiteBg() {
       const styleId = 'dynBgStyle';
       let el = document.getElementById(styleId);
       if (!el) { el = document.createElement('style'); el.id = styleId; document.head.appendChild(el); }
-      el.textContent = `
-        body.glass {
-          background: #050810 !important;
-        }
+
+      const glassCSS = url ? `
+        body.glass { background: #050810 !important; }
         body.glass::before {
           background: url('${url}') center center / cover no-repeat fixed !important;
           filter: brightness(0.35) saturate(1.4) !important;
@@ -1612,8 +1611,21 @@ async function loadSiteBg() {
             radial-gradient(ellipse at 50% 50%, rgba(100,50,180,0.22) 0%, transparent 55%),
             radial-gradient(ellipse at 15% 85%, rgba(20,120,100,0.28) 0%, transparent 45%),
             radial-gradient(ellipse at 85% 80%, rgba(200,80,30,0.22) 0%, transparent 45%) !important;
+        }` : '';
+
+      const lightUrl = snap.data().bgImageUrlLight;
+      const lightCSS = lightUrl ? `
+        body:not(.dark):not(.glass) {
+          background-image: url('${lightUrl}') !important;
+          background-size: cover !important;
+          background-attachment: fixed !important;
+          background-position: center !important;
         }
-      `;
+        body:not(.dark):not(.glass) .main {
+          background: transparent !important;
+        }` : '';
+
+      el.textContent = glassCSS + lightCSS;
     }
   } catch(e) { /* fon yuklanmasa davom etaveradi */ }
 }

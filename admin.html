@@ -472,58 +472,77 @@
 
   <!-- FON RASM (faqat super admin) -->
   <div class="section" id="section-background">
-    <div class="form-card">
-      <h2>🖼️ Sayt fon rasmi</h2>
 
+    <!-- GLASS FON -->
+    <div class="form-card" style="margin-bottom:16px">
+      <h2>🫧 Shisha effekti fon rasmi</h2>
       <div class="bg-info-box">
-        ℹ️ Bu sozlama faqat <b>Super Admin</b> ga ko'rinadi.<br>
-        📐 Tavsiya etilgan: <b>1080 × 1920 px</b> yoki istalgan o'lcham<br>
-        📁 Format: <b>JPG, PNG, WEBP</b> — avtomatik siqiladi<br>
-        🌙 Fon rasm faqat <b>Liquid Glass</b> rejimida ko'rinadi
+        🌙 Faqat <b>Liquid Glass</b> rejimida ko'rinadi<br>
+        📐 Tavsiya: <b>1080×1920px</b> &nbsp;|&nbsp; Format: <b>JPG, PNG</b> — avtomatik siqiladi
       </div>
-
-      <!-- Joriy fon -->
       <div class="bg-current-wrap">
         <div class="bg-current-label">
-          <span class="bg-status-dot" id="bgStatusDot"></span>
-          Joriy fon rasm
+          <span class="bg-status-dot" id="bgStatusDotGlass"></span>
+          Joriy Glass fon
         </div>
-        <div id="bgCurrentContent"><div class="bg-current-empty">⏳ Yuklanmoqda...</div></div>
+        <div id="bgCurrentGlass"><div class="bg-current-empty">⏳ Yuklanmoqda...</div></div>
       </div>
-
-      <!-- Fayl yuklash -->
-      <div class="bg-upload-area" id="bgUploadArea"
+      <div class="bg-upload-area" id="bgUploadAreaGlass"
            ondragover="event.preventDefault();this.classList.add('drag-over')"
            ondragleave="this.classList.remove('drag-over')"
-           ondrop="handleBgDrop(event)">
-        <input type="file" accept="image/*" id="bgFileInput" onchange="handleBgFile(event)">
-        <span class="bg-upload-icon">🖼️</span>
-        <div class="bg-upload-title">Rasm tanlash uchun bosing yoki tashlang</div>
-        <div class="bg-upload-hint">
-          Formatlar: <b>JPG, PNG, WEBP</b><br>
-          Istalgan hajm — avtomatik siqiladi
-        </div>
+           ondrop="handleBgDrop(event,'glass')">
+        <input type="file" accept="image/*" id="bgFileInputGlass" onchange="handleBgFile(event,'glass')">
+        <span class="bg-upload-icon">🫧</span>
+        <div class="bg-upload-title">Glass fon rasmini tanlang</div>
+        <div class="bg-upload-hint">Qorong'i, rangdor rasmlar yaxshi ko'rinadi</div>
       </div>
-
-      <!-- Preview -->
-      <div class="bg-preview-wrap" id="bgPreviewWrap">
+      <div class="bg-preview-wrap" id="bgPreviewWrapGlass">
         <div class="bg-preview-label">📸 Ko'rinishi</div>
-        <img id="bgPreviewImg" class="bg-preview-img" src="" alt="Preview">
-        <div id="bgSizeInfo" style="font-size:11px;color:var(--text-muted);margin-top:6px"></div>
+        <img id="bgPreviewImgGlass" class="bg-preview-img" src="" alt="Preview">
+        <div id="bgSizeInfoGlass" style="font-size:11px;color:var(--text-muted);margin-top:6px"></div>
       </div>
-
-      <div id="bgUrlMsg" style="font-size:13px;margin-top:10px;min-height:18px;color:var(--text-secondary)"></div>
-
-      <!-- Tugmalar -->
+      <div id="bgMsgGlass" style="font-size:13px;margin-top:10px;min-height:18px;color:var(--text-secondary)"></div>
       <div class="bg-action-row">
-        <button class="bg-save-btn" id="bgSaveBtn" onclick="saveBgImage()" disabled>
-          💾 Saqlash va qo'llash
-        </button>
-        <button class="bg-remove-btn" id="bgRemoveBtn" onclick="removeBgImage()" style="display:none">
-          🗑 Fonni o'chirish
-        </button>
+        <button class="bg-save-btn" id="bgSaveBtnGlass" onclick="saveBgImage('glass')" disabled>💾 Saqlash</button>
+        <button class="bg-remove-btn" id="bgRemoveBtnGlass" onclick="removeBgImage('glass')" style="display:none">🗑 O'chirish</button>
       </div>
     </div>
+
+    <!-- LIGHT FON -->
+    <div class="form-card">
+      <h2>☀️ Kunduzgi rejim fon rasmi</h2>
+      <div class="bg-info-box" style="background:#FFF3E0;color:#E65100;border-left-color:#FF9800">
+        ☀️ Faqat <b>Kunduzgi (Light)</b> rejimida ko'rinadi<br>
+        📐 Tavsiya: <b>1080×1920px</b> &nbsp;|&nbsp; Och rangli rasmlar yaxshi ko'rinadi
+      </div>
+      <div class="bg-current-wrap">
+        <div class="bg-current-label">
+          <span class="bg-status-dot" id="bgStatusDotLight"></span>
+          Joriy Light fon
+        </div>
+        <div id="bgCurrentLight"><div class="bg-current-empty">⏳ Yuklanmoqda...</div></div>
+      </div>
+      <div class="bg-upload-area" id="bgUploadAreaLight"
+           ondragover="event.preventDefault();this.classList.add('drag-over')"
+           ondragleave="this.classList.remove('drag-over')"
+           ondrop="handleBgDrop(event,'light')">
+        <input type="file" accept="image/*" id="bgFileInputLight" onchange="handleBgFile(event,'light')">
+        <span class="bg-upload-icon">☀️</span>
+        <div class="bg-upload-title">Light fon rasmini tanlang</div>
+        <div class="bg-upload-hint">Och, pastel rangli rasmlar yaxshi ko'rinadi</div>
+      </div>
+      <div class="bg-preview-wrap" id="bgPreviewWrapLight">
+        <div class="bg-preview-label">📸 Ko'rinishi</div>
+        <img id="bgPreviewImgLight" class="bg-preview-img" src="" alt="Preview">
+        <div id="bgSizeInfoLight" style="font-size:11px;color:var(--text-muted);margin-top:6px"></div>
+      </div>
+      <div id="bgMsgLight" style="font-size:13px;margin-top:10px;min-height:18px;color:var(--text-secondary)"></div>
+      <div class="bg-action-row">
+        <button class="bg-save-btn" id="bgSaveBtnLight" onclick="saveBgImage('light')" disabled>💾 Saqlash</button>
+        <button class="bg-remove-btn" id="bgRemoveBtnLight" onclick="removeBgImage('light')" style="display:none">🗑 O'chirish</button>
+      </div>
+    </div>
+
   </div>
 
 </div><!-- end container -->
@@ -1141,126 +1160,126 @@ function clearCatForm() {
 window.goHome = () => window.location.href = 'index.html';
 window.logoutAdmin = async () => { await signOut(auth); window.location.href = 'login.html'; };
 
-// ===== FON RASM (canvas siqish + Firestore base64) =====
-let _bgBase64 = null;
+// ===== FON RASM (Glass + Light alohida) =====
+const _bgData = { glass: null, light: null };
 
 async function loadBgSettings() {
   try {
     const snap = await getDoc(doc(db, 'settings', 'siteSettings'));
-    const content = document.getElementById('bgCurrentContent');
-    const dot = document.getElementById('bgStatusDot');
-    if (snap.exists() && snap.data().bgImageUrl) {
-      const url = snap.data().bgImageUrl;
-      content.innerHTML = `
-        <img class="bg-current-img" src="${url}" alt="Joriy fon">
-        <div style="font-size:12px;color:#27ae60;margin-top:2px">✅ Faol fon rasm o'rnatilgan</div>`;
-      dot.classList.add('active');
-      document.getElementById('bgRemoveBtn').style.display = 'inline-block';
+    const data = snap.exists() ? snap.data() : {};
+
+    // GLASS
+    const glassEl = document.getElementById('bgCurrentGlass');
+    const glassDot = document.getElementById('bgStatusDotGlass');
+    if (data.bgImageUrl) {
+      glassEl.innerHTML = `<img class="bg-current-img" src="${data.bgImageUrl}" alt="Glass fon">
+        <div style="font-size:12px;color:#27ae60;margin-top:2px">✅ Glass fon o'rnatilgan</div>`;
+      glassDot.classList.add('active');
+      document.getElementById('bgRemoveBtnGlass').style.display = 'inline-block';
     } else {
-      content.innerHTML = '<div class="bg-current-empty">📭 Hozircha fon rasm o\'rnatilmagan<br><small style="color:var(--text-muted)">Standart gradient ishlatilmoqda</small></div>';
-      dot.classList.remove('active');
+      glassEl.innerHTML = '<div class="bg-current-empty">📭 Glass fon o\'rnatilmagan</div>';
+      glassDot.classList.remove('active');
     }
-  } catch(e) {
-    document.getElementById('bgCurrentContent').innerHTML = '<div class="bg-current-empty" style="color:#E24B4A">⚠️ ' + e.message + '</div>';
-  }
+
+    // LIGHT
+    const lightEl = document.getElementById('bgCurrentLight');
+    const lightDot = document.getElementById('bgStatusDotLight');
+    if (data.bgImageUrlLight) {
+      lightEl.innerHTML = `<img class="bg-current-img" src="${data.bgImageUrlLight}" alt="Light fon">
+        <div style="font-size:12px;color:#27ae60;margin-top:2px">✅ Light fon o'rnatilgan</div>`;
+      lightDot.classList.add('active');
+      document.getElementById('bgRemoveBtnLight').style.display = 'inline-block';
+    } else {
+      lightEl.innerHTML = '<div class="bg-current-empty">📭 Light fon o\'rnatilmagan</div>';
+      lightDot.classList.remove('active');
+    }
+  } catch(e) { console.error(e); }
 }
 
-window.handleBgDrop = function(e) {
+window.handleBgDrop = function(e, mode) {
   e.preventDefault();
-  document.getElementById('bgUploadArea').classList.remove('drag-over');
+  document.getElementById(mode==='glass'?'bgUploadAreaGlass':'bgUploadAreaLight').classList.remove('drag-over');
   const file = e.dataTransfer.files[0];
-  if (file) processBgFile(file);
+  if (file) processBgFile(file, mode);
 };
 
-window.handleBgFile = function(e) {
+window.handleBgFile = function(e, mode) {
   const file = e.target.files[0];
-  if (file) processBgFile(file);
+  if (file) processBgFile(file, mode);
 };
 
-function processBgFile(file) {
-  const msg = document.getElementById('bgUrlMsg');
+function processBgFile(file, mode) {
+  const suffix = mode === 'glass' ? 'Glass' : 'Light';
+  const msg = document.getElementById('bgMsg' + suffix);
   if (!file.type.startsWith('image/')) {
     msg.textContent = '❌ Faqat rasm fayllari!'; msg.style.color = '#E24B4A'; return;
   }
-  msg.textContent = '⏳ Rasm siqilmoqda...'; msg.style.color = 'var(--text-muted)';
-
+  msg.textContent = '⏳ Siqilmoqda...'; msg.style.color = 'var(--text-muted)';
   const reader = new FileReader();
   reader.onload = (ev) => {
     const img = new Image();
     img.onload = () => {
-      // Canvas orqali siqish: max 1080px kenglik, 80% sifat
       const maxW = 1080;
       const scale = img.width > maxW ? maxW / img.width : 1;
       const w = Math.round(img.width * scale);
       const h = Math.round(img.height * scale);
       const canvas = document.createElement('canvas');
       canvas.width = w; canvas.height = h;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, w, h);
-      const base64 = canvas.toDataURL('image/jpeg', 0.82);
-      const kb = Math.round(base64.length * 0.75 / 1024);
-
-      _bgBase64 = base64;
-      document.getElementById('bgPreviewImg').src = base64;
-      document.getElementById('bgPreviewWrap').classList.add('show');
-      document.getElementById('bgSizeInfo').textContent = `📐 ${w}×${h}px  |  💾 ~${kb} KB`;
-      document.getElementById('bgSaveBtn').disabled = false;
-
-      if (kb > 900) {
-        msg.textContent = `⚠️ Rasm katta (${kb}KB). Sifat pasaytirilmoqda...`;
-        msg.style.color = '#e67e22';
-        // Yanada ko'proq siqish
-        const base64v2 = canvas.toDataURL('image/jpeg', 0.6);
-        const kb2 = Math.round(base64v2.length * 0.75 / 1024);
-        _bgBase64 = base64v2;
-        document.getElementById('bgSizeInfo').textContent = `📐 ${w}×${h}px  |  💾 ~${kb2} KB (siqilgan)`;
-        msg.textContent = `✅ Tayyor! ${kb2}KB ga siqildi`;
-        msg.style.color = '#27ae60';
-      } else {
-        msg.textContent = `✅ Tayyor! ~${kb} KB`;
-        msg.style.color = '#27ae60';
-      }
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      let base64 = canvas.toDataURL('image/jpeg', 0.82);
+      let kb = Math.round(base64.length * 0.75 / 1024);
+      if (kb > 900) { base64 = canvas.toDataURL('image/jpeg', 0.6); kb = Math.round(base64.length * 0.75 / 1024); }
+      _bgData[mode] = base64;
+      document.getElementById('bgPreviewImg' + suffix).src = base64;
+      document.getElementById('bgPreviewWrap' + suffix).classList.add('show');
+      document.getElementById('bgSizeInfo' + suffix).textContent = `📐 ${w}×${h}px  |  💾 ~${kb} KB`;
+      document.getElementById('bgSaveBtn' + suffix).disabled = false;
+      msg.textContent = `✅ Tayyor! ~${kb} KB`; msg.style.color = '#27ae60';
     };
     img.src = ev.target.result;
   };
   reader.readAsDataURL(file);
 }
 
-window.saveBgImage = async function() {
-  if (!_bgBase64) return;
-  const btn = document.getElementById('bgSaveBtn');
-  const msg = document.getElementById('bgUrlMsg');
+window.saveBgImage = async function(mode) {
+  const suffix = mode === 'glass' ? 'Glass' : 'Light';
+  const field = mode === 'glass' ? 'bgImageUrl' : 'bgImageUrlLight';
+  if (!_bgData[mode]) return;
+  const btn = document.getElementById('bgSaveBtn' + suffix);
+  const msg = document.getElementById('bgMsg' + suffix);
   btn.disabled = true; btn.textContent = '⏳ Saqlanmoqda...';
-  msg.textContent = '☁️ Firestore ga yuklanmoqda...'; msg.style.color = 'var(--text-muted)';
   try {
     await setDoc(doc(db, 'settings', 'siteSettings'),
-      { bgImageUrl: _bgBase64, updatedAt: serverTimestamp() },
+      { [field]: _bgData[mode], updatedAt: serverTimestamp() },
       { merge: true }
     );
-    msg.textContent = '✅ Muvaffaqiyatli saqlandi!'; msg.style.color = '#27ae60';
+    msg.textContent = '✅ Saqlandi!'; msg.style.color = '#27ae60';
     btn.textContent = '✅ Saqlandi';
-    _bgBase64 = null;
-    document.getElementById('bgFileInput').value = '';
-    setTimeout(() => { btn.textContent = '💾 Saqlash va qo\'llash'; }, 2500);
+    _bgData[mode] = null;
+    document.getElementById('bgFileInput' + suffix).value = '';
+    setTimeout(() => { btn.textContent = '💾 Saqlash'; }, 2500);
     loadBgSettings();
   } catch(e) {
-    msg.textContent = '❌ Xatolik: ' + e.message; msg.style.color = '#E24B4A';
-    btn.disabled = false; btn.textContent = '💾 Saqlash va qo\'llash';
+    msg.textContent = '❌ ' + e.message; msg.style.color = '#E24B4A';
+    btn.disabled = false; btn.textContent = '💾 Saqlash';
   }
 };
 
-window.removeBgImage = async function() {
+window.removeBgImage = async function(mode) {
+  const suffix = mode === 'glass' ? 'Glass' : 'Light';
+  const field = mode === 'glass' ? 'bgImageUrl' : 'bgImageUrlLight';
   if (!confirm("Fon rasmni o'chirasizmi?")) return;
   try {
     await setDoc(doc(db, 'settings', 'siteSettings'),
-      { bgImageUrl: null, updatedAt: serverTimestamp() },
+      { [field]: null, updatedAt: serverTimestamp() },
       { merge: true }
     );
-    document.getElementById('bgUrlMsg').textContent = "✅ Fon rasm o'chirildi";
-    document.getElementById('bgUrlMsg').style.color = '#27ae60';
-    document.getElementById('bgPreviewWrap').classList.remove('show');
-    document.getElementById('bgSaveBtn').disabled = true;
-    _bgBase64 = null;
+    document.getElementById('bgMsg' + suffix).textContent = "✅ O'chirildi";
+    document.getElementById('bgMsg' + suffix).style.color = '#27ae60';
+    document.getElementById('bgPreviewWrap' + suffix).classList.remove('show');
+    document.getElementById('bgSaveBtn' + suffix).disabled = true;
+    document.getElementById('bgRemoveBtn' + suffix).style.display = 'none';
+    _bgData[mode] = null;
     loadBgSettings();
   } catch(e) { alert("Xatolik: " + e.message); }
 };
