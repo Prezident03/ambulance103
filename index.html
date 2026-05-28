@@ -1457,6 +1457,37 @@ window.filterByCategory = function(catName) {
 
 loadCategories();
 
+// ===== FON RASM YUKLASH =====
+async function loadSiteBg() {
+  try {
+    const { db } = await import('./firebase.js');
+    const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+    const snap = await getDoc(doc(db, 'settings', 'siteSettings'));
+    if (snap.exists() && snap.data().bgImageUrl) {
+      const url = snap.data().bgImageUrl;
+      // Mavjud style ni override qilamiz
+      const styleId = 'dynBgStyle';
+      let el = document.getElementById(styleId);
+      if (!el) { el = document.createElement('style'); el.id = styleId; document.head.appendChild(el); }
+      el.textContent = `
+        body.glass::before {
+          background: url('${url}') center center / cover no-repeat fixed !important;
+        }
+        body.glass::after {
+          background:
+            rgba(0,0,0,0.45),
+            radial-gradient(ellipse at 10% 15%,rgba(226,75,74,0.25) 0%,transparent 40%),
+            radial-gradient(ellipse at 90% 10%,rgba(52,100,219,0.25) 0%,transparent 40%),
+            radial-gradient(ellipse at 50% 50%,rgba(100,50,180,0.15) 0%,transparent 55%),
+            radial-gradient(ellipse at 15% 85%,rgba(20,120,100,0.18) 0%,transparent 40%),
+            radial-gradient(ellipse at 85% 80%,rgba(200,80,30,0.15) 0%,transparent 40%) !important;
+        }
+      `;
+    }
+  } catch(e) { /* fon yuklanmasa davom etaveradi */ }
+}
+loadSiteBg();
+
 // Hex rangdan CSS filter hisoblash (qora ikonni rangli qilish uchun)
 function hexToIconFilter(hex) {
   hex = (hex||'#e74c3c').replace('#','');

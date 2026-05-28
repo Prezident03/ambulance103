@@ -211,6 +211,35 @@
     .edit-banner{background:#FFF3E0;border:1px solid #FF9800;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none;color:#E65100}
     body.dark .edit-banner{background:#2a1a05;color:#ffaa55;border-color:#aa6600}
     .section-divider{border:none;border-top:1px solid var(--border);margin:16px 0}
+
+    /* ===== FON RASM SOZLAMALARI ===== */
+    .bg-upload-area{border:2.5px dashed var(--border);border-radius:16px;padding:32px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg-faint);position:relative}
+    .bg-upload-area:hover,.bg-upload-area.drag-over{border-color:#E24B4A;background:#FCEBEB}
+    body.dark .bg-upload-area:hover,body.dark .bg-upload-area.drag-over{background:#2a1010}
+    .bg-upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+    .bg-upload-icon{font-size:44px;margin-bottom:12px;display:block}
+    .bg-upload-title{font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:6px}
+    .bg-upload-hint{font-size:12px;color:var(--text-muted);line-height:1.7}
+    .bg-upload-hint b{color:#E24B4A}
+    .bg-preview-wrap{margin-top:20px;display:none}
+    .bg-preview-wrap.show{display:block}
+    .bg-preview-label{font-size:12px;font-weight:700;color:var(--text-secondary);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em}
+    .bg-preview-img{width:100%;max-height:220px;object-fit:cover;border-radius:12px;border:2px solid var(--border);display:block}
+    .bg-current-wrap{margin-bottom:20px;padding:16px;background:var(--bg-faint);border-radius:12px;border:1px solid var(--border)}
+    .bg-current-label{font-size:12px;font-weight:700;color:var(--text-secondary);margin-bottom:10px;text-transform:uppercase;letter-spacing:.04em;display:flex;align-items:center;gap:6px}
+    .bg-status-dot{width:8px;height:8px;border-radius:50%;background:#ccc;display:inline-block}
+    .bg-status-dot.active{background:#27ae60}
+    .bg-current-img{width:100%;max-height:160px;object-fit:cover;border-radius:10px;border:1.5px solid var(--border);display:block;margin-bottom:10px}
+    .bg-current-empty{font-size:13px;color:var(--text-muted);padding:20px;text-align:center}
+    .bg-progress{height:6px;background:var(--border);border-radius:6px;overflow:hidden;margin-top:14px;display:none}
+    .bg-progress.show{display:block}
+    .bg-progress-bar{height:100%;width:0%;background:#E24B4A;border-radius:6px;transition:width .3s}
+    .bg-action-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+    .bg-save-btn{background:#E24B4A;color:white;border:none;padding:11px 24px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;flex:1;min-width:140px}
+    .bg-save-btn:disabled{opacity:.5;cursor:not-allowed}
+    .bg-remove-btn{background:#FCEBEB;color:#E24B4A;border:1.5px solid #E24B4A;padding:11px 20px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer}
+    .bg-info-box{background:#E6F1FB;color:#0C447C;border-radius:10px;padding:12px 16px;font-size:13px;margin-bottom:16px;border-left:3px solid #378ADD;line-height:1.7}
+    body.dark .bg-info-box{background:#0f1f35;color:#99ccff}
   </style>
 </head>
 <body>
@@ -255,6 +284,7 @@
     <button class="admin-tab" onclick="showAdminTab('users')">👥 Foydalanuvchilar</button>
     <button class="admin-tab" onclick="showAdminTab('categories')">📂 Kategoriyalar</button>
     <button class="admin-tab" onclick="showAdminTab('admins')" id="adminsTabBtn" style="display:none">🔐 Adminlar</button>
+    <button class="admin-tab" onclick="showAdminTab('background')" id="bgTabBtn" style="display:none">🖼️ Fon rasm</button>
   </div>
 
   <!-- KASALLIKLAR -->
@@ -442,12 +472,68 @@
     </div>
     <div id="categoryList"><div class="empty">Yuklanmoqda...</div></div>
   </div>
-</div>
+
+  <!-- FON RASM (faqat super admin) -->
+  <div class="section" id="section-background">
+    <div class="form-card">
+      <h2>🖼️ Sayt fon rasmi</h2>
+
+      <div class="bg-info-box">
+        ℹ️ Bu sozlama faqat <b>Super Admin</b> ga ko'rinadi.<br>
+        📐 Tavsiya etilgan o'lcham: <b>1080 × 1920 px</b> (portret / mobil)<br>
+        📁 Format: <b>JPG yoki PNG</b> &nbsp;|&nbsp; 📦 Hajm: <b>maksimum 3 MB</b><br>
+        🌙 Fon rasm faqat <b>Liquid Glass</b> rejimida ko'rinadi
+      </div>
+
+      <!-- Joriy fon -->
+      <div class="bg-current-wrap" id="bgCurrentWrap">
+        <div class="bg-current-label">
+          <span class="bg-status-dot" id="bgStatusDot"></span>
+          Joriy fon rasm
+        </div>
+        <div id="bgCurrentContent"><div class="bg-current-empty">⏳ Yuklanmoqda...</div></div>
+      </div>
+
+      <!-- Yuklash maydoni -->
+      <div class="bg-upload-area" id="bgUploadArea"
+           ondragover="event.preventDefault();this.classList.add('drag-over')"
+           ondragleave="this.classList.remove('drag-over')"
+           ondrop="handleBgDrop(event)">
+        <input type="file" accept="image/jpeg,image/png,image/webp" id="bgFileInput" onchange="handleBgFileSelect(event)">
+        <span class="bg-upload-icon">🖼️</span>
+        <div class="bg-upload-title">Rasm yuklash uchun bosing yoki tashlang</div>
+        <div class="bg-upload-hint">
+          Formatlar: <b>JPG, PNG, WEBP</b><br>
+          Maksimal hajm: <b>3 MB</b><br>
+          Tavsiya etilgan: <b>1080 × 1920 px</b>
+        </div>
+      </div>
+
+      <!-- Yangi rasm preview -->
+      <div class="bg-preview-wrap" id="bgPreviewWrap">
+        <div class="bg-preview-label">📸 Yangi rasm ko'rinishi</div>
+        <img id="bgPreviewImg" class="bg-preview-img" src="" alt="Preview">
+      </div>
+
+      <!-- Progress -->
+      <div class="bg-progress" id="bgProgress"><div class="bg-progress-bar" id="bgProgressBar"></div></div>
+      <div id="bgUploadMsg" style="font-size:13px;margin-top:8px;min-height:18px;color:var(--text-secondary)"></div>
+
+      <!-- Tugmalar -->
+      <div class="bg-action-row">
+        <button class="bg-save-btn" id="bgSaveBtn" onclick="saveBgImage()" disabled>☁️ Saqlash va qo'llash</button>
+        <button class="bg-remove-btn" id="bgRemoveBtn" onclick="removeBgImage()" style="display:none">🗑 Fonni o'chirish</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end container -->
 
 <script type="module">
-import { auth, db } from './firebase.js';
+import { auth, db, storage } from './firebase.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, serverTimestamp, orderBy, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, setDoc, getDoc, serverTimestamp, orderBy, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
 // ===== DARK MODE =====
 function applyDark(dark) {
@@ -471,145 +557,57 @@ let selectedIconName = 'Heart';
 
 // ===== HEALTHICONS =====
 const HEALTH_ICONS = [
-  // ===== BODY =====
-  {n:"Yurak (anatomik)",u:'specialties/cardiology',c:'body'},
-  {n:"Miya",u:'specialties/neurosurgery_1',c:'body'},
-  {n:"O'pka",u:'body/lungs',c:'body'},
-  {n:"Buyrak",u:'body/kidneys',c:'body'},
-  {n:"Jigar",u:'body/liver',c:'body'},
-  {n:"Oshqozon",u:'body/stomach',c:'body'},
-  {n:"Ko'z",u:'body/eye',c:'body'},
-  {n:"Quloq",u:'body/ear',c:'body'},
-  {n:"Burun",u:'body/nose',c:'body'},
-  {n:"Tish",u:'body/tooth',c:'body'},
-  {n:"Suyak",u:'body/skeleton',c:'body'},
-  {n:"Bosh",u:'body/head',c:'body'},
-  {n:"Tana",u:'body/body',c:'body'},
-  {n:"Qon hujayralari",u:'body/blood_cells',c:'body'},
-  {n:"Qon tomchi",u:'body/blood_drop',c:'body'},
-  {n:"DNK",u:'body/dna',c:'body'},
-  {n:"Umurtqa",u:'body/spine',c:'body'},
-  {n:"Ichak",u:'body/intestine',c:'body'},
-  {n:"Siydik pufagi",u:'body/bladder',c:'body'},
-  {n:"Me'da osti bezi",u:'body/pancreas',c:'body'},
-  {n:"Qalqonsimon bez",u:'body/thyroid',c:'body'},
-  {n:"Taloq",u:'body/spleen',c:'body'},
-  {n:"O't pufagi",u:'body/gallbladder',c:'body'},
-  {n:"Oyoq (past)",u:'body/foot',c:'body'},
-  {n:"Qo'l",u:'body/arm',c:'body'},
-  {n:"Oyoq",u:'body/leg',c:'body'},
-  {n:"Og'iz",u:'body/mouth',c:'body'},
-  {n:"Qon tomiri",u:'body/blood_vessel',c:'body'},
-  {n:"Bo'g'im",u:'body/joints',c:'body'},
-  {n:"Hujayra yadrosi",u:'body/cell_nuclei',c:'body'},
-  {n:"Kalla",u:'body/skull',c:'body'},
-  {n:"Antibody",u:'body/antibody',c:'body'},
-  {n:"Ferment",u:'body/enzyme',c:'body'},
-
-  // ===== CONDITIONS =====
-  {n:"Isitma",u:'conditions/fever',c:'conditions'},
-  {n:"Bosh og'rig'i",u:'conditions/headache',c:'conditions'},
-  {n:"Yo'tal",u:'conditions/coughing',c:'conditions'},
-  {n:"Qusish",u:'conditions/vomiting',c:'conditions'},
-  {n:"Ko'ngil aynish",u:'conditions/nausea',c:'conditions'},
-  {n:"Ich ketish",u:'conditions/diarrhea',c:'conditions'},
-  {n:"Allergiya",u:'conditions/allergies',c:'conditions'},
-  {n:"Pnevmoniya",u:'conditions/pneumonia',c:'conditions'},
-  {n:"Sil",u:'conditions/tuberculosis',c:'conditions'},
-  {n:"OIV",u:'conditions/hiv',c:'conditions'},
-  {n:"Bel og'rig'i",u:'conditions/back_pain',c:'conditions'},
-  {n:"Ter chiqishi",u:'conditions/sweating',c:'conditions'},
-  {n:"Ortiqcha vazn",u:'conditions/overweight',c:'conditions'},
-  {n:"Kam vazn",u:'conditions/underweight',c:'conditions'},
-  {n:"Ko'rish buzilishi",u:'conditions/low_vision',c:'conditions'},
-  {n:"Titroq",u:'conditions/chills',c:'conditions'},
-  {n:"Karlik",u:'conditions/deaf',c:'conditions'},
-  {n:"Varikoz",u:'conditions/varicose_vein',c:'conditions'},
-
-  // ===== DEVICES =====
-  {n:"Stetoskop",u:'devices/stethoscope',c:'devices'},
-  {n:"Shprits",u:'devices/syringe',c:'devices'},
-  {n:"Termometr",u:'devices/thermometer_digital',c:'devices'},
-  {n:"Mikroskop",u:'devices/microscope',c:'devices'},
-  {n:"Rentgen",u:'devices/x-ray',c:'devices'},
-  {n:"Nogironlar arabasi",u:'devices/wheelchair',c:'devices'},
-  {n:"Kasalxona kravati",u:'devices/hospital_bed',c:'devices'},
-  {n:"Tonometr",u:'devices/blood_pressure_monitor',c:'devices'},
-  {n:"Glyukometr",u:'devices/glucometer',c:'devices'},
-  {n:"Ingalyator",u:'devices/inhaler',c:'devices'},
-  {n:"Ventilyator",u:'devices/ventilator',c:'devices'},
-  {n:"Defibrillyator",u:'devices/defibrillator',c:'devices'},
-  {n:"Kislorod balloni",u:'devices/oxygen_tank',c:'devices'},
-  {n:"Kapelnitsa",u:'devices/intravenous_bag',c:'devices'},
-  {n:"Tarozu",u:'devices/weight_scale',c:'devices'},
-  {n:"Pulsoksimetr",u:'devices/pulse_oximeter_1',c:'devices'},
-  {n:"Test naycha",u:'devices/test_tubes',c:'devices'},
-
-  // ===== MEDICATIONS =====
-  {n:"Dorilar",u:'medications/medicines',c:'medications'},
-  {n:"Tabletka 1",u:'medications/pill_1',c:'medications'},
-  {n:"Tabletka 2",u:'medications/pill_2',c:'medications'},
-  {n:"Tabletka 3",u:'medications/pill_3',c:'medications'},
-  {n:"Tabletka 4",u:'medications/pill_4',c:'medications'},
-
-  // ===== PEOPLE =====
-  {n:"Shifokor",u:'people/doctor',c:'people'},
-  {n:"Hamshira",u:'people/person_nurse_1',c:'people'},
-  {n:"Homilador",u:'people/pregnant',c:'people'},
-  {n:"Keksa erkak",u:'people/elderly_man',c:'people'},
-  {n:"Keksa ayol",u:'people/elderly_woman',c:'people'},
-  {n:"Chaqaloq",u:'people/baby_2-3_months',c:'people'},
-  {n:"Diabet bemori",u:'people/diabetes',c:'people'},
-  {n:"Alomatlar",u:'people/symptoms',c:'people'},
-  {n:"Sog'liq xodimi",u:'people/person_health_worker',c:'people'},
-  {n:"Jamoat xodimi",u:'people/community_healthcare_worker',c:'people'},
-
-  // ===== SYMBOLS =====
-  {n:"Yurak (belgi)",u:'symbols/heart',c:'symbols'},
-  {n:"Yurak urishi",u:'symbols/heartbeat',c:'symbols'},
-  {n:"Kardiogramma",u:'symbols/cardiogram',c:'symbols'},
-  {n:"Virus",u:'symbols/virus',c:'symbols'},
-  {n:"Sog'liq qalqoni",u:'symbols/health_shield',c:'symbols'},
-  {n:"Ruhiy sog'liq",u:'symbols/mental_health',c:'symbols'},
-  {n:"Dorixona",u:'symbols/pharmacy',c:'symbols'},
-  {n:"Ogohlantirish",u:'symbols/alert_circle',c:'symbols'},
-  {n:"Xavfli",u:'symbols/hazardous',c:'symbols'},
-  {n:"O'lim",u:'symbols/death',c:'symbols'},
-  {n:"Epidemiya",u:'symbols/outbreak',c:'symbols'},
-  {n:"Diabet (belgi)",u:'symbols/diabetes',c:'symbols'},
-
-  // ===== VEHICLES =====
-  {n:"Tez yordam",u:'vehicles/ambulance',c:'vehicles'},
-  {n:"Vertolyot",u:'vehicles/helicopter',c:'vehicles'},
-
-  // ===== PLACES =====
-  {n:"Kasalxona",u:'places/hospital',c:'places'},
-  {n:"Klinika",u:'places/clinic',c:'places'},
-  {n:"Uy",u:'places/home_1',c:'places'},
-  {n:"Dala kasalxonasi",u:'places/field_hospital',c:'places'},
-  {n:"Qishloq klinikasi",u:'places/rural_clinic',c:'places'},
-
-  // ===== EMOTIONS =====
-  {n:"Isitma (yuz)",u:'emotions/fever',c:'emotions'},
-  {n:"Bosh aylanishi",u:'emotions/dizzy',c:'emotions'},
-  {n:"Ko'ngil aynish (yuz)",u:'emotions/nauseous',c:'emotions'},
-  {n:"Og'riq",u:'emotions/bandage',c:'emotions'},
-  {n:"Tinch",u:'emotions/calm',c:'emotions'},
-  {n:"Asabiy",u:'emotions/nervous',c:'emotions'},
-  {n:"Yig'lash",u:'emotions/crying',c:'emotions'},
-  {n:"Xursand",u:'emotions/happy',c:'emotions'},
-
-  // ===== SPECIALTIES =====
-  {n:"Kardiologiya",u:'specialties/cardiology',c:'specialties'},
-  {n:"Nevrologiya",u:'specialties/neurosurgery_1',c:'specialties'},
-  {n:"Pediatriya",u:'specialties/pediatrics',c:'specialties'},
-  {n:"Farmatsevtika",u:'specialties/pharmacy',c:'specialties'},
-  {n:"Radiologiya",u:'specialties/radiology',c:'specialties'},
-  {n:"Intensiv",u:'specialties/intensive_care_unit',c:'specialties'},
-  {n:"Onkologiya",u:'specialties/oncology',c:'specialties'},
-  {n:"Ginekologiya",u:'specialties/gynecology',c:'specialties'},
-  {n:"Tez yordam bo'limi",u:'specialties/accident_and_emergency_1',c:'specialties'},
-  {n:"Nefrologiya",u:'specialties/nephrology',c:'specialties'},
+  {n:'Heart',u:'body/heart',c:'body'},{n:'Brain',u:'body/brain',c:'body'},
+  {n:'Lungs',u:'body/lungs',c:'body'},{n:'Kidneys',u:'body/kidneys',c:'body'},
+  {n:'Liver',u:'body/liver',c:'body'},{n:'Stomach',u:'body/stomach',c:'body'},
+  {n:'Eye',u:'body/eye',c:'body'},{n:'Ear',u:'body/ear',c:'body'},
+  {n:'Nose',u:'body/nose',c:'body'},{n:'Tooth',u:'body/tooth',c:'body'},
+  {n:'Bone',u:'body/skeleton',c:'body'},{n:'Head',u:'body/head',c:'body'},
+  {n:'Body',u:'body/body',c:'body'},{n:'Blood Cells',u:'body/blood_cells',c:'body'},
+  {n:'Blood Drop',u:'body/blood_drop',c:'body'},{n:'DNA',u:'body/dna',c:'body'},
+  {n:'Spine',u:'body/spine',c:'body'},{n:'Intestine',u:'body/intestine',c:'body'},
+  {n:'Bladder',u:'body/bladder',c:'body'},{n:'Pancreas',u:'body/pancreas',c:'body'},
+  {n:'Thyroid',u:'body/thyroid',c:'body'},{n:'Spleen',u:'body/spleen',c:'body'},
+  {n:'Gallbladder',u:'body/gallbladder',c:'body'},{n:'Foot',u:'body/foot',c:'body'},
+  {n:'Arm',u:'body/arm',c:'body'},{n:'Leg',u:'body/leg',c:'body'},
+  {n:'Fever',u:'conditions/fever',c:'conditions'},{n:'Headache',u:'conditions/headache',c:'conditions'},
+  {n:'Coughing',u:'conditions/coughing',c:'conditions'},{n:'Vomiting',u:'conditions/vomiting',c:'conditions'},
+  {n:'Nausea',u:'conditions/nausea',c:'conditions'},{n:'Diarrhea',u:'conditions/diarrhea',c:'conditions'},
+  {n:'Allergy',u:'conditions/allergies',c:'conditions'},{n:'Pneumonia',u:'conditions/pneumonia',c:'conditions'},
+  {n:'Tuberculosis',u:'conditions/tuberculosis',c:'conditions'},{n:'HIV',u:'conditions/hiv',c:'conditions'},
+  {n:'Back Pain',u:'conditions/back_pain',c:'conditions'},{n:'Sweating',u:'conditions/sweating',c:'conditions'},
+  {n:'Overweight',u:'conditions/overweight',c:'conditions'},{n:'Underweight',u:'conditions/underweight',c:'conditions'},
+  {n:'Stethoscope',u:'devices/stethoscope',c:'devices'},{n:'Syringe',u:'devices/syringe',c:'devices'},
+  {n:'Thermometer',u:'devices/thermometer_digital',c:'devices'},{n:'Microscope',u:'devices/microscope',c:'devices'},
+  {n:'X-ray',u:'devices/x-ray',c:'devices'},{n:'Wheelchair',u:'devices/wheelchair',c:'devices'},
+  {n:'Hospital Bed',u:'devices/hospital_bed',c:'devices'},{n:'Blood Pressure',u:'devices/blood_pressure_monitor',c:'devices'},
+  {n:'Glucometer',u:'devices/glucometer',c:'devices'},{n:'Inhaler',u:'devices/inhaler',c:'devices'},
+  {n:'Ventilator',u:'devices/ventilator',c:'devices'},{n:'Defibrillator',u:'devices/defibrillator',c:'devices'},
+  {n:'Oxygen Tank',u:'devices/oxygen_tank',c:'devices'},{n:'IV Bag',u:'devices/intravenous_bag',c:'devices'},
+  {n:'Weight Scale',u:'devices/weight_scale',c:'devices'},{n:'Pulse Oximeter',u:'devices/pulse_oximeter_1',c:'devices'},
+  {n:'Pills',u:'medications/medicines',c:'medications'},{n:'Pill 1',u:'medications/pill_1',c:'medications'},
+  {n:'Pill 2',u:'medications/pill_2',c:'medications'},{n:'Pill 3',u:'medications/pill_3',c:'medications'},
+  {n:'Doctor',u:'people/doctor',c:'people'},{n:'Nurse',u:'people/person_nurse_1',c:'people'},
+  {n:'Pregnant',u:'people/pregnant',c:'people'},{n:'Elderly Man',u:'people/elderly_man',c:'people'},
+  {n:'Elderly Woman',u:'people/elderly_woman',c:'people'},{n:'Baby',u:'people/baby_2-3_months',c:'people'},
+  {n:'Diabetes Person',u:'people/diabetes',c:'people'},{n:'Symptoms',u:'people/symptoms',c:'people'},
+  {n:'Heart',u:'symbols/heart',c:'symbols'},{n:'Heartbeat',u:'symbols/heartbeat',c:'symbols'},
+  {n:'Cardiogram',u:'symbols/cardiogram',c:'symbols'},{n:'Virus',u:'symbols/virus',c:'symbols'},
+  {n:'Health Shield',u:'symbols/health_shield',c:'symbols'},{n:'Mental Health',u:'symbols/mental_health',c:'symbols'},
+  {n:'Pharmacy',u:'symbols/pharmacy',c:'symbols'},{n:'Alert',u:'symbols/alert_circle',c:'symbols'},
+  {n:'Hazardous',u:'symbols/hazardous',c:'symbols'},{n:'Death',u:'symbols/death',c:'symbols'},
+  {n:'Outbreak',u:'symbols/outbreak',c:'symbols'},{n:'Diabetes',u:'symbols/diabetes',c:'symbols'},
+  {n:'Ambulance',u:'vehicles/ambulance',c:'vehicles'},{n:'Helicopter',u:'vehicles/helicopter',c:'vehicles'},
+  {n:'Hospital',u:'places/hospital',c:'places'},{n:'Clinic',u:'places/clinic',c:'places'},
+  {n:'Home',u:'places/home_1',c:'places'},{n:'Field Hospital',u:'places/field_hospital',c:'places'},
+  {n:'Fever Face',u:'emotions/fever',c:'emotions'},{n:'Dizzy',u:'emotions/dizzy',c:'emotions'},
+  {n:'Nauseous',u:'emotions/nauseous',c:'emotions'},{n:'Pain',u:'emotions/bandage',c:'emotions'},
+  {n:'Calm',u:'emotions/calm',c:'emotions'},{n:'Nervous',u:'emotions/nervous',c:'emotions'},
+  {n:'Cardiology',u:'specialties/cardiology',c:'specialties'},{n:'Neurology',u:'specialties/neurosurgery_1',c:'specialties'},
+  {n:'Pediatrics',u:'specialties/pediatrics',c:'specialties'},{n:'Pharmacy Spec',u:'specialties/pharmacy',c:'specialties'},
+  {n:'Radiology',u:'specialties/radiology',c:'specialties'},{n:'ICU',u:'specialties/intensive_care_unit',c:'specialties'},
+  {n:'Oncology',u:'specialties/oncology',c:'specialties'},{n:'Gynecology',u:'specialties/gynecology',c:'specialties'},
+  {n:'Emergency',u:'specialties/accident_and_emergency_1',c:'specialties'},{n:'Nephrology',u:'specialties/nephrology',c:'specialties'},
 ];
 
 const ICON_BASE = 'https://cdn.jsdelivr.net/gh/resolvetosavelives/healthicons/public/icons/svg/filled/';
@@ -635,11 +633,7 @@ function buildIconModal() {
     const url = getIconUrl(icon.u);
     const currentSel = iconModalTarget === 'cat' ? selectedCatIconUrl : selectedIconUrl;
     const sel = url === currentSel ? ' selected' : '';
-    const isSelected = url === (iconModalTarget === 'cat' ? selectedCatIconUrl : selectedIconUrl);
-    return `<div class="icon-modal-item${sel}" onclick="selectHealthIcon('${url}','${icon.n}')" title="${icon.n}">
-      <img src="${url}" alt="${icon.n}" onerror="this.style.opacity='0.15'" style="transition:opacity .2s">
-      <span>${icon.n}</span>
-    </div>`;
+    return `<div class="icon-modal-item${sel}" onclick="selectHealthIcon('${url}','${icon.n}')" title="${icon.n}"><img src="${url}" alt="${icon.n}" onerror="this.style.display='none'"><span>${icon.n}</span></div>`;
   }).join('');
 }
 
@@ -678,6 +672,8 @@ onAuthStateChanged(auth, async (user) => {
   currentUserEmail = user.email;
   if (user.email === SUPER_ADMIN) {
     document.getElementById('adminsTabBtn').style.display = 'inline-block';
+    document.getElementById('bgTabBtn').style.display = 'inline-block';
+    loadBgSettings();
   } else {
     const snap = await getDocs(query(collection(db, 'admins'), where('email', '==', user.email)));
     if (snap.empty) { window.location.href = 'index.html'; return; }
@@ -987,7 +983,7 @@ window.removeAdmin = async (id, email) => {
 };
 
 window.showAdminTab = (tab) => {
-  const tabs = ['diseases','drugs','users','categories','admins'];
+  const tabs = ['diseases','drugs','users','categories','admins','background'];
   document.querySelectorAll('.admin-tab').forEach((b,i) => b.classList.toggle('active', tabs[i]===tab));
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById('section-'+tab).classList.add('active');
@@ -1146,6 +1142,123 @@ function clearCatForm() {
 
 window.goHome = () => window.location.href = 'index.html';
 window.logoutAdmin = async () => { await signOut(auth); window.location.href = 'login.html'; };
+
+// ===== FON RASM FUNKSIYALARI =====
+let _bgSelectedFile = null;
+
+async function loadBgSettings() {
+  try {
+    const snap = await getDoc(doc(db, 'settings', 'siteSettings'));
+    const content = document.getElementById('bgCurrentContent');
+    const dot = document.getElementById('bgStatusDot');
+    if (snap.exists() && snap.data().bgImageUrl) {
+      const url = snap.data().bgImageUrl;
+      content.innerHTML = `<img class="bg-current-img" src="${url}" alt="Joriy fon"><div style="font-size:11px;color:var(--text-muted)">✅ Faol — fon rasm o'rnatilgan</div>`;
+      dot.classList.add('active');
+      document.getElementById('bgRemoveBtn').style.display = 'inline-block';
+    } else {
+      content.innerHTML = '<div class="bg-current-empty">📭 Hozircha fon rasm o\'rnatilmagan<br><small style="color:var(--text-muted)">Standart gradient fon ishlatilmoqda</small></div>';
+      dot.classList.remove('active');
+    }
+  } catch(e) {
+    document.getElementById('bgCurrentContent').innerHTML = '<div class="bg-current-empty" style="color:#E24B4A">⚠️ Yuklashda xatolik: ' + e.message + '</div>';
+  }
+}
+
+window.handleBgFileSelect = function(event) {
+  const file = event.target.files[0];
+  if (file) processBgFile(file);
+};
+
+window.handleBgDrop = function(event) {
+  event.preventDefault();
+  document.getElementById('bgUploadArea').classList.remove('drag-over');
+  const file = event.dataTransfer.files[0];
+  if (file) processBgFile(file);
+};
+
+function processBgFile(file) {
+  const msg = document.getElementById('bgUploadMsg');
+  if (!file.type.startsWith('image/')) { msg.textContent = '❌ Faqat rasm fayllari (JPG, PNG, WEBP)'; msg.style.color = '#E24B4A'; return; }
+  if (file.size > 3 * 1024 * 1024) { msg.textContent = '❌ Fayl hajmi 3 MB dan katta!'; msg.style.color = '#E24B4A'; return; }
+  _bgSelectedFile = file;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    document.getElementById('bgPreviewImg').src = e.target.result;
+    document.getElementById('bgPreviewWrap').classList.add('show');
+    document.getElementById('bgSaveBtn').disabled = false;
+    msg.textContent = `✅ Tayyor: ${file.name} (${(file.size/1024).toFixed(0)} KB)`;
+    msg.style.color = '#27ae60';
+  };
+  reader.readAsDataURL(file);
+}
+
+window.saveBgImage = async function() {
+  if (!_bgSelectedFile) return;
+  const saveBtn = document.getElementById('bgSaveBtn');
+  const progress = document.getElementById('bgProgress');
+  const bar = document.getElementById('bgProgressBar');
+  const msg = document.getElementById('bgUploadMsg');
+  saveBtn.disabled = true;
+  saveBtn.textContent = '⏳ Yuklanmoqda...';
+  progress.classList.add('show');
+  bar.style.width = '0%';
+  try {
+    const storageRef = ref(storage, 'site/background.' + _bgSelectedFile.name.split('.').pop());
+    const uploadTask = uploadBytesResumable(storageRef, _bgSelectedFile);
+    uploadTask.on('state_changed',
+      (snapshot) => {
+        const pct = Math.round(snapshot.bytesTransferred / snapshot.totalBytes * 100);
+        bar.style.width = pct + '%';
+        msg.textContent = `📤 Yuklanmoqda: ${pct}%`;
+        msg.style.color = 'var(--text-secondary)';
+      },
+      (error) => {
+        msg.textContent = '❌ Xatolik: ' + error.message;
+        msg.style.color = '#E24B4A';
+        saveBtn.disabled = false;
+        saveBtn.textContent = '☁️ Saqlash va qo\'llash';
+      },
+      async () => {
+        const url = await getDownloadURL(uploadTask.snapshot.ref);
+        await setDoc(doc(db, 'settings', 'siteSettings'), { bgImageUrl: url, updatedAt: serverTimestamp() }, { merge: true });
+        msg.textContent = '✅ Muvaffaqiyatli saqlandi!';
+        msg.style.color = '#27ae60';
+        saveBtn.textContent = '✅ Saqlandi';
+        _bgSelectedFile = null;
+        document.getElementById('bgPreviewWrap').classList.remove('show');
+        document.getElementById('bgFileInput').value = '';
+        setTimeout(() => { saveBtn.textContent = '☁️ Saqlash va qo\'llash'; }, 2000);
+        loadBgSettings();
+      }
+    );
+  } catch(e) {
+    msg.textContent = '❌ Xatolik: ' + e.message;
+    msg.style.color = '#E24B4A';
+    saveBtn.disabled = false;
+    saveBtn.textContent = '☁️ Saqlash va qo\'llash';
+  }
+};
+
+window.removeBgImage = async function() {
+  if (!confirm("Fon rasmni o'chirasizmi? Standart gradient fon qaytadi.")) return;
+  try {
+    await setDoc(doc(db, 'settings', 'siteSettings'), { bgImageUrl: null, updatedAt: serverTimestamp() }, { merge: true });
+    try {
+      const storageRef = ref(storage, 'site/background.jpg');
+      await deleteObject(storageRef);
+    } catch(e) {}
+    try {
+      const storageRef2 = ref(storage, 'site/background.png');
+      await deleteObject(storageRef2);
+    } catch(e) {}
+    document.getElementById('bgUploadMsg').textContent = "✅ Fon rasm o'chirildi";
+    document.getElementById('bgUploadMsg').style.color = '#27ae60';
+    loadBgSettings();
+  } catch(e) {
+    alert("Xatolik: " + e.message);
+  }
+};
 </script>
 </body>
 </html>
