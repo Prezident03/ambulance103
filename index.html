@@ -142,16 +142,11 @@
       border: 0.5px solid rgba(255,255,255,0.15);
     }
     body.glass .section-modal-overlay { background: rgba(0,0,10,0.6) !important; backdrop-filter: blur(4px); }
-    body.glass .profile-dropdown-overlay.open {
-      background: transparent !important;
-    }
     body.glass .profile-dropdown {
-      background: rgba(20,24,48,0.52) !important;
-      backdrop-filter: blur(44px) saturate(200%) brightness(1.15) !important;
-      -webkit-backdrop-filter: blur(44px) saturate(200%) brightness(1.15) !important;
-      border: 0.5px solid rgba(255,255,255,0.24) !important;
-      box-shadow: 0 32px 64px rgba(0,0,0,0.5), inset 0 1.5px 0 rgba(255,255,255,0.3) !important;
-      overflow: visible !important;
+      background: rgba(10,14,26,0.82) !important;
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border: 0.5px solid rgba(255,255,255,0.15) !important;
     }
     body.glass .nav-btn {
       background: rgba(255,255,255,0.07) !important;
@@ -181,8 +176,8 @@
     .profile-btn img{width:100%;height:100%;object-fit:cover;border-radius:50%}
 
     /* PROFIL DROPDOWN */
-    .profile-dropdown-overlay{display:none;position:fixed;inset:0;z-index:9990;pointer-events:none;}
-    .profile-dropdown-overlay.open{display:block;pointer-events:auto;}
+    .profile-dropdown-overlay{display:none;position:fixed;inset:0;z-index:9990;}
+    .profile-dropdown-overlay.open{display:block;}
     .profile-dropdown{
       position:fixed;
       top:56px;
@@ -503,7 +498,6 @@
   </style>
 </head>
 <body>
-<div class="profile-dropdown-overlay" id="profileOverlay" onclick="closeProfile()"></div>
 
 <div class="topbar">
   <div class="topbar-left" onclick="goHome()" style="cursor:pointer" title="Bosh sahifa">
@@ -902,24 +896,16 @@ window.toggleGlass = function(el) {
 
 // ===== PROFIL DROPDOWN =====
 window.toggleProfile = function() {
-  const dd = document.getElementById('profileDropdown');
-  const ov = document.getElementById('profileOverlay');
-  const opening = !dd.classList.contains('open');
-  dd.classList.toggle('open');
-  if(ov) ov.classList.toggle('open', opening);
+  document.getElementById('profileDropdown').classList.toggle('open');
 };
 window.closeProfile = function() {
   document.getElementById('profileDropdown').classList.remove('open');
-  const ov = document.getElementById('profileOverlay');
-  if(ov) ov.classList.remove('open');
 };
 document.addEventListener('click', function(e) {
   const btn = document.getElementById('profileBtn');
   const dd = document.getElementById('profileDropdown');
   if (!btn.contains(e.target) && !dd.contains(e.target)) {
     dd.classList.remove('open');
-    const ov = document.getElementById('profileOverlay');
-    if(ov) ov.classList.remove('open');
   }
 });
 window.goAdmin = function() { window.location.href = 'admin.html'; };
