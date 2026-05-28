@@ -87,17 +87,7 @@
         radial-gradient(ellipse at 15% 85%,rgba(20,120,100,0.28) 0%,transparent 40%),
         radial-gradient(ellipse at 85% 80%,rgba(200,80,30,0.2) 0%,transparent 40%);
     }
-    body.glass .profile-dropdown {
-      background: rgba(20,24,48,0.52) !important;
-      backdrop-filter: blur(44px) saturate(200%) brightness(1.15) !important;
-      -webkit-backdrop-filter: blur(44px) saturate(200%) brightness(1.15) !important;
-      border: 0.5px solid rgba(255,255,255,0.24) !important;
-      box-shadow: 0 32px 64px rgba(0,0,0,0.5), inset 0 1.5px 0 rgba(255,255,255,0.3), inset 0 -1px 0 rgba(255,255,255,0.07) !important;
-    }
-    body.glass .pd-header { border-bottom-color: rgba(255,255,255,0.12) !important; }
-    body.glass .pd-divider { background: rgba(255,255,255,0.1) !important; }
-    body.glass .pd-item:hover { background: rgba(255,255,255,0.1) !important; }
-        body.glass .topbar {
+    body.glass .topbar {
       background: rgba(150,30,30,0.35) !important;
       backdrop-filter: blur(28px) saturate(180%);
       -webkit-backdrop-filter: blur(28px) saturate(180%);
@@ -186,13 +176,17 @@
     .profile-btn img{width:100%;height:100%;object-fit:cover;border-radius:50%}
 
     /* PROFIL DROPDOWN */
+    .profile-dropdown-overlay{
+      display:none;position:fixed;inset:0;z-index:9998;
+      background:rgba(0,0,0,0.2);
+    }
+    .profile-dropdown-overlay.open{display:block;}
     .profile-dropdown{
-      position:fixed;top:58px;right:12px;
-      width:268px;max-height:calc(100vh - 70px);overflow-y:auto;
+      position:fixed;top:56px;right:12px;
+      width:268px;max-height:calc(100dvh - 68px);overflow-y:auto;
       background:var(--bg-card);border:1px solid var(--border);
       border-radius:22px;box-shadow:0 12px 40px rgba(0,0,0,0.25);
-      z-index:99999;display:none;
-      transform-origin:top right;
+      z-index:9999;display:none;
     }
     @media(max-width:400px){.profile-dropdown{right:8px;width:calc(100vw - 16px);}}
     .profile-dropdown.open{display:block}
@@ -499,7 +493,7 @@
   </style>
 </head>
 <body>
-
+<div class="profile-dropdown-overlay" id="profileOverlay" onclick="closeProfile()"></div>
 <div class="topbar">
   <div class="topbar-left" onclick="goHome()" style="cursor:pointer" title="Bosh sahifa">
     <i class="ti ti-ambulance"></i>
@@ -897,7 +891,16 @@ window.toggleGlass = function(el) {
 
 // ===== PROFIL DROPDOWN =====
 window.toggleProfile = function() {
-  document.getElementById('profileDropdown').classList.toggle('open');
+  const dd = document.getElementById('profileDropdown');
+  const ov = document.getElementById('profileOverlay');
+  const isOpen = dd.classList.contains('open');
+  dd.classList.toggle('open');
+  if(ov) ov.classList.toggle('open', !isOpen);
+};
+window.closeProfile = function() {
+  document.getElementById('profileDropdown').classList.remove('open');
+  const ov = document.getElementById('profileOverlay');
+  if(ov) ov.classList.remove('open');
 };
 document.addEventListener('click', function(e) {
   const btn = document.getElementById('profileBtn');
