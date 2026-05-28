@@ -198,7 +198,7 @@
     .profile-btn img{width:100%;height:100%;object-fit:cover;border-radius:50%}
 
     /* PROFIL DROPDOWN */
-    .profile-dropdown-overlay{display:none;position:fixed;inset:0;z-index:99990;}
+    .profile-dropdown-overlay{display:none;position:fixed;inset:0;z-index:99990;pointer-events:auto;}
     .profile-dropdown-overlay.open{display:block;}
     .profile-dropdown{
       position:fixed;
@@ -211,9 +211,10 @@
       border:1px solid var(--border);
       border-radius:22px;
       box-shadow:0 12px 40px rgba(0,0,0,0.25);
-      z-index:99999;
+      z-index:999999;
       overflow:hidden;
       display:none;
+      pointer-events:auto;
     }
     @media(max-width:400px){.profile-dropdown{right:8px;width:calc(100vw - 16px);}}
     .profile-dropdown.open{display:block}
@@ -522,82 +523,74 @@
 <body>
 <div class="profile-dropdown-overlay" id="profileOverlay" onclick="closeProfile()"></div>
 
+<!-- Profil Dropdown (body ichida, topbardan tashqarida) -->
+<div class="profile-dropdown" id="profileDropdown">
+  <div class="pd-header">
+    <div class="pd-avatar" id="pdAvatar">👤</div>
+    <div class="pd-user-info">
+      <h4 id="pdName">—</h4>
+      <p id="pdEmail">—</p>
+    </div>
+  </div>
+
+  <button class="pd-item" id="pdAdminBtn" style="display:none" onclick="goAdmin()">
+    <i class="ti ti-shield-lock"></i>
+    <span>Admin panel</span>
+    <span class="pd-badge">Admin</span>
+  </button>
+
+  <button class="pd-item" onclick="openProfileModal()">
+    <i class="ti ti-user-circle"></i>
+    <span>Profil ma'lumotlari</span>
+  </button>
+
+  <div class="pd-divider"></div>
+
+  <div class="pd-dark-row">
+    <i class="ti ti-moon"></i>
+    <span>Qorong'i rejim</span>
+    <label class="dark-toggle-sw">
+      <input type="checkbox" id="darkSwitch" onchange="toggleDarkFromSwitch(this)">
+      <span class="slider"></span>
+    </label>
+  </div>
+
+  <div class="pd-divider"></div>
+
+  <div style="padding:10px 16px 14px">
+    <div style="font-size:10px;color:var(--text-faint);font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px">Liquid Glass</div>
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:18px">🫧</span>
+        <div>
+          <div style="font-size:13px;color:var(--text-primary);font-weight:500">Shisha effekti</div>
+          <div style="font-size:10px;color:var(--text-faint)">Har rejimda ishlaydi</div>
+        </div>
+      </div>
+      <label class="dark-toggle-sw">
+        <input type="checkbox" id="glassSwitch" onchange="toggleGlass(this)">
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <div class="pd-divider"></div>
+
+  <button class="pd-item pd-logout" onclick="doLogout()">
+    <i class="ti ti-logout"></i>
+    <span>Hisobdan chiqish</span>
+  </button>
+</div>
+
 <div class="topbar">
   <div class="topbar-left" onclick="goHome()" style="cursor:pointer" title="Bosh sahifa">
     <i class="ti ti-ambulance"></i>
     <h1>Tez Tibbiy Yordam</h1>
   </div>
   <div class="topbar-right">
-    <!-- Profil tugma -->
     <button class="profile-btn" id="profileBtn" onclick="toggleProfile()">
       <span id="profileBtnText">👤</span>
     </button>
-
-    <!-- Profil Dropdown -->
-    <div class="profile-dropdown" id="profileDropdown">
-      <!-- Header: avatar + ism -->
-      <div class="pd-header">
-        <div class="pd-avatar" id="pdAvatar">👤</div>
-        <div class="pd-user-info">
-          <h4 id="pdName">—</h4>
-          <p id="pdEmail">—</p>
-        </div>
-      </div>
-
-      <!-- Admin panel (faqat adminlarga) -->
-      <button class="pd-item" id="pdAdminBtn" style="display:none" onclick="goAdmin()">
-        <i class="ti ti-shield-lock"></i>
-        <span>Admin panel</span>
-        <span class="pd-badge">Admin</span>
-      </button>
-
-      <!-- Profil ma'lumotlari -->
-      <button class="pd-item" onclick="openProfileModal()">
-        <i class="ti ti-user-circle"></i>
-        <span>Profil ma'lumotlari</span>
-      </button>
-
-      <div class="pd-divider"></div>
-
-      <!-- Qorong'i rejim -->
-      <div class="pd-dark-row">
-        <i class="ti ti-moon"></i>
-        <span>Qorong'i rejim</span>
-        <label class="dark-toggle-sw">
-          <input type="checkbox" id="darkSwitch" onchange="toggleDarkFromSwitch(this)">
-          <span class="slider"></span>
-        </label>
-      </div>
-
-      <div class="pd-divider"></div>
-
-      <!-- Liquid Glass -->
-      <div style="padding:10px 16px 14px">
-        <div style="font-size:10px;color:var(--text-faint);font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px">Liquid Glass</div>
-        <div style="display:flex;align-items:center;justify-content:space-between">
-          <div style="display:flex;align-items:center;gap:8px">
-            <span style="font-size:18px">🫧</span>
-            <div>
-              <div style="font-size:13px;color:var(--text-primary);font-weight:500">Shisha effekti</div>
-              <div style="font-size:10px;color:var(--text-faint)">Har rejimda ishlaydi</div>
-            </div>
-          </div>
-          <label class="dark-toggle-sw">
-            <input type="checkbox" id="glassSwitch" onchange="toggleGlass(this)">
-            <span class="slider"></span>
-          </label>
-        </div>
-      </div>
-
-      <div class="pd-divider"></div>
-
-      <!-- Chiqish -->
-      <button class="pd-item pd-logout" onclick="doLogout()">
-        <i class="ti ti-logout"></i>
-        <span>Hisobdan chiqish</span>
-      </button>
-    </div>
-
     <!-- Eski tugmalar (app.js uchun saqlaymiz, ko'rinmaydi) -->
     <button id="adminBtn" style="display:none" onclick="goAdmin()"></button>
     <button id="logoutBtn" style="display:none"></button>
