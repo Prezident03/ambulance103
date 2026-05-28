@@ -87,7 +87,17 @@
         radial-gradient(ellipse at 15% 85%,rgba(20,120,100,0.28) 0%,transparent 40%),
         radial-gradient(ellipse at 85% 80%,rgba(200,80,30,0.2) 0%,transparent 40%);
     }
-    body.glass .topbar {
+    body.glass .profile-dropdown {
+      background: rgba(20,24,48,0.52) !important;
+      backdrop-filter: blur(44px) saturate(200%) brightness(1.15) !important;
+      -webkit-backdrop-filter: blur(44px) saturate(200%) brightness(1.15) !important;
+      border: 0.5px solid rgba(255,255,255,0.24) !important;
+      box-shadow: 0 32px 64px rgba(0,0,0,0.5), inset 0 1.5px 0 rgba(255,255,255,0.3), inset 0 -1px 0 rgba(255,255,255,0.07) !important;
+    }
+    body.glass .pd-header { border-bottom-color: rgba(255,255,255,0.12) !important; }
+    body.glass .pd-divider { background: rgba(255,255,255,0.1) !important; }
+    body.glass .pd-item:hover { background: rgba(255,255,255,0.1) !important; }
+        body.glass .topbar {
       background: rgba(150,30,30,0.35) !important;
       backdrop-filter: blur(28px) saturate(180%);
       -webkit-backdrop-filter: blur(28px) saturate(180%);
@@ -177,22 +187,14 @@
 
     /* PROFIL DROPDOWN */
     .profile-dropdown{
-      position:fixed;
-      top:58px;
-      right:12px;
-      width:260px;
-      max-height:calc(100vh - 70px);
-      overflow-y:auto;
-      background:var(--bg-card);
-      border:1px solid var(--border);
-      border-radius:16px;
-      box-shadow:0 12px 40px rgba(0,0,0,0.25);
-      z-index:9999;
-      display:none;
+      position:fixed;top:58px;right:12px;
+      width:268px;max-height:calc(100vh - 70px);overflow-y:auto;
+      background:var(--bg-card);border:1px solid var(--border);
+      border-radius:22px;box-shadow:0 12px 40px rgba(0,0,0,0.25);
+      z-index:99999;display:none;
+      transform-origin:top right;
     }
-    @media(max-width:360px){
-      .profile-dropdown{right:8px;width:calc(100vw - 16px);}
-    }
+    @media(max-width:400px){.profile-dropdown{right:8px;width:calc(100vw - 16px);}}
     .profile-dropdown.open{display:block}
     .pd-header{padding:16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)}
     .pd-avatar{width:48px;height:48px;border-radius:50%;background:#E24B4A;color:white;font-size:20px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
