@@ -305,6 +305,47 @@
     }
 
 
+    /* ===== INFO CARDS ===== */
+    .info-cards-section{margin:20px 0 8px;}
+    .info-cards-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    @media(max-width:500px){.info-cards-grid{grid-template-columns:1fr;}}
+    .info-card{
+      background:#fff;border-radius:20px;padding:20px 16px 18px;
+      box-shadow:0 3px 16px rgba(0,0,0,0.07);overflow:hidden;
+      position:relative;cursor:pointer;
+      transition:transform .28s cubic-bezier(.34,1.56,.64,1),box-shadow .28s;
+    }
+    body.dark .info-card{background:#16213e;}
+    .info-card:hover{transform:translateY(-5px);box-shadow:0 14px 32px rgba(0,0,0,0.12);}
+    .info-card-header{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+    .info-card-icon{
+      width:48px;height:48px;border-radius:14px;
+      display:flex;align-items:center;justify-content:center;flex-shrink:0;
+    }
+    .info-card-icon img{width:26px;height:26px;filter:brightness(0) invert(1);}
+    .info-card-title{font-size:17px;font-weight:800;color:#1a1a2e;line-height:1.2;}
+    body.dark .info-card-title{color:#fff;}
+    .info-card-desc{font-size:11px;color:#666;line-height:1.5;margin-bottom:12px;}
+    body.dark .info-card-desc{color:#aaa;}
+    .info-card-list{list-style:none;padding:0;margin:0 0 14px;display:flex;flex-direction:column;gap:5px;}
+    .info-card-list li{font-size:11px;color:#444;display:flex;align-items:center;gap:6px;font-weight:500;}
+    body.dark .info-card-list li{color:#ccc;}
+    .info-card-list li::before{content:"✔";font-size:10px;width:18px;height:18px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700;background:#e8f5e9;color:#16a34a;}
+    .info-card:first-child .info-card-list li::before{background:#dbeafe;color:#2563eb;}
+    .info-card-btn{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:9px 16px;border-radius:10px;border:none;cursor:pointer;
+      font-size:12px;font-weight:700;color:#fff;transition:opacity .2s;
+    }
+    .info-card-btn:hover{opacity:.88;}
+    .info-card-img{
+      position:absolute;right:-8px;bottom:-6px;
+      width:90px;height:90px;object-fit:contain;
+      opacity:.92;pointer-events:none;
+    }
+    @media(max-width:400px){.info-card-img{width:70px;height:70px;}}
+
     /* ===== KATEGORIYALAR ===== */
     .categories-section{margin-bottom:16px;}
     .cat-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
@@ -477,6 +518,55 @@
       </div>
     </div>
   </div>
+  <!-- INFO CARDS -->
+  <div class="info-cards-section">
+    <div class="info-cards-grid">
+
+      <!-- KASALLIKLAR CARD -->
+      <div class="info-card" onclick="openSectionModal('kasalliklar')">
+        <div class="info-card-header">
+          <div class="info-card-icon" style="background:linear-gradient(135deg,#2563eb,#1d4ed8)">
+            <img src="https://cdn.jsdelivr.net/gh/resolvetosavelives/healthicons/public/icons/svg/filled/devices/stethoscope.svg" alt="kasallik">
+          </div>
+          <div class="info-card-title">Kasalliklar</div>
+        </div>
+        <p class="info-card-desc">Kasalliklar haqida to'liq ma'lumot oling: belgilari, sabablari va davolash usullari.</p>
+        <ul class="info-card-list">
+          <li style="--c:#2563eb" class="blue-check">Simptomlar</li>
+          <li>Sabablar</li>
+          <li>Davolash usullari</li>
+          <li>Oldini olish</li>
+        </ul>
+        <button class="info-card-btn" style="background:linear-gradient(135deg,#2563eb,#1d4ed8)">
+          Kasalliklarni ko'rish →
+        </button>
+        <img class="info-card-img" src="https://cdn.jsdelivr.net/gh/resolvetosavelives/healthicons/public/icons/svg/filled/specialties/cardiology.svg" alt="" style="opacity:0.08;width:120px;height:120px;right:-10px;bottom:-10px">
+      </div>
+
+      <!-- DORILAR CARD -->
+      <div class="info-card" onclick="openSectionModal('dorilar')">
+        <div class="info-card-header">
+          <div class="info-card-icon" style="background:linear-gradient(135deg,#16a34a,#15803d)">
+            <img src="https://cdn.jsdelivr.net/gh/resolvetosavelives/healthicons/public/icons/svg/filled/medications/pill_1.svg" alt="dori">
+          </div>
+          <div class="info-card-title">Dorilar</div>
+        </div>
+        <p class="info-card-desc">Dorilar haqida batafsil ma'lumot: qo'llanilishi, dozasi va qarshi ko'rsatmalar.</p>
+        <ul class="info-card-list">
+          <li>Qo'llanilishi</li>
+          <li>Dozasi</li>
+          <li>Qarshi ko'rsatmalar</li>
+          <li>Nojo'ya ta'sirlar</li>
+        </ul>
+        <button class="info-card-btn" style="background:linear-gradient(135deg,#16a34a,#15803d)">
+          Dorilarni ko'rish →
+        </button>
+        <img class="info-card-img" src="https://cdn.jsdelivr.net/gh/resolvetosavelives/healthicons/public/icons/svg/filled/medications/medicines.svg" alt="" style="opacity:0.08;width:120px;height:120px;right:-10px;bottom:-10px">
+      </div>
+
+    </div>
+  </div>
+
 </div><!-- end main -->
 
 <!-- ALL CATEGORIES MODAL -->
