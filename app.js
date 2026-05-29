@@ -54,12 +54,14 @@ onAuthStateChanged(auth, async (user) => {
   loadFromFirestore();
 });
 
-document.getElementById('logoutBtn').addEventListener('click', async () => {
+const logoutBtn = document.getElementById('logoutBtn');
+if (logoutBtn) logoutBtn.addEventListener('click', async () => {
   await signOut(auth);
   window.location.href = 'login.html';
 });
 
-document.getElementById('adminBtn').addEventListener('click', () => {
+const adminBtnEl = document.getElementById('adminBtn');
+if (adminBtnEl) adminBtnEl.addEventListener('click', () => {
   window.location.href = 'admin.html';
 });
 
