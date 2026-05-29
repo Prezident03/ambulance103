@@ -548,14 +548,15 @@
   <!-- AI KITOBLAR (faqat super admin) -->
   <div class="section" id="section-aibooks">
     <div class="form-card" style="margin-bottom:16px">
-      <h2>🔑 Gemini API Key</h2>
+      <h2>🔑 Groq API Key</h2>
       <div class="bg-info-box">
-        🔒 API key GitHub da ko'rinmaydi — Firebase da xavfsiz saqlanadi<br>
-        🌐 <a href="https://aistudio.google.com" target="_blank" style="color:#378ADD">aistudio.google.com</a> dan oling — bepul!
+        🔒 API key Firebase da xavfsiz saqlanadi — GitHub da ko'rinmaydi<br>
+        🌐 <a href="https://console.groq.com" target="_blank" style="color:#378ADD">console.groq.com</a> dan oling — bepul!<br>
+        Key <b>gsk_...</b> bilan boshlanishi kerak
       </div>
       <div class="form-group">
-        <label>API Key</label>
-        <input type="password" id="geminiKeyInput" class="form-input" placeholder="AQ.Ab8...">
+        <label>Groq API Key</label>
+        <input type="password" id="geminiKeyInput" class="form-input" placeholder="gsk_...">
       </div>
       <div id="geminiKeyMsg" style="font-size:13px;margin-bottom:10px;min-height:18px;color:var(--text-secondary)"></div>
       <button class="btn-primary" onclick="saveGeminiKey()" style="width:100%;padding:12px">
@@ -1315,7 +1316,7 @@ window.saveGeminiKey = async function() {
   if (!key) { msg.textContent = '⚠️ API keyni kiriting'; msg.style.color = '#E24B4A'; return; }
   msg.textContent = '⏳ Saqlanmoqda...'; msg.style.color = 'var(--text-muted)';
   try {
-    await setDoc(doc(db, 'settings', 'aiConfig'), { geminiKey: key, updatedAt: serverTimestamp() }, { merge: true });
+    await setDoc(doc(db, 'settings', 'aiConfig'), { groqKey: key, updatedAt: serverTimestamp() }, { merge: true });
     msg.textContent = '✅ API key xavfsiz saqlandi!'; msg.style.color = '#27ae60';
     document.getElementById('geminiKeyInput').value = '';
   } catch(e) { msg.textContent = '❌ ' + e.message; msg.style.color = '#E24B4A'; }
