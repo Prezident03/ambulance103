@@ -677,7 +677,13 @@
     body.dark .cat-count{color:#666;}
     /* ===== SECTION MODAL ===== */
     .section-modal-overlay{
-      display:none;position:fixed;inset:0;z-index:1000;
+      display:none;
+      position:fixed;
+      top:0;
+      left:240px;
+      right:240px;
+      bottom:0;
+      z-index:1000;
       background:rgba(0,0,0,0.45);
       animation:smFadeIn .2s ease;
     }
@@ -692,6 +698,11 @@
     }
     body.dark .section-modal-box{background:#1a1a2e;}
     @keyframes smSlideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+
+    /* Mobilda modal to'liq ekran */
+    @media(max-width:768px){
+      .section-modal-overlay{left:0;right:0;}
+    }
     .section-modal-header{
       display:flex;align-items:center;justify-content:space-between;
       padding:16px 20px 12px;
