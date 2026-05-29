@@ -2081,23 +2081,117 @@ window.sendAiMessage = async function() {
   document.getElementById('aiSendBtn').disabled = true;
 
   try {
+    // Tibbiy sinonimlar va bog'liq atamalar lug'ati
+    function expandMedicalQuery(query) {
+      const synonyms = {
+        // Yurak-qon tomir
+        'gipertoniya': ['arterial gipertenziya', 'aqb yuqori', 'qon bosimi', 'gipertenziya', 'bosim ko\'tarilishi', 'gipertonik'],
+        'gipertenziya': ['gipertoniya', 'arterial gipertenziya', 'aqb yuqori', 'qon bosimi', 'bosim'],
+        'aqb': ['arterial qon bosimi', 'qon bosimi', 'bosim', 'gipertenziya', 'gipertoniya'],
+        'bosim': ['aqb', 'arterial qon bosimi', 'gipertenziya', 'gipertoniya'],
+        'gipertonik': ['gipertoniya', 'gipertenziya', 'gipertonik kriz', 'bosim ko\'tarilishi'],
+        'kriz': ['gipertonik kriz', 'krizis', 'gipertenziv kriz', 'bosim keskin ko\'tarilishi'],
+        'infarkt': ['miokard infarkti', 'yurak infarkti', 'o\'tkir miokard infarkti', 'omi'],
+        'insult': ['miya qon aylanishi buzilishi', 'miya infarkti', 'o\'tkir insult', 'gemorragik insult', 'ishemik insult'],
+        'stenokardiya': ['yurak og\'rig\'i', 'angina pectoris', 'koronar yurak kasalligi', 'stend'],
+        'taxikardiya': ['yurak tez urishi', 'yurak ritmi buzilishi', 'aritmiya'],
+        'bradikardiya': ['yurak sekin urishi', 'yurak ritmi', 'aritmiya'],
+        'aritmiya': ['yurak ritmi buzilishi', 'taxikardiya', 'bradikardiya', 'fibrillatsiya'],
+
+        // Nafas
+        'nafas qisilishi': ['dispnoe', 'odishviylik', 'nafas etishmovchilik', 'bronxospazm'],
+        'astma': ['bronxial astma', 'nafas qisilishi', 'bronxospazm', 'o\'pkа'],
+        'pnevmoniya': ['o\'pka yallig\'lanishi', 'bronxopnevmoniya', 'o\'pka'],
+
+        // Qand
+        'diabet': ['qand kasalligi', 'giperglikemiya', 'insulin', 'glyukoza', 'saxarli diabet'],
+        'giperglikemiya': ['qand yuqori', 'diabet', 'qand kasalligi', 'glyukoza yuqori'],
+        'gipoglikemiya': ['qand past', 'insulin', 'glyukoza past', 'qand tushishi'],
+
+        // Nafas yo'llari
+        'o\'pka': ['pulmonologiya', 'nafas', 'bronx', 'pnevmoniya'],
+        'bronx': ['nafas yo\'llari', 'astma', 'bronxit', 'bronxospazm'],
+
+        // Shoshilinch
+        'shok': ['gipovolemik shok', 'anafilaktik shok', 'septik shok', 'kardiogen shok'],
+        'reanimatsiya': ['tez yordam', 'yurak to\'xtashi', 'nafas to\'xtashi', 'CPR', 'sun\'iy nafas'],
+        'anafilaksiya': ['anafilaktik shok', 'allergik shok', 'allergiya'],
+
+        // Umumiy
+        'og\'riq': ['alogia', 'spazm', 'sindromi'],
+        'ko\'ngil aynishi': ['qayt qilish', 'qusish', 'dispepsiya'],
+        'isitma': ['temperatura', 'gipetermiya', 'qizdirib', 'febril'],
+        'zaharlanish': ['intoksikatsiya', 'o\'tkir zaharlanish', 'toksikoz'],
+      };
+
+      const queryLower = query.toLowerCase();
+      const expandedWords = new Set(queryLower.split(/\s+/).filter(w => w.length > 2));
+
+      // Sinonimlarni qo'shamiz
+      for (const [key, syns] of Object.entries(synonyms)) {
+        if (queryLower.includes(key)) {
+          syns.forEach(s => s.split(' ').forEach(w => expandedWords.add(w)));
+        }
+        // Teskari — sinonim so'zda bo'lsa, asosiy kalit so'zni ham qo'shamiz
+        for (const syn of syns) {
+          if (queryLower.includes(syn)) {
+            expandedWords.add(key);
+            syns.forEach(s => s.split(' ').forEach(w => expandedWords.add(w)));
+          }
+        }
+      }
+
+      return [...expandedWords].filter(w => w.length > 2);
+    }
+
+    // Kitobdan tegishli kontekst topish (kengaytirilgan qidiruv)
+    function getRelevantContext(query, bookText, maxChars = 10000) {
+      if (!bookText) return '';
+      const searchWords = expandMedicalQuery(query);
+      const paragraphs = bookText.split('\n').filter(p => p.trim().length > 30);
+
+      const scored = paragraphs.map(p => {
+        const pl = p.toLowerCase();
+        // Har bir so'zga ball — qancha mos so'z, shuncha yuqori ball
+        const score = searchWords.reduce((s, w) => {
+          if (pl.includes(w)) {
+            // Uzunroq so'z = ko'proq ball (aniqroq moslik)
+            return s + Math.max(1, w.length / 3);
+          }
+          return s;
+        }, 0);
+        return { p, score };
+      });
+
+      scored.sort((a, b) => b.score - a.score);
+
+      let context = '';
+      for (const { p, score } of scored) {
+        if (score === 0) break;
+        if (context.length + p.length > maxChars) break;
+        context += p + '\n';
+      }
+
+      return context || bookText.slice(0, maxChars);
+    }
+
+    const relevantContext = getRelevantContext(msg, aiBooks);
+
     const systemPrompt = `Siz AZMed AI — o'zbek tibbiy protokollari asosida ishlaydigan klinik maslahatchi.
 
 QOIDALAR:
 1. Faqat tibbiy savollarga javob bering
-2. Quyidagi kitoblar mazmunidan foydalaning
-3. Kitobda yo'q bo'lsa, umumiy tibbiy bilimdan foydalaning
-4. Har doim oxirida: "⚠️ Yakuniy qaror shifokorga tegishli" deb yozing
-5. O'zbek tilida javob bering
-6. Aniq, klinik jihatdan foydali javob bering
-7. Dori dozalari va protokol bosqichlarini ko'rsating
+2. Quyidagi kitob parchalaridan foydalaning
+3. O'zbek tilida, aniq va klinik jihatdan foydali javob bering
+4. Dori dozalari va protokol bosqichlarini ko'rsating
+5. Oxirida: "⚠️ Yakuniy qaror shifokorga tegishli" deb yozing
 
-KITOBLAR:
-${aiBooks || 'Umumiy tibbiy bilimdan foydalanamiz.'}`;
+KITOB PARCHALARI:
+${relevantContext || 'Umumiy tibbiy bilimdan foydalanamiz.'}`;
 
     const messages = [
       { role: 'system', content: systemPrompt },
-      ...aiHistory
+      ...aiHistory.slice(-4) // Faqat oxirgi 4 ta xabar
     ];
 
     const response = await fetch(GROQ_URL, {
