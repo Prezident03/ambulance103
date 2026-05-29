@@ -8,450 +8,669 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
-
     :root{
-      --bg:#f0f4f8;
-      --bg-card:#ffffff;
-      --bg-input:#ffffff;
-      --text-primary:#111111;
-      --text-secondary:#555555;
-      --text-muted:#888888;
-      --border:#e0e0e0;
       --red:#E24B4A;
+      --bg:#f9f9f9;
+      --sb-bg:#f0f0f0;
+      --sb-hover:#e4e4e4;
+      --sb-border:#e0e0e0;
+      --chat-bg:#ffffff;
+      --msg-bot-bg:#f4f4f4;
+      --msg-bot-border:#e8e8e8;
+      --text:#111111;
+      --text2:#555555;
+      --text3:#999999;
+      --input-bg:#ffffff;
+      --input-border:#d8d8d8;
+      --topbar:#ffffff;
+      --topbar-border:#e8e8e8;
     }
     body.dark{
-      --bg:#0f0f1a;
-      --bg-card:#1a1a2e;
-      --bg-input:#252535;
-      --text-primary:#f0f0f0;
-      --text-secondary:#aaaaaa;
-      --text-muted:#666666;
-      --border:#2a2a3e;
+      --bg:#1a1a1a;
+      --sb-bg:#111111;
+      --sb-hover:#2a2a2a;
+      --sb-border:#2a2a2a;
+      --chat-bg:#1a1a1a;
+      --msg-bot-bg:#2a2a2a;
+      --msg-bot-border:#333333;
+      --text:#ececec;
+      --text2:#aaaaaa;
+      --text3:#666666;
+      --input-bg:#2a2a2a;
+      --input-border:#3a3a3a;
+      --topbar:#111111;
+      --topbar-border:#2a2a2a;
     }
     body.glass{
       --bg:transparent;
-      --bg-card:rgba(255,255,255,0.06);
-      --text-primary:#ffffff;
-      --text-secondary:rgba(255,255,255,0.7);
-      --border:rgba(255,255,255,0.12);
+      --sb-bg:rgba(10,10,20,0.75);
+      --sb-hover:rgba(255,255,255,0.06);
+      --sb-border:rgba(255,255,255,0.08);
+      --chat-bg:transparent;
+      --msg-bot-bg:rgba(255,255,255,0.06);
+      --msg-bot-border:rgba(255,255,255,0.1);
+      --text:#ffffff;
+      --text2:rgba(255,255,255,0.65);
+      --text3:rgba(255,255,255,0.35);
+      --input-bg:rgba(255,255,255,0.07);
+      --input-border:rgba(255,255,255,0.15);
+      --topbar:rgba(10,10,20,0.8);
+      --topbar-border:rgba(255,255,255,0.08);
     }
-    body.glass::before{
-      content:'';position:fixed;inset:0;z-index:-2;
-      background:#050810;
-    }
-    body.glass::after{
-      content:'';position:fixed;inset:0;z-index:-1;
-      background:
-        radial-gradient(ellipse at 10% 15%,rgba(226,75,74,0.35) 0%,transparent 45%),
-        radial-gradient(ellipse at 90% 10%,rgba(52,100,219,0.38) 0%,transparent 45%),
-        radial-gradient(ellipse at 50% 50%,rgba(100,50,180,0.22) 0%,transparent 55%);
-    }
+    body.glass::before{content:'';position:fixed;inset:0;z-index:-2;background:#050810}
+    body.glass::after{content:'';position:fixed;inset:0;z-index:-1;
+      background:radial-gradient(ellipse at 10% 15%,rgba(226,75,74,0.3) 0%,transparent 45%),
+        radial-gradient(ellipse at 85% 10%,rgba(52,100,219,0.3) 0%,transparent 45%),
+        radial-gradient(ellipse at 50% 80%,rgba(100,50,180,0.18) 0%,transparent 50%)}
 
-    body{
-      font-family:Arial,sans-serif;
-      background:var(--bg);
-      color:var(--text-primary);
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
+      background:var(--bg);color:var(--text);height:100dvh;
+      display:flex;overflow:hidden;transition:background .3s,color .3s}
+
+    /* ===== SIDEBAR ===== */
+    .sb{
+      width:260px;min-width:260px;
+      background:var(--sb-bg);
+      border-right:1px solid var(--sb-border);
+      display:flex;flex-direction:column;
       height:100dvh;
-      display:flex;
-      flex-direction:column;
-      overflow:hidden;
-      transition:background .3s,color .3s;
-    }
-
-    /* TOPBAR */
-    .ai-topbar{
-      background:var(--red);
-      color:white;
-      padding:0 16px;
-      height:56px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
+      transition:transform .3s;
       flex-shrink:0;
-      z-index:100;
     }
-    .ai-topbar-left{display:flex;align-items:center;gap:12px}
-    .ai-back-btn{
-      background:rgba(255,255,255,0.15);border:none;color:white;
-      width:34px;height:34px;border-radius:10px;
-      cursor:pointer;display:flex;align-items:center;justify-content:center;
-      font-size:18px;transition:background .15s;
+    body.glass .sb{backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)}
+
+    .sb-top{padding:14px 12px 10px;display:flex;align-items:center;gap:8px}
+    .sb-logo{display:flex;align-items:center;gap:8px;flex:1;cursor:pointer;text-decoration:none}
+    .sb-logo-icon{width:32px;height:32px;border-radius:8px;background:var(--red);
+      display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .sb-logo-icon i{color:#fff;font-size:16px}
+    .sb-logo-name{font-size:14px;font-weight:700;color:var(--text)}
+    .sb-logo-sub{font-size:10px;color:var(--text3);margin-top:1px}
+    .sb-close{display:none;background:none;border:none;color:var(--text2);
+      font-size:20px;cursor:pointer;padding:4px;border-radius:6px}
+    .sb-close:hover{background:var(--sb-hover)}
+
+    .sb-new-btn{
+      margin:8px 12px;
+      background:var(--red);color:#fff;border:none;
+      border-radius:10px;padding:10px 14px;font-size:13px;font-weight:600;
+      cursor:pointer;display:flex;align-items:center;gap:8px;
+      transition:background .15s;width:calc(100% - 24px);
     }
-    .ai-back-btn:hover{background:rgba(255,255,255,0.25)}
-    .ai-topbar-avatar{
-      width:36px;height:36px;border-radius:50%;
-      background:rgba(255,255,255,0.2);
-      display:flex;align-items:center;justify-content:center;font-size:18px;
+    .sb-new-btn:hover{background:#c0392b}
+    .sb-new-btn i{font-size:16px}
+
+    .sb-section{padding:6px 12px 4px;font-size:11px;font-weight:600;
+      color:var(--text3);text-transform:uppercase;letter-spacing:.5px}
+
+    .sb-list{flex:1;overflow-y:auto;padding:0 8px 8px;scrollbar-width:thin}
+    .sb-item{
+      padding:9px 10px;border-radius:8px;cursor:pointer;
+      display:flex;align-items:center;gap:8px;
+      font-size:13px;color:var(--text2);
+      transition:background .15s;position:relative;
     }
-    .ai-topbar-info h1{font-size:15px;font-weight:700;color:#fff}
-    .ai-topbar-status{display:flex;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,0.75)}
-    .ai-status-dot{width:6px;height:6px;border-radius:50%;background:#4ade80;animation:pulse 2s infinite}
-    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+    .sb-item:hover{background:var(--sb-hover);color:var(--text)}
+    .sb-item.active{background:var(--sb-hover);color:var(--text)}
+    .sb-item i{font-size:15px;flex-shrink:0;color:var(--text3)}
+    .sb-item.active i{color:var(--red)}
+    .sb-item-text{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .sb-item-del{display:none;background:none;border:none;color:var(--text3);
+      font-size:14px;cursor:pointer;padding:2px 4px;border-radius:4px;flex-shrink:0}
+    .sb-item:hover .sb-item-del{display:block}
+    .sb-item-del:hover{color:#E24B4A;background:rgba(226,74,74,0.1)}
+
+    .sb-empty{text-align:center;padding:24px 16px;font-size:12px;color:var(--text3);line-height:1.6}
+
+    .sb-bottom{padding:10px 8px;border-top:1px solid var(--sb-border)}
+    .sb-book-info{
+      padding:8px 10px;border-radius:8px;
+      background:rgba(226,74,74,0.08);border:0.5px solid rgba(226,74,74,0.2);
+      font-size:11px;color:var(--text2);display:flex;align-items:center;gap:6px;
+      margin-bottom:6px;
+    }
+    .sb-book-info i{color:var(--red);font-size:14px}
+    .sb-actions{display:flex;gap:6px}
+    .sb-action{flex:1;padding:8px;border-radius:8px;border:none;
+      background:var(--sb-hover);color:var(--text2);font-size:12px;
+      cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;
+      transition:background .15s}
+    .sb-action:hover{background:var(--sb-border);color:var(--text)}
+    .sb-action i{font-size:14px}
+
+    /* ===== MAIN ===== */
+    .main{flex:1;display:flex;flex-direction:column;min-width:0;height:100dvh}
+
+    /* Topbar */
+    .ai-topbar{
+      background:var(--topbar);border-bottom:1px solid var(--topbar-border);
+      padding:0 16px;height:52px;display:flex;align-items:center;
+      justify-content:space-between;flex-shrink:0;
+    }
+    body.glass .ai-topbar{backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+    .ai-topbar-left{display:flex;align-items:center;gap:10px}
+    .sb-toggle{background:none;border:none;color:var(--text2);
+      font-size:20px;cursor:pointer;padding:6px;border-radius:8px;
+      display:none}
+    .sb-toggle:hover{background:var(--sb-hover)}
+    .ai-chat-title{font-size:14px;font-weight:600;color:var(--text);
+      max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .ai-topbar-right{display:flex;align-items:center;gap:8px}
-    .ai-book-badge{
-      background:rgba(255,255,255,0.15);color:#fff;
-      border-radius:20px;padding:4px 10px;
-      font-size:11px;font-weight:600;
-      display:flex;align-items:center;gap:4px;
-    }
-    .ai-clear-btn{
-      background:rgba(255,255,255,0.15);border:none;color:white;
-      width:34px;height:34px;border-radius:10px;
-      cursor:pointer;display:flex;align-items:center;justify-content:center;
-      font-size:16px;transition:background .15s;
-    }
-    .ai-clear-btn:hover{background:rgba(255,255,255,0.25)}
+    .ai-topbar-btn{background:none;border:none;color:var(--text2);
+      font-size:18px;cursor:pointer;padding:6px 8px;border-radius:8px;
+      transition:background .15s}
+    .ai-topbar-btn:hover{background:var(--sb-hover);color:var(--text)}
+    .ai-back-btn{display:flex;align-items:center;gap:6px;background:none;
+      border:none;color:var(--text2);font-size:13px;cursor:pointer;
+      padding:6px 10px;border-radius:8px;transition:background .15s}
+    .ai-back-btn:hover{background:var(--sb-hover);color:var(--text)}
+    .ai-back-btn i{font-size:16px}
 
-    /* CHAT AREA */
-    .ai-chat{
-      flex:1;overflow-y:auto;
-      padding:20px 16px;
-      display:flex;flex-direction:column;gap:14px;
-      scrollbar-width:thin;
-    }
-    @media(min-width:768px){
-      .ai-chat{padding:24px calc(50% - 340px)}
-    }
+    /* Chat area */
+    .ai-chat{flex:1;overflow-y:auto;padding:24px 0;scrollbar-width:thin}
+    .ai-chat-inner{max-width:720px;margin:0 auto;padding:0 20px;
+      display:flex;flex-direction:column;gap:0}
 
-    /* MESSAGES */
-    .ai-msg{display:flex;flex-direction:column;max-width:85%}
-    .ai-msg-bot{align-self:flex-start}
-    .ai-msg-user{align-self:flex-end}
-    .ai-bubble-bot{
-      background:var(--bg-card);
-      border:1px solid var(--border);
-      border-radius:4px 16px 16px 16px;
-      padding:12px 16px;
-      font-size:14px;line-height:1.7;
-      color:var(--text-primary);
-    }
-    body.glass .ai-bubble-bot{
-      background:rgba(255,255,255,0.08);
-      backdrop-filter:blur(12px);
-      border:0.5px solid rgba(255,255,255,0.15);
-    }
-    .ai-bubble-user{
-      background:var(--red);color:white;
-      border-radius:16px 16px 4px 16px;
-      padding:12px 16px;font-size:14px;line-height:1.7;
-    }
-    .ai-msg-time{font-size:11px;color:var(--text-muted);margin-top:4px;padding:0 4px}
-    .ai-msg-user .ai-msg-time{text-align:right}
+    /* Welcome */
+    .ai-welcome{text-align:center;padding:60px 20px 40px;max-width:560px;margin:0 auto}
+    .ai-welcome-logo{width:64px;height:64px;border-radius:16px;
+      background:var(--red);display:flex;align-items:center;justify-content:center;
+      margin:0 auto 20px;box-shadow:0 4px 20px rgba(226,74,74,0.3)}
+    .ai-welcome-logo i{font-size:28px;color:#fff}
+    .ai-welcome h2{font-size:22px;font-weight:700;color:var(--text);margin-bottom:10px}
+    .ai-welcome p{font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:28px}
+    .ai-sugg-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;text-align:left}
+    .ai-sugg{background:var(--msg-bot-bg);border:1px solid var(--msg-bot-border);
+      border-radius:12px;padding:14px;cursor:pointer;transition:all .15s}
+    .ai-sugg:hover{border-color:var(--red);transform:translateY(-1px)}
+    .ai-sugg-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px}
+    .ai-sugg-desc{font-size:11px;color:var(--text2);line-height:1.5}
 
-    /* TYPING */
-    .ai-typing{display:flex;gap:5px;align-items:center;padding:12px 16px}
-    .ai-typing span{width:7px;height:7px;border-radius:50%;background:var(--red);animation:typing .8s infinite}
+    /* Messages */
+    .ai-msg-row{padding:16px 0;display:flex;gap:14px;align-items:flex-start}
+    .ai-msg-row.user{flex-direction:row-reverse}
+    .ai-msg-avatar{width:32px;height:32px;border-radius:8px;flex-shrink:0;
+      display:flex;align-items:center;justify-content:center;font-size:16px}
+    .ai-msg-avatar.bot{background:var(--red)}
+    .ai-msg-avatar.bot i{color:#fff;font-size:16px}
+    .ai-msg-avatar.user{background:rgba(226,74,74,0.15)}
+    .ai-msg-avatar.user i{color:var(--red);font-size:16px}
+    .ai-msg-content{flex:1;min-width:0}
+    .ai-msg-name{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px}
+    .ai-msg-row.user .ai-msg-name{text-align:right}
+    .ai-msg-bubble{font-size:14px;line-height:1.75;color:var(--text)}
+    .ai-msg-row.bot .ai-msg-bubble{
+      background:var(--msg-bot-bg);border:1px solid var(--msg-bot-border);
+      border-radius:4px 14px 14px 14px;padding:14px 16px;
+    }
+    .ai-msg-row.user .ai-msg-bubble{
+      background:var(--red);color:#fff;
+      border-radius:14px 4px 14px 14px;padding:14px 16px;
+      margin-left:auto;display:inline-block;max-width:85%;
+    }
+    .ai-msg-time{font-size:11px;color:var(--text3);margin-top:6px}
+    .ai-msg-row.user .ai-msg-time{text-align:right}
+    .ai-msg-divider{border:none;border-top:1px solid var(--msg-bot-border);margin:4px 0}
+
+    /* Typing */
+    .ai-typing{display:flex;gap:5px;align-items:center;padding:14px 16px;
+      background:var(--msg-bot-bg);border:1px solid var(--msg-bot-border);
+      border-radius:4px 14px 14px 14px;width:fit-content}
+    .ai-typing span{width:7px;height:7px;border-radius:50%;
+      background:var(--text3);animation:typing .8s infinite}
     .ai-typing span:nth-child(2){animation-delay:.15s}
     .ai-typing span:nth-child(3){animation-delay:.3s}
-    @keyframes typing{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes typing{0%,100%{transform:translateY(0);opacity:.4}50%{transform:translateY(-5px);opacity:1}}
 
-    /* WELCOME */
-    .ai-welcome{
-      text-align:center;padding:40px 20px;
+    /* Input */
+    .ai-input-area{
+      padding:12px 20px 16px;border-top:1px solid var(--topbar-border);
+      background:var(--topbar);flex-shrink:0;
     }
-    .ai-welcome-icon{
-      width:72px;height:72px;border-radius:50%;
-      background:rgba(226,75,74,0.1);border:2px solid rgba(226,75,74,0.2);
-      display:flex;align-items:center;justify-content:center;
-      margin:0 auto 16px;font-size:32px;
-    }
-    body.glass .ai-welcome-icon{background:rgba(226,75,74,0.2)}
-    .ai-welcome h2{font-size:20px;font-weight:700;color:var(--text-primary);margin-bottom:8px}
-    .ai-welcome p{font-size:14px;color:var(--text-secondary);line-height:1.6;max-width:400px;margin:0 auto 24px}
-    .ai-suggestions{display:flex;flex-direction:column;gap:8px;max-width:480px;margin:0 auto}
-    .ai-suggestion{
-      background:var(--bg-card);border:1px solid var(--border);
-      border-radius:12px;padding:12px 16px;
-      font-size:13px;color:var(--text-primary);
-      cursor:pointer;text-align:left;
-      transition:all .15s;display:flex;align-items:center;gap:10px;
-    }
-    .ai-suggestion:hover{border-color:var(--red);color:var(--red);transform:translateX(4px)}
-    body.glass .ai-suggestion{background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.12)}
-    .ai-suggestion i{color:var(--red);font-size:16px;flex-shrink:0}
-
-    /* INPUT */
-    .ai-input-wrap{
-      padding:12px 16px;
-      border-top:1px solid var(--border);
-      background:var(--bg-card);
-      flex-shrink:0;
-    }
-    body.glass .ai-input-wrap{
-      background:rgba(15,15,30,0.7);
-      backdrop-filter:blur(20px);
-      border-top-color:rgba(255,255,255,0.1);
-    }
-    @media(min-width:768px){
-      .ai-input-wrap{padding:12px calc(50% - 340px)}
-    }
-    .ai-input-row{display:flex;gap:10px;align-items:flex-end}
-    .ai-textarea{
-      flex:1;resize:none;
-      border:1.5px solid var(--border);
-      border-radius:14px;padding:12px 16px;
-      font-size:14px;color:var(--text-primary);
-      background:var(--bg-input);
-      outline:none;font-family:inherit;
-      max-height:120px;line-height:1.5;
+    body.glass .ai-input-area{backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+    .ai-input-inner{max-width:720px;margin:0 auto}
+    .ai-input-box{
+      display:flex;align-items:flex-end;gap:8px;
+      background:var(--input-bg);border:1.5px solid var(--input-border);
+      border-radius:14px;padding:10px 12px;
       transition:border-color .2s;
     }
-    .ai-textarea:focus{border-color:var(--red)}
-    body.glass .ai-textarea{
-      background:rgba(255,255,255,0.08);
-      border-color:rgba(255,255,255,0.15);color:#fff;
-    }
-    .ai-textarea::placeholder{color:var(--text-muted)}
-    .ai-send{
-      width:44px;height:44px;border-radius:14px;
-      background:var(--red);border:none;color:white;
+    .ai-input-box:focus-within{border-color:var(--red)}
+    .ai-textarea{flex:1;resize:none;border:none;outline:none;
+      font-size:14px;color:var(--text);background:transparent;
+      font-family:inherit;max-height:140px;line-height:1.55}
+    .ai-textarea::placeholder{color:var(--text3)}
+    .ai-send-btn{width:36px;height:36px;border-radius:10px;
+      background:var(--red);border:none;color:#fff;
       cursor:pointer;display:flex;align-items:center;justify-content:center;
-      font-size:18px;flex-shrink:0;transition:background .15s,transform .1s;
+      font-size:16px;flex-shrink:0;transition:background .15s,transform .1s}
+    .ai-send-btn:hover{background:#c0392b;transform:scale(1.05)}
+    .ai-send-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+    .ai-input-hint{font-size:11px;color:var(--text3);text-align:center;margin-top:8px}
+
+    /* Mobile */
+    @media(max-width:768px){
+      .sb{position:fixed;top:0;left:0;bottom:0;z-index:1000;
+        transform:translateX(-100%)}
+      .sb.open{transform:translateX(0);box-shadow:4px 0 24px rgba(0,0,0,0.2)}
+      .sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:999}
+      .sb-overlay.show{display:block}
+      .sb-close{display:flex}
+      .sb-toggle{display:flex}
+      .ai-chat-inner{padding:0 14px}
+      .ai-sugg-grid{grid-template-columns:1fr}
     }
-    .ai-send:hover{background:#c0392b;transform:scale(1.05)}
-    .ai-send:disabled{opacity:.5;cursor:not-allowed;transform:none}
-    .ai-input-hint{font-size:11px;color:var(--text-muted);margin-top:6px;text-align:center}
   </style>
 </head>
 <body>
 
-<!-- TOPBAR -->
-<div class="ai-topbar">
-  <div class="ai-topbar-left">
-    <button class="ai-back-btn" onclick="window.location.href='index.html'" title="Orqaga">
-      <i class="ti ti-arrow-left"></i>
-    </button>
-    <div class="ai-topbar-avatar">🩺</div>
-    <div class="ai-topbar-info">
-      <h1>AZMed AI</h1>
-      <div class="ai-topbar-status">
-        <span class="ai-status-dot"></span>
-        <span>Faol — klinik maslahatchi</span>
+<div class="sb-overlay" id="sbOverlay" onclick="closeSb()"></div>
+
+<!-- SIDEBAR -->
+<div class="sb" id="sidebar">
+  <div class="sb-top">
+    <a class="sb-logo" onclick="window.location.href='index.html'">
+      <div class="sb-logo-icon"><i class="ti ti-ambulance"></i></div>
+      <div>
+        <div class="sb-logo-name">AZMed AI</div>
+        <div class="sb-logo-sub">Tibbiy maslahatchi</div>
+      </div>
+    </a>
+    <button class="sb-close" onclick="closeSb()"><i class="ti ti-x"></i></button>
+  </div>
+
+  <button class="sb-new-btn" onclick="newChat()">
+    <i class="ti ti-plus"></i> Yangi suhbat
+  </button>
+
+  <div class="sb-section">Suhbatlar tarixi</div>
+  <div class="sb-list" id="sbList">
+    <div class="sb-empty">Hali suhbat yo'q.<br>Yangi suhbat boshlang.</div>
+  </div>
+
+  <div class="sb-bottom">
+    <div class="sb-book-info">
+      <i class="ti ti-book-2"></i>
+      <span id="sbBookText">Kitoblar yuklanmoqda...</span>
+    </div>
+    <div class="sb-actions">
+      <button class="sb-action" onclick="window.location.href='index.html'">
+        <i class="ti ti-home"></i> Bosh sahifa
+      </button>
+      <button class="sb-action" onclick="toggleTheme()">
+        <i class="ti ti-moon" id="themeIcon"></i> <span id="themeText">Rejim</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- Topbar -->
+  <div class="ai-topbar">
+    <div class="ai-topbar-left">
+      <button class="sb-toggle" onclick="openSb()"><i class="ti ti-menu-2"></i></button>
+      <div class="ai-chat-title" id="chatTitle">AZMed AI</div>
+    </div>
+    <div class="ai-topbar-right">
+      <button class="ai-topbar-btn" onclick="clearChat()" title="Chatni tozalash">
+        <i class="ti ti-trash"></i>
+      </button>
+      <button class="ai-back-btn" onclick="window.location.href='index.html'">
+        <i class="ti ti-arrow-left"></i> Orqaga
+      </button>
+    </div>
+  </div>
+
+  <!-- Chat -->
+  <div class="ai-chat" id="aiChat">
+    <div class="ai-chat-inner" id="aiChatInner">
+      <div class="ai-welcome" id="aiWelcome">
+        <div class="ai-welcome-logo"><i class="ti ti-stethoscope"></i></div>
+        <h2>AZMed AI bilan maslahatlashing</h2>
+        <p>Tibbiy protokollar va kitoblar asosida klinik fikrlaydigan sun'iy intellekt. Bemor holati yoki klinik savolingizni yozing.</p>
+        <div class="ai-sugg-grid">
+          <div class="ai-sugg" onclick="fillInput('AQB 200/110, bosh og\'riq, ko\'ngil aynish. Gipertonik kriz — birinchi yordam?')">
+            <div class="ai-sugg-title">Gipertonik kriz</div>
+            <div class="ai-sugg-desc">AQB yuqori, bosh og'riq — birinchi yordam protokoli</div>
+          </div>
+          <div class="ai-sugg" onclick="fillInput('Miokard infarkti shubhasi: ko\'krak og\'rig\'i, sovuq ter, qo\'l og\'rig\'i. Nima qilaman?')">
+            <div class="ai-sugg-title">Miokard infarkti</div>
+            <div class="ai-sugg-desc">Ko'krak og'rig'i, sovuq ter — shoshilinch protokol</div>
+          </div>
+          <div class="ai-sugg" onclick="fillInput('Anafilaktik shok — belgilari va shoshilinch yordam algoritmi?')">
+            <div class="ai-sugg-title">Anafilaktik shok</div>
+            <div class="ai-sugg-desc">Allergik shok — tez yordam algoritmi</div>
+          </div>
+          <div class="ai-sugg" onclick="fillInput('Gipoglikemiya: bemor hushini yo\'qotish arafasida. Qanday yordam beraman?')">
+            <div class="ai-sugg-title">Gipoglikemiya</div>
+            <div class="ai-sugg-desc">Qand past holati — shoshilinch choralar</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
-  <div class="ai-topbar-right">
-    <div class="ai-book-badge" id="bookBadge">
-      <i class="ti ti-book-2"></i>
-      <span id="bookBadgeText">Yuklanmoqda...</span>
-    </div>
-    <button class="ai-clear-btn" onclick="clearChat()" title="Chatni tozalash">
-      <i class="ti ti-trash"></i>
-    </button>
-  </div>
-</div>
 
-<!-- CHAT -->
-<div class="ai-chat" id="aiChat">
-  <!-- Welcome screen -->
-  <div class="ai-welcome" id="aiWelcome">
-    <div class="ai-welcome-icon">🩺</div>
-    <h2>AZMed AI ga xush kelibsiz</h2>
-    <p>Tibbiy protokollar va kitoblar asosida klinik fikrlaydigan sun'iy intellekt. Bemor holati, simptomlar yoki klinik savollaringizni yozing.</p>
-    <div class="ai-suggestions">
-      <button class="ai-suggestion" onclick="fillInput(this.dataset.q)" data-q="Bemor AQB 200/110, bosh og'riq, ko'ngil aynish. Gipertonik kriz. Birinchi yordam qanday?">
-        <i class="ti ti-heart-rate-monitor"></i>
-        Gipertonik kriz — birinchi yordam
-      </button>
-      <button class="ai-suggestion" onclick="fillInput(this.dataset.q)" data-q="Bemor 60 yoshda, ko'krak og'rig'i, sovuq ter, qo'l og'rig'i. Miokard infarkti shubhasi. Nima qilaman?">
-        <i class="ti ti-heart"></i>
-        Miokard infarkti shubhasi
-      </button>
-      <button class="ai-suggestion" onclick="fillInput(this.dataset.q)" data-q="Anafilaktik shok — belgilari va shoshilinch yordam protokoli qanday?">
-        <i class="ti ti-alert-triangle"></i>
-        Anafilaktik shok protokoli
-      </button>
-      <button class="ai-suggestion" onclick="fillInput(this.dataset.q)" data-q="Qand kasalligi, gipoglikemiya holati. Bemor hushini yo'qotish arafasida. Qanday yordam beraman?">
-        <i class="ti ti-droplet"></i>
-        Gipoglikemiya — shoshilinch yordam
-      </button>
+  <!-- Input -->
+  <div class="ai-input-area">
+    <div class="ai-input-inner">
+      <div class="ai-input-box">
+        <textarea id="aiInput" class="ai-textarea" rows="1"
+          placeholder="Bemor holati yoki klinik savolni yozing..."
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}"
+          oninput="autoResize(this)"></textarea>
+        <button class="ai-send-btn" id="sendBtn" onclick="sendMsg()">
+          <i class="ti ti-send"></i>
+        </button>
+      </div>
+      <div class="ai-input-hint">Enter — yuborish &nbsp;·&nbsp; Shift+Enter — yangi qator</div>
     </div>
   </div>
-</div>
-
-<!-- INPUT -->
-<div class="ai-input-wrap">
-  <div class="ai-input-row">
-    <textarea id="aiInput" class="ai-textarea" rows="1"
-      placeholder="Bemor holati, simptomlar yoki klinik savolni yozing..."
-      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}"
-      oninput="autoResize(this)"></textarea>
-    <button class="ai-send" id="sendBtn" onclick="sendMsg()">
-      <i class="ti ti-send"></i>
-    </button>
-  </div>
-  <div class="ai-input-hint">Enter — yuborish &nbsp;·&nbsp; Shift+Enter — yangi qator</div>
 </div>
 
 <script type="module" src="app.js"></script>
 <script>
-// Dark/glass mode
+// Theme
 const savedDark = localStorage.getItem('darkMode') === 'true';
-if (savedDark) document.body.classList.add('dark');
+if(savedDark) document.body.classList.add('dark');
 const savedGlass = localStorage.getItem('glassMode') === 'true';
-if (savedGlass) document.body.classList.add('glass');
+if(savedGlass) document.body.classList.add('glass');
+updateThemeBtn();
+
+function updateThemeBtn(){
+  const isDark = document.body.classList.contains('dark');
+  const isGlass = document.body.classList.contains('glass');
+  const icon = document.getElementById('themeIcon');
+  const txt = document.getElementById('themeText');
+  if(!icon) return;
+  if(isGlass){icon.className='ti ti-droplet';if(txt)txt.textContent='Glass'}
+  else if(isDark){icon.className='ti ti-sun';if(txt)txt.textContent='Light'}
+  else{icon.className='ti ti-moon';if(txt)txt.textContent='Dark'}
+}
+window.toggleTheme = function(){
+  const isDark = document.body.classList.contains('dark');
+  const isGlass = document.body.classList.contains('glass');
+  if(!isDark && !isGlass){
+    document.body.classList.add('dark');
+    localStorage.setItem('darkMode','true');
+  } else if(isDark && !isGlass){
+    document.body.classList.remove('dark');
+    document.body.classList.add('glass');
+    localStorage.setItem('darkMode','false');
+    localStorage.setItem('glassMode','true');
+  } else {
+    document.body.classList.remove('glass','dark');
+    localStorage.setItem('glassMode','false');
+  }
+  updateThemeBtn();
+};
+
+// Sidebar
+window.openSb = function(){
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sbOverlay').classList.add('show');
+};
+window.closeSb = function(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sbOverlay').classList.remove('show');
+};
 
 // AI config
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 let groqKey = '';
 let aiBooks = '';
+let aiBookNames = [];
 let history = [];
+let chats = JSON.parse(localStorage.getItem('azmedChats') || '[]');
+let currentChatId = null;
 
-async function loadConfig() {
+async function loadConfig(){
   try {
-    const { db } = await import('./firebase.js');
-    const { collection, getDocs, doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
-    const keySnap = await getDoc(doc(db, 'settings', 'aiConfig'));
-    if (keySnap.exists()) groqKey = keySnap.data().groqKey || '';
-    const booksSnap = await getDocs(collection(db, 'aiBooks'));
-    let txt = '';
-    booksSnap.forEach(d => { txt += `\n\n=== ${d.data().name} ===\n${d.data().content}`; });
-    aiBooks = txt;
-    const badge = document.getElementById('bookBadgeText');
-    badge.textContent = booksSnap.empty ? 'Kitob yo\'q' : `${booksSnap.size} ta kitob`;
-    document.getElementById('bookBadge').style.background = booksSnap.empty ? 'rgba(255,255,255,0.1)' : 'rgba(74,222,128,0.25)';
-  } catch(e) {
-    document.getElementById('bookBadgeText').textContent = 'Xato';
-  }
+    const {db} = await import('./firebase.js');
+    const {collection, getDocs, doc, getDoc} = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+    const keySnap = await getDoc(doc(db,'settings','aiConfig'));
+    if(keySnap.exists()) groqKey = keySnap.data().groqKey||'';
+    const booksSnap = await getDocs(collection(db,'aiBooks'));
+    let txt=''; aiBookNames=[];
+    booksSnap.forEach(d=>{
+      txt+=`\n\n=== ${d.data().name} ===\n${d.data().content}`;
+      aiBookNames.push(d.data().name);
+    });
+    aiBooks=txt;
+    const el=document.getElementById('sbBookText');
+    if(el) el.textContent=booksSnap.empty?'Kitob yuklanmagan':`${booksSnap.size} ta kitob yuklangan`;
+  } catch(e){}
 }
 loadConfig();
+renderChatList();
 
-function expandQuery(query) {
-  const synonyms = {
-    'gipertoniya':['arterial gipertenziya','aqb yuqori','qon bosimi','gipertenziya','bosim'],
-    'gipertenziya':['gipertoniya','arterial gipertenziya','aqb','qon bosimi'],
-    'aqb':['arterial qon bosimi','qon bosimi','bosim','gipertenziya'],
-    'kriz':['gipertonik kriz','gipertenziv kriz','bosim ko\'tarilishi'],
-    'infarkt':['miokard infarkti','yurak infarkti','omi'],
-    'insult':['miya qon aylanishi','miya infarkti','gemorragik','ishemik insult'],
-    'stenokardiya':['yurak og\'rig\'i','angina pectoris','koronar'],
-    'taxikardiya':['yurak tez urishi','aritmiya'],
-    'bradikardiya':['yurak sekin urishi','aritmiya'],
-    'aritmiya':['yurak ritmi','taxikardiya','bradikardiya'],
-    'astma':['bronxial astma','nafas qisilishi','bronxospazm'],
-    'diabet':['qand kasalligi','giperglikemiya','insulin','saxarli diabet'],
-    'giperglikemiya':['qand yuqori','diabet','glyukoza'],
-    'gipoglikemiya':['qand past','insulin','glyukoza past'],
-    'shok':['gipovolemik shok','anafilaktik shok','septik shok','kardiogen shok'],
-    'anafilaksiya':['anafilaktik shok','allergik shok'],
-    'reanimatsiya':['yurak to\'xtashi','nafas to\'xtashi','cpr'],
-    'isitma':['temperatura','gipetermiya','febril'],
-    'zaharlanish':['intoksikatsiya','toksikoz'],
-  };
-  const ql = query.toLowerCase();
-  const words = new Set(ql.split(/\s+/).filter(w=>w.length>2));
-  for(const [k,syns] of Object.entries(synonyms)){
-    if(ql.includes(k)) syns.forEach(s=>s.split(' ').forEach(w=>words.add(w)));
-    for(const s of syns) if(ql.includes(s)){words.add(k);syns.forEach(x=>x.split(' ').forEach(w=>words.add(w)));}
+// Chat history
+function renderChatList(){
+  const list = document.getElementById('sbList');
+  if(!list) return;
+  if(!chats.length){
+    list.innerHTML='<div class="sb-empty">Hali suhbat yo\'q.<br>Yangi suhbat boshlang.</div>';
+    return;
+  }
+  list.innerHTML='';
+  [...chats].reverse().forEach(c=>{
+    const div=document.createElement('div');
+    div.className='sb-item'+(c.id===currentChatId?' active':'');
+    div.innerHTML=`<i class="ti ti-message"></i>
+      <span class="sb-item-text">${c.title}</span>
+      <button class="sb-item-del" onclick="event.stopPropagation();deleteChat('${c.id}')"><i class="ti ti-x"></i></button>`;
+    div.onclick=()=>loadChat(c.id);
+    list.appendChild(div);
+  });
+}
+
+function saveChats(){localStorage.setItem('azmedChats',JSON.stringify(chats))}
+
+window.newChat = function(){
+  currentChatId = null;
+  history = [];
+  document.getElementById('chatTitle').textContent='AZMed AI';
+  const inner = document.getElementById('aiChatInner');
+  inner.innerHTML=`<div class="ai-welcome" id="aiWelcome">
+    <div class="ai-welcome-logo"><i class="ti ti-stethoscope"></i></div>
+    <h2>AZMed AI bilan maslahatlashing</h2>
+    <p>Tibbiy protokollar va kitoblar asosida klinik fikrlaydigan sun'iy intellekt.</p>
+    <div class="ai-sugg-grid">
+      <div class="ai-sugg" onclick="fillInput('AQB 200/110, bosh og\\'riq. Gipertonik kriz birinchi yordam?')"><div class="ai-sugg-title">Gipertonik kriz</div><div class="ai-sugg-desc">Birinchi yordam protokoli</div></div>
+      <div class="ai-sugg" onclick="fillInput('Miokard infarkti shubhasi. Nima qilaman?')"><div class="ai-sugg-title">Miokard infarkti</div><div class="ai-sugg-desc">Shoshilinch protokol</div></div>
+      <div class="ai-sugg" onclick="fillInput('Anafilaktik shok algoritmi?')"><div class="ai-sugg-title">Anafilaktik shok</div><div class="ai-sugg-desc">Tez yordam algoritmi</div></div>
+      <div class="ai-sugg" onclick="fillInput('Gipoglikemiya birinchi yordam?')"><div class="ai-sugg-title">Gipoglikemiya</div><div class="ai-sugg-desc">Shoshilinch choralar</div></div>
+    </div>
+  </div>`;
+  renderChatList();
+  closeSb();
+};
+
+function loadChat(id){
+  const chat = chats.find(c=>c.id===id);
+  if(!chat) return;
+  currentChatId = id;
+  history = chat.messages.map(m=>({role:m.role,content:m.content}));
+  document.getElementById('chatTitle').textContent = chat.title;
+  const inner = document.getElementById('aiChatInner');
+  inner.innerHTML='';
+  chat.messages.forEach(m=>{
+    appendMsg(m.content, m.role==='user'?'user':'bot', false);
+  });
+  renderChatList();
+  closeSb();
+  const chat_el = document.getElementById('aiChat');
+  setTimeout(()=>{ chat_el.scrollTop=chat_el.scrollHeight; }, 50);
+}
+
+window.deleteChat = function(id){
+  chats = chats.filter(c=>c.id!==id);
+  saveChats();
+  if(currentChatId===id) newChat();
+  else renderChatList();
+};
+
+window.clearChat = function(){
+  if(currentChatId){
+    chats = chats.filter(c=>c.id!==currentChatId);
+    saveChats();
+  }
+  newChat();
+};
+
+// Sinonimlar
+function expandQuery(query){
+  const s={'gipertoniya':['arterial gipertenziya','aqb','qon bosimi','gipertenziya'],
+    'aqb':['arterial qon bosimi','bosim','gipertenziya'],'kriz':['gipertonik kriz','bosim ko\'tarilishi'],
+    'infarkt':['miokard infarkti','yurak infarkti'],'insult':['miya qon aylanishi','miya infarkti'],
+    'diabet':['qand kasalligi','giperglikemiya','insulin'],'shok':['anafilaktik shok','kardiogen shok'],
+    'astma':['bronxial astma','nafas qisilishi'],'zaharlanish':['intoksikatsiya','toksikoz'],
+    'isitma':['temperatura','febril'],'reanimatsiya':['yurak to\'xtashi','cpr']};
+  const ql=query.toLowerCase();
+  const words=new Set(ql.split(/\s+/).filter(w=>w.length>2));
+  for(const [k,syns] of Object.entries(s)){
+    if(ql.includes(k)) syns.forEach(x=>x.split(' ').forEach(w=>words.add(w)));
+    for(const syn of syns) if(ql.includes(syn)){words.add(k);syns.forEach(x=>x.split(' ').forEach(w=>words.add(w)));}
   }
   return [...words].filter(w=>w.length>2);
 }
 
-function getContext(query, book, maxChars=10000) {
+function getContext(query, book, max=10000){
   if(!book) return '';
-  const words = expandQuery(query);
-  const paras = book.split('\n').filter(p=>p.trim().length>30);
-  const scored = paras.map(p=>{
+  const words=expandQuery(query);
+  const paras=book.split('\n').filter(p=>p.trim().length>30);
+  const scored=paras.map(p=>{
     const pl=p.toLowerCase();
     const score=words.reduce((s,w)=>s+(pl.includes(w)?Math.max(1,w.length/3):0),0);
-    return {p,score};
+    return{p,score};
   });
   scored.sort((a,b)=>b.score-a.score);
   let ctx='';
-  for(const {p,score} of scored){
-    if(score===0) break;
-    if(ctx.length+p.length>maxChars) break;
+  for(const{p,score}of scored){
+    if(score===0)break;
+    if(ctx.length+p.length>max)break;
     ctx+=p+'\n';
   }
-  return ctx||book.slice(0,maxChars);
+  return ctx||book.slice(0,max);
 }
 
 function now(){return new Date().toLocaleTimeString('uz',{hour:'2-digit',minute:'2-digit'})}
 
-function appendMsg(text, role) {
+function appendMsg(text, role, scroll=true){
   document.getElementById('aiWelcome')?.remove();
-  const chat = document.getElementById('aiChat');
-  const div = document.createElement('div');
-  div.className = `ai-msg ai-msg-${role}`;
-  const formatted = text.replace(/\*\*(.*?)\*\*/g,'<b>$1</b>').replace(/\*(.*?)\*/g,'<i>$1</i>').replace(/\n/g,'<br>');
-  div.innerHTML = `<div class="ai-bubble-${role}">${formatted}</div><div class="ai-msg-time">${now()}</div>`;
-  chat.appendChild(div);
-  chat.scrollTop = chat.scrollHeight;
+  const inner=document.getElementById('aiChatInner');
+  const div=document.createElement('div');
+  div.className=`ai-msg-row ${role}`;
+  const formatted=text.replace(/\*\*(.*?)\*\*/g,'<b>$1</b>').replace(/\*(.*?)\*/g,'<i>$1</i>').replace(/\n/g,'<br>');
+  if(role==='bot'){
+    div.innerHTML=`<div class="ai-msg-avatar bot"><i class="ti ti-stethoscope"></i></div>
+      <div class="ai-msg-content">
+        <div class="ai-msg-name">AZMed AI</div>
+        <div class="ai-msg-bubble">${formatted}</div>
+        <div class="ai-msg-time">${now()}</div>
+      </div>`;
+  } else {
+    div.innerHTML=`<div class="ai-msg-content">
+        <div class="ai-msg-name">Siz</div>
+        <div class="ai-msg-bubble">${formatted}</div>
+        <div class="ai-msg-time">${now()}</div>
+      </div>
+      <div class="ai-msg-avatar user"><i class="ti ti-user"></i></div>`;
+  }
+  inner.appendChild(div);
+  if(scroll){const c=document.getElementById('aiChat');c.scrollTop=c.scrollHeight;}
 }
 
-function showTyping() {
+function showTyping(){
   document.getElementById('aiWelcome')?.remove();
-  const chat = document.getElementById('aiChat');
-  const id = 'typing_'+Date.now();
-  const div = document.createElement('div');
-  div.id = id; div.className = 'ai-msg ai-msg-bot';
-  div.innerHTML = `<div class="ai-bubble-bot"><div class="ai-typing"><span></span><span></span><span></span></div></div>`;
-  chat.appendChild(div);
-  chat.scrollTop = chat.scrollHeight;
+  const inner=document.getElementById('aiChatInner');
+  const id='t'+Date.now();
+  const div=document.createElement('div');
+  div.id=id; div.className='ai-msg-row bot';
+  div.innerHTML=`<div class="ai-msg-avatar bot"><i class="ti ti-stethoscope"></i></div>
+    <div class="ai-msg-content"><div class="ai-typing"><span></span><span></span><span></span></div></div>`;
+  inner.appendChild(div);
+  document.getElementById('aiChat').scrollTop=999999;
   return id;
 }
 
-window.fillInput = function(q) {
-  document.getElementById('aiInput').value = q;
+window.fillInput=function(q){
+  document.getElementById('aiInput').value=q;
   autoResize(document.getElementById('aiInput'));
   document.getElementById('aiInput').focus();
 };
-
-window.clearChat = function() {
-  history = [];
-  const chat = document.getElementById('aiChat');
-  chat.innerHTML = '';
-  // Welcome qayta ko'rsatish
-  const w = document.createElement('div');
-  w.id = 'aiWelcome'; w.className = 'ai-welcome';
-  w.innerHTML = `<div class="ai-welcome-icon">🩺</div><h2>Chat tozalandi</h2><p>Yangi savol yozing.</p>`;
-  chat.appendChild(w);
+window.autoResize=function(el){
+  el.style.height='auto';
+  el.style.height=Math.min(el.scrollHeight,140)+'px';
 };
 
-window.autoResize = function(el) {
-  el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
-};
-
-window.sendMsg = async function() {
-  const input = document.getElementById('aiInput');
-  const msg = input.value.trim();
+window.sendMsg=async function(){
+  const input=document.getElementById('aiInput');
+  const msg=input.value.trim();
   if(!msg) return;
-  if(!groqKey){ appendMsg('⚠️ API key yuklanmagan.', 'bot'); return; }
+  if(!groqKey){appendMsg('⚠️ API key yuklanmagan.','bot');return;}
 
-  appendMsg(msg, 'user');
-  history.push({role:'user', content:msg});
+  appendMsg(msg,'user');
+  history.push({role:'user',content:msg});
   input.value=''; input.style.height='auto';
 
-  const tid = showTyping();
-  document.getElementById('sendBtn').disabled = true;
+  // Suhbat yaratish / yangilash
+  if(!currentChatId){
+    currentChatId='c'+Date.now();
+    chats.push({id:currentChatId,title:msg.slice(0,40),messages:[],createdAt:Date.now()});
+    document.getElementById('chatTitle').textContent=msg.slice(0,40);
+  }
+  const chat=chats.find(c=>c.id===currentChatId);
+  if(chat) chat.messages.push({role:'user',content:msg});
+  saveChats(); renderChatList();
 
-  try {
-    const ctx = getContext(msg, aiBooks);
-    const system = `Siz AZMed AI — o'zbek tibbiy protokollari asosida ishlaydigan klinik maslahatchi.
-QOIDALAR: Faqat tibbiy savollarga javob bering. O'zbek tilida, aniq va klinik jihatdan foydali javob bering. Dori dozalari va protokol bosqichlarini ko'rsating. Oxirida: "⚠️ Yakuniy qaror shifokorga tegishli" deb yozing.
-KITOB PARCHALARI:\n${ctx||'Umumiy tibbiy bilimdan foydalanamiz.'}`;
+  const tid=showTyping();
+  document.getElementById('sendBtn').disabled=true;
 
-    const res = await fetch(GROQ_URL, {
+  try{
+    const bookListText=aiBookNames.length>0
+      ? aiBookNames.map((n,i)=>`${i+1}. ${n}`).join('\n')
+      : 'Hozircha hech qanday kitob yuklanmagan';
+
+    const system=`Siz AZMed AI — tibbiy maslahatchi sun'iy intellektsiz.
+
+MUHIM QOIDALAR:
+1. Faqat HAQIQIY ma'lumot bering — hech qachon yolg'on yoki to'qima ma'lumot bermang
+2. Faqat quyidagi kitoblar mavjud — boshqa kitoblar YO'Q:
+${bookListText}
+3. Agar savol kitoblarda yo'q bo'lsa — "Bu mavzu mening kitoblarimda yo'q, umumiy tibbiy bilimdan foydalanaman" deb ayting
+4. Agar "nechta kitob bor" deb so'ralsa — yuqoridagi ro'yxatni aniq ko'rsating
+5. O'zbek tilida javob bering
+6. Dori dozalari va protokol bosqichlarini ko'rsating
+7. Oxirida: "⚠️ Yakuniy qaror shifokorga tegishli" deb yozing
+
+KITOBLAR MATNI (tegishli qismlar):
+${getContext(msg,aiBooks)}`;
+
+    const res=await fetch(GROQ_URL,{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':`Bearer ${groqKey}`},
       body:JSON.stringify({
         model:'llama-3.3-70b-versatile',
-        messages:[{role:'system',content:system},...history.slice(-6)],
-        temperature:0.3, max_tokens:1500
+        messages:[{role:'system',content:system},...history.slice(-8)],
+        temperature:0.3,max_tokens:1500
       })
     });
     if(!res.ok){const e=await res.json();throw new Error(e.error?.message||res.statusText);}
-    const data = await res.json();
+    const data=await res.json();
     document.getElementById(tid)?.remove();
-    const reply = data.choices?.[0]?.message?.content;
-    if(reply){appendMsg(reply,'bot');history.push({role:'assistant',content:reply});}
-    else appendMsg('Javob kelmadi.','bot');
-  } catch(e) {
+    const reply=data.choices?.[0]?.message?.content;
+    if(reply){
+      appendMsg(reply,'bot');
+      history.push({role:'assistant',content:reply});
+      if(chat) chat.messages.push({role:'assistant',content:reply});
+      saveChats();
+    } else appendMsg('Javob kelmadi.','bot');
+  }catch(e){
     document.getElementById(tid)?.remove();
     appendMsg('❌ Xatolik: '+e.message,'bot');
   }
-  document.getElementById('sendBtn').disabled = false;
+  document.getElementById('sendBtn').disabled=false;
 };
 </script>
 </body>
