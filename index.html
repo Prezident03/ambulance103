@@ -2069,16 +2069,20 @@ async function loadAiConfig() {
     // Kitoblar
     const snap = await getDocs(collection(db, 'aiBooks'));
     if (snap.empty) {
-      document.getElementById('aiBookStatusText').textContent = 'Kitob yuklanmagan';
+      const el = document.getElementById('aiBookStatusText');
+      if (el) el.textContent = 'Kitob yuklanmagan';
       return;
     }
     let text = '';
     snap.forEach(d => { text += `\n\n=== ${d.data().name} ===\n${d.data().content}`; });
     aiBooks = text;
-    document.getElementById('aiBookStatusText').textContent = `${snap.size} ta kitob yuklangan ✓`;
-    document.querySelector('.ai-book-status i').style.color = '#27ae60';
+    const badge = document.getElementById('aiBookStatusText');
+    if (badge) badge.textContent = `${snap.size} ta kitob yuklangan ✓`;
+    const icon = document.querySelector('.ai-book-status i');
+    if (icon) icon.style.color = '#27ae60';
   } catch(e) {
-    document.getElementById('aiBookStatusText').textContent = 'Yuklashda xato';
+    const el = document.getElementById('aiBookStatusText');
+    if (el) el.textContent = 'Yuklashda xato';
   }
 }
 loadAiConfig();
