@@ -775,7 +775,71 @@
     body.dark .section-modal-close{background:#2a2a4a;color:#aaa;}
     .section-modal-close:hover{background:#e0e0e0;}
     .section-modal-body{overflow-y:auto;padding:12px 16px 24px;flex:1;}
-    /* ===== AI E'LON KARTASI ===== */
+    /* ===== AI WOW BANNER — BARCHA REJIMLAR ===== */
+    .ai-wow-banner{
+      margin-bottom:16px;border-radius:20px;overflow:hidden;cursor:pointer;
+      border:1px solid rgba(226,74,74,0.35);
+      background:linear-gradient(135deg,#181824 0%,#1a1030 50%,#201828 100%);
+      transition:transform .25s,box-shadow .25s;position:relative;
+    }
+    body:not(.dark):not(.glass) .ai-wow-banner{
+      background:linear-gradient(135deg,#1e1030 0%,#1a1530 50%,#0f1a30 100%);
+      border-color:rgba(226,74,74,0.4);
+    }
+    body.glass .ai-wow-banner{
+      background:linear-gradient(135deg,rgba(20,10,40,0.85) 0%,rgba(15,5,30,0.9) 50%,rgba(10,15,35,0.85) 100%);
+      backdrop-filter:blur(24px);border-color:rgba(226,74,74,0.3);
+    }
+    .ai-wow-banner:hover{transform:translateY(-3px);box-shadow:0 20px 60px rgba(226,74,74,0.3)}
+    .ai-wow-particles{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+    .ai-wow-p{position:absolute;border-radius:50%;filter:blur(45px);opacity:.2}
+    .ai-wow-p1{width:200px;height:200px;top:-70px;left:-50px;background:#E24B4A}
+    .ai-wow-p2{width:150px;height:150px;bottom:-50px;right:20%;background:#E24B4A}
+    .ai-wow-p3{width:130px;height:130px;top:10px;right:-30px;background:#7c3aed}
+    .ai-wow-top{padding:22px 28px 14px;display:flex;align-items:center;gap:12px;position:relative;z-index:2;border-bottom:0.5px solid rgba(255,255,255,0.06)}
+    .ai-wow-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(226,74,74,0.2);border:1px solid rgba(226,74,74,0.45);color:#ff8a8a;font-size:11px;font-weight:700;padding:4px 11px;border-radius:20px;letter-spacing:.5px;flex-shrink:0}
+    .ai-wow-dot{width:5px;height:5px;border-radius:50%;background:#E24B4A;display:inline-block;animation:aiDot 1.4s infinite;box-shadow:0 0 5px #E24B4A}
+    @keyframes aiDot{0%,100%{opacity:1}50%{opacity:.2}}
+    .ai-wow-title{font-size:19px;font-weight:700;color:#fff;letter-spacing:-.2px;white-space:nowrap}
+    .ai-wow-title span{color:#E24B4A;text-shadow:0 0 18px rgba(226,74,74,0.4)}
+    .ai-wow-mid{display:grid;grid-template-columns:1fr 1fr;padding:16px 28px;gap:8px;position:relative;z-index:2}
+    .ai-wow-left{display:flex;flex-direction:column;justify-content:center;gap:10px}
+    .ai-wow-desc{font-size:12px;color:rgba(255,255,255,0.55);line-height:1.65}
+    .ai-wow-feats{display:flex;flex-direction:column;gap:6px}
+    .ai-wow-feat{display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,0.65);padding:6px 12px;background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.09);border-radius:10px}
+    .ai-wow-feat i{font-size:14px;color:#E24B4A}
+    .ai-wow-right{display:flex;align-items:center;justify-content:center;gap:14px}
+    .ai-wow-robot{animation:aiFloat 3s ease-in-out infinite;flex-shrink:0;filter:drop-shadow(0 6px 20px rgba(226,74,74,0.25))}
+    @keyframes aiFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+    .ai-wow-chats{display:flex;flex-direction:column;gap:7px;flex:1}
+    .ai-wow-cb{padding:8px 13px;font-size:11px;font-weight:500;line-height:1.4}
+    .ai-wow-cb1{background:rgba(226,74,74,0.15);color:#ff8a8a;border:0.5px solid rgba(226,74,74,0.2);border-radius:4px 12px 12px 12px}
+    .ai-wow-cb2{background:rgba(100,160,255,0.15);color:#8ab4ff;border:0.5px solid rgba(100,160,255,0.2);border-radius:12px 4px 12px 12px;align-self:flex-end}
+    .ai-wow-cb3{background:rgba(100,220,150,0.15);color:#6ddc9a;border:0.5px solid rgba(100,220,150,0.2);border-radius:4px 12px 12px 12px}
+    .ai-wow-footer{display:flex;align-items:center;gap:6px;margin-top:2px}
+    .ai-wow-ic{width:20px;height:20px;border-radius:50%;background:#E24B4A;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 0 8px rgba(226,74,74,0.4)}
+    .ai-wow-ic-name{font-size:11px;color:rgba(255,255,255,0.7);font-weight:600}
+    .ai-wow-online{display:flex;align-items:center;gap:3px;font-size:10px;color:#4ade80}
+    .ai-wow-green{width:5px;height:5px;border-radius:50%;background:#4ade80;display:inline-block;animation:aiDot 2s infinite}
+
+    /* BOTTOM BUTTON */
+    .ai-wow-bottom{padding:0 28px 22px;position:relative;z-index:2}
+    .ai-wow-btn{
+      width:100%;background:#E24B4A;color:#fff;border-radius:14px;padding:14px;
+      font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;
+      gap:10px;box-shadow:0 4px 24px rgba(226,74,74,0.4);letter-spacing:.1px;
+      transition:background .15s,box-shadow .15s;position:relative;overflow:hidden;
+    }
+    .ai-wow-banner:hover .ai-wow-btn{background:#c0392b;box-shadow:0 6px 32px rgba(226,74,74,0.55)}
+    .ai-wow-btn .ti{font-size:16px}
+
+    /* YULDUZLAR */
+    .ai-star-wrap{display:flex;align-items:center;gap:1px;position:relative}
+    .ai-star{width:16px;height:16px;flex-shrink:0}
+    .ai-star1{animation:starPulse 1.8s ease-in-out infinite;opacity:.7}
+    .ai-star2{animation:starPulse 1.8s ease-in-out infinite .3s;width:20px;height:20px;opacity:1}
+    .ai-star3{animation:starPulse 1.8s ease-in-out infinite .6s;width:14px;height:14px;opacity:.8}
+    @keyframes starPulse{0%,100%{transform:scale(1) rotate(0deg);opacity:.7}50%{transform:scale(1.3) rotate(20deg);opacity:1}}
     .ai-announce-card{
       background:linear-gradient(135deg,#E24B4A,#c0392b);
       border-radius:16px;
@@ -1111,49 +1175,33 @@
   </div>
 
   <!-- AI E'LON KARTASI -->
-  <div style="margin-bottom:16px;border-radius:20px;overflow:hidden;cursor:pointer;border:1px solid rgba(226,74,74,0.3);background:linear-gradient(135deg,#181824 0%,#1a1030 50%,#201828 100%);transition:transform .25s,box-shadow .25s;position:relative"
-       onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 20px 60px rgba(226,74,74,0.25)'"
-       onmouseout="this.style.transform='';this.style.boxShadow=''"
-       onclick="window.location.href='ai.html'">
+  <div class="ai-wow-banner" onclick="window.location.href='ai.html'">
 
     <!-- Particles -->
-    <div style="position:absolute;inset:0;pointer-events:none;overflow:hidden">
-      <div style="position:absolute;width:200px;height:200px;top:-70px;left:-50px;background:#E24B4A;border-radius:50%;filter:blur(45px);opacity:.18"></div>
-      <div style="position:absolute;width:150px;height:150px;bottom:-50px;right:20%;background:#E24B4A;border-radius:50%;filter:blur(45px);opacity:.18"></div>
-      <div style="position:absolute;width:130px;height:130px;top:10px;right:-30px;background:#7c3aed;border-radius:50%;filter:blur(45px);opacity:.18"></div>
+    <div class="ai-wow-particles">
+      <div class="ai-wow-p ai-wow-p1"></div>
+      <div class="ai-wow-p ai-wow-p2"></div>
+      <div class="ai-wow-p ai-wow-p3"></div>
     </div>
 
-    <!-- TOP: title row -->
-    <div style="padding:22px 28px 14px;display:flex;align-items:center;gap:12px;position:relative;z-index:2;border-bottom:0.5px solid rgba(255,255,255,0.06)">
-      <div style="display:inline-flex;align-items:center;gap:5px;background:rgba(226,74,74,0.2);border:1px solid rgba(226,74,74,0.4);color:#ff8a8a;font-size:11px;font-weight:700;padding:4px 11px;border-radius:20px;letter-spacing:.5px;flex-shrink:0">
-        <span style="width:5px;height:5px;border-radius:50%;background:#E24B4A;display:inline-block;animation:aiDot 1.4s infinite"></span>
-        YANGI
-      </div>
-      <div style="font-size:19px;font-weight:700;color:#fff;letter-spacing:-.2px;white-space:nowrap">
-        AZMed <span style="color:#E24B4A;text-shadow:0 0 18px rgba(226,74,74,0.4)">AI</span> — Tibbiy maslahatchi
-      </div>
+    <!-- TOP -->
+    <div class="ai-wow-top">
+      <div class="ai-wow-badge"><span class="ai-wow-dot"></span>YANGI</div>
+      <div class="ai-wow-title">AZMed <span>AI</span> — Tibbiy maslahatchi</div>
     </div>
 
     <!-- MIDDLE -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;padding:16px 28px;gap:8px;position:relative;z-index:2">
-      <!-- Left -->
-      <div style="display:flex;flex-direction:column;justify-content:center;gap:10px">
-        <div style="font-size:12px;color:rgba(255,255,255,0.55);line-height:1.65">Protokollar asosida klinik fikrlaydigan sun'iy intellekt</div>
-        <div style="display:flex;flex-direction:column;gap:6px">
-          <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,0.65);padding:6px 12px;background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.09);border-radius:10px">
-            <i class="ti ti-book-2" style="font-size:14px;color:#E24B4A"></i>Kitoblar asosida
-          </div>
-          <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,0.65);padding:6px 12px;background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.09);border-radius:10px">
-            <i class="ti ti-brain" style="font-size:14px;color:#E24B4A"></i>Klinik fikrlash
-          </div>
-          <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,0.65);padding:6px 12px;background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.09);border-radius:10px">
-            <i class="ti ti-stethoscope" style="font-size:14px;color:#E24B4A"></i>Shifokorlar uchun
-          </div>
+    <div class="ai-wow-mid">
+      <div class="ai-wow-left">
+        <div class="ai-wow-desc">Protokollar asosida klinik fikrlaydigan sun'iy intellekt</div>
+        <div class="ai-wow-feats">
+          <div class="ai-wow-feat"><i class="ti ti-book-2"></i>Kitoblar asosida</div>
+          <div class="ai-wow-feat"><i class="ti ti-brain"></i>Klinik fikrlash</div>
+          <div class="ai-wow-feat"><i class="ti ti-stethoscope"></i>Shifokorlar uchun</div>
         </div>
       </div>
-      <!-- Right: Robot + Chats -->
-      <div style="display:flex;align-items:center;justify-content:center;gap:14px">
-        <div style="animation:aiFloat 3s ease-in-out infinite;flex-shrink:0;filter:drop-shadow(0 6px 20px rgba(226,74,74,0.2))">
+      <div class="ai-wow-right">
+        <div class="ai-wow-robot">
           <svg width="90" height="110" viewBox="0 0 105 128" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <radialGradient id="aiWg" cx="40%" cy="25%" r="65%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#dde0f0"/></radialGradient>
@@ -1166,14 +1214,8 @@
             <circle cx="52" cy="4" r="3.5" fill="#E24B4A"/>
             <rect x="20" y="16" width="64" height="50" rx="18" fill="url(#aiWg)" stroke="rgba(255,255,255,0.3)" stroke-width="0.5"/>
             <rect x="28" y="23" width="48" height="36" rx="10" fill="#13101e"/>
-            <circle cx="42" cy="41" r="9" fill="#0a0812"/>
-            <circle cx="42" cy="41" r="6.5" fill="url(#aiEg)"/>
-            <circle cx="42" cy="41" r="2.8" fill="#fff" opacity=".95"/>
-            <circle cx="40.5" cy="39.5" r="1.2" fill="#fff" opacity=".5"/>
-            <circle cx="62" cy="41" r="9" fill="#0a0812"/>
-            <circle cx="62" cy="41" r="6.5" fill="url(#aiEg)"/>
-            <circle cx="62" cy="41" r="2.8" fill="#fff" opacity=".95"/>
-            <circle cx="60.5" cy="39.5" r="1.2" fill="#fff" opacity=".5"/>
+            <circle cx="42" cy="41" r="9" fill="#0a0812"/><circle cx="42" cy="41" r="6.5" fill="url(#aiEg)"/><circle cx="42" cy="41" r="2.8" fill="#fff" opacity=".95"/><circle cx="40.5" cy="39.5" r="1.2" fill="#fff" opacity=".5"/>
+            <circle cx="62" cy="41" r="9" fill="#0a0812"/><circle cx="62" cy="41" r="6.5" fill="url(#aiEg)"/><circle cx="62" cy="41" r="2.8" fill="#fff" opacity=".95"/><circle cx="60.5" cy="39.5" r="1.2" fill="#fff" opacity=".5"/>
             <path d="M42 52 Q52 60 62 52" fill="none" stroke="#E24B4A" stroke-width="2" stroke-linecap="round"/>
             <rect x="9" y="27" width="11" height="24" rx="5.5" fill="url(#aiWg)"/>
             <rect x="85" y="27" width="11" height="24" rx="5.5" fill="url(#aiWg)"/>
@@ -1189,38 +1231,32 @@
             <rect x="57" y="116" width="15" height="8" rx="4" fill="url(#aiWg)"/>
           </svg>
         </div>
-        <div style="display:flex;flex-direction:column;gap:7px;flex:1">
-          <div style="padding:8px 13px;border-radius:4px 12px 12px 12px;font-size:11px;font-weight:500;line-height:1.4;background:rgba(226,74,74,0.15);color:#ff8a8a;border:0.5px solid rgba(226,74,74,0.2)">Gipertonik krizda birinchi yordam?</div>
-          <div style="padding:8px 13px;border-radius:12px 4px 12px 12px;font-size:11px;font-weight:500;line-height:1.4;background:rgba(100,160,255,0.15);color:#8ab4ff;border:0.5px solid rgba(100,160,255,0.2);align-self:flex-end">Anafilaktik shok algoritmi?</div>
-          <div style="padding:8px 13px;border-radius:4px 12px 12px 12px;font-size:11px;font-weight:500;line-height:1.4;background:rgba(100,220,150,0.15);color:#6ddc9a;border:0.5px solid rgba(100,220,150,0.2)">Migren uchun qanday dori?</div>
-          <div style="display:flex;align-items:center;gap:6px;margin-top:2px">
-            <div style="width:20px;height:20px;border-radius:50%;background:#E24B4A;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-              <svg width="11" height="11" viewBox="0 0 12 12" fill="#fff"><path d="M6 1l1.2 3.6L11 6 7.2 7.4 6 11 4.8 7.4 1 6l3.8-1.4z"/></svg>
-            </div>
-            <div style="font-size:10px;color:rgba(255,255,255,0.4)">
-              <div style="font-size:11px;color:rgba(255,255,255,0.7);font-weight:600">AI yordamchi</div>
-              <div style="display:flex;align-items:center;gap:3px;color:#4ade80">
-                <span style="width:5px;height:5px;border-radius:50%;background:#4ade80;display:inline-block"></span>24/7 siz bilan
-              </div>
-            </div>
+        <div class="ai-wow-chats">
+          <div class="ai-wow-cb ai-wow-cb1">Gipertonik krizda birinchi yordam?</div>
+          <div class="ai-wow-cb ai-wow-cb2">Anafilaktik shok algoritmi?</div>
+          <div class="ai-wow-cb ai-wow-cb3">Migren uchun qanday dori?</div>
+          <div class="ai-wow-footer">
+            <div class="ai-wow-ic"><svg width="11" height="11" viewBox="0 0 12 12" fill="#fff"><path d="M6 1l1.2 3.6L11 6 7.2 7.4 6 11 4.8 7.4 1 6z"/></svg></div>
+            <div><div class="ai-wow-ic-name">AI yordamchi</div><div class="ai-wow-online"><span class="ai-wow-green"></span>24/7 siz bilan</div></div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- BOTTOM: full button -->
-    <div style="padding:0 28px 22px;position:relative;z-index:2">
-      <div style="width:100%;background:#E24B4A;color:#fff;border-radius:14px;padding:14px;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 24px rgba(226,74,74,0.35)">
-        <i class="ti ti-robot" style="font-size:18px"></i>
-        AI dan foydalanish
-        <i class="ti ti-arrow-right" style="font-size:16px"></i>
+    <!-- BOTTOM BUTTON -->
+    <div class="ai-wow-bottom">
+      <div class="ai-wow-btn">
+        <!-- Yulduzlar -->
+        <span class="ai-star-wrap">
+          <svg class="ai-star ai-star1" viewBox="0 0 24 24" fill="#fff"><path d="M12 2l2 7h7l-5.5 4 2 7L12 16l-5.5 4 2-7L3 9h7z"/></svg>
+          <svg class="ai-star ai-star2" viewBox="0 0 24 24" fill="#fff"><path d="M12 2l2 7h7l-5.5 4 2 7L12 16l-5.5 4 2-7L3 9h7z"/></svg>
+          <svg class="ai-star ai-star3" viewBox="0 0 24 24" fill="#ffe066"><path d="M12 2l2 7h7l-5.5 4 2 7L12 16l-5.5 4 2-7L3 9h7z"/></svg>
+        </span>
+        AI bilan maslahatlashish
+        <i class="ti ti-arrow-right"></i>
       </div>
     </div>
 
-    <style>
-      @keyframes aiFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-      @keyframes aiDot{0%,100%{opacity:1}50%{opacity:.2}}
-    </style>
   </div>
 
   <!-- INFO CARDS -->
