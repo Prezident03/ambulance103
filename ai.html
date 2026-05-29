@@ -369,7 +369,7 @@
 </div>
 
 <script type="module" src="app.js"></script>
-<script>
+<script type="module">
 // Theme
 const savedDark = localStorage.getItem('darkMode') === 'true';
 if(savedDark) document.body.classList.add('dark');
@@ -387,6 +387,7 @@ function updateThemeBtn(){
   else if(isDark){icon.className='ti ti-sun';if(txt)txt.textContent='Light'}
   else{icon.className='ti ti-moon';if(txt)txt.textContent='Dark'}
 }
+window.updateThemeBtn = updateThemeBtn;
 window.toggleTheme = function(){
   const isDark = document.body.classList.contains('dark');
   const isGlass = document.body.classList.contains('glass');
@@ -418,11 +419,61 @@ window.closeSb = function(){
 // AI config
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 let groqKey = '';
-let aiBooks = '';
 let aiBookNames = [];
+let aiBooksList = []; // [{name, content}]
+let ragChunks = [];   // [{text, bookName, idx}]
+let bm25Index = null;
 let history = [];
 let chats = JSON.parse(localStorage.getItem('azmedChats') || '[]');
 let currentChatId = null;
+
+// ===== BM25 RAG TIZIMI =====
+class BM25 {
+  constructor(docs, k1=1.5, b=0.75) {
+    this.k1=k1; this.b=b; this.N=docs.length;
+    this.avgdl = docs.reduce((s,d)=>s+this.tok(d).length,0)/Math.max(this.N,1);
+    this.tf = docs.map(d=>{ const t=this.tok(d),tf={};t.forEach(w=>tf[w]=(tf[w]||0)+1);return{tf,len:t.length}; });
+    const df={};
+    docs.forEach(d=>{ new Set(this.tok(d)).forEach(w=>df[w]=(df[w]||0)+1); });
+    this.idf={};
+    for(const[w,f]of Object.entries(df))
+      this.idf[w]=Math.log((this.N-f+0.5)/(f+0.5)+1);
+  }
+  tok(t){ return t.toLowerCase().split(/[\s,.:;()\[\]]+/).filter(w=>w.length>2); }
+  score(query,i){
+    const{tf,len}=this.tf[i];
+    return this.tok(query).reduce((s,w)=>{
+      const idf=this.idf[w]||0,freq=tf[w]||0;
+      return s+idf*(freq*(this.k1+1))/(freq+this.k1*(1-this.b+this.b*len/this.avgdl));
+    },0);
+  }
+  search(query,topK=8){
+    return this.tf.map((_,i)=>({i,s:this.score(query,i)}))
+      .sort((a,b)=>b.s-a.s).slice(0,topK).filter(x=>x.s>0);
+  }
+}
+
+function chunkText(text, size=400, overlap=80){
+  const words=text.split(/\s+/);
+  const chunks=[];
+  for(let i=0;i<words.length;i+=size-overlap){
+    const chunk=words.slice(i,i+size).join(' ');
+    if(chunk.trim().length>50) chunks.push(chunk);
+    if(i+size>=words.length) break;
+  }
+  return chunks;
+}
+
+function buildRagIndex(books){
+  ragChunks=[];
+  books.forEach(book=>{
+    const chunks=chunkText(book.content);
+    chunks.forEach((text,idx)=>ragChunks.push({text,bookName:book.name,idx}));
+  });
+  if(ragChunks.length>0)
+    bm25Index=new BM25(ragChunks.map(c=>c.text));
+  console.log(`RAG: ${ragChunks.length} ta bo'lak indekslandi (${books.length} ta kitob)`);
+}
 
 async function loadConfig(){
   try {
@@ -431,18 +482,36 @@ async function loadConfig(){
     const keySnap = await getDoc(doc(db,'settings','aiConfig'));
     if(keySnap.exists()) groqKey = keySnap.data().groqKey||'';
     const booksSnap = await getDocs(collection(db,'aiBooks'));
-    let txt=''; aiBookNames=[];
+    aiBookNames=[]; aiBooksList=[];
     booksSnap.forEach(d=>{
-      txt+=`\n\n=== ${d.data().name} ===\n${d.data().content}`;
       aiBookNames.push(d.data().name);
+      aiBooksList.push({name:d.data().name, content:d.data().content||''});
     });
-    aiBooks=txt;
+    buildRagIndex(aiBooksList);
     const el=document.getElementById('sbBookText');
-    if(el) el.textContent=booksSnap.empty?'Kitob yuklanmagan':`${booksSnap.size} ta kitob yuklangan`;
-  } catch(e){}
+    if(el) el.textContent=booksSnap.empty
+      ? 'Kitob yuklanmagan'
+      : `${booksSnap.size} ta kitob · ${ragChunks.length} bo'lak`;
+  } catch(e){ console.error('Config xato:',e); }
 }
 loadConfig();
 renderChatList();
+
+function getContext(query, max=10000){
+  if(!bm25Index || !ragChunks.length) return '';
+  const expandedQ = [...expandQuery(query), ...query.split(/\s+/)].join(' ');
+  const results = bm25Index.search(expandedQ, 10);
+  let ctx='', sources=new Set();
+  for(const {i} of results){
+    const chunk=ragChunks[i];
+    if(ctx.length+chunk.text.length>max) break;
+    ctx+=chunk.text+'\n\n';
+    sources.add(chunk.bookName);
+  }
+  if(sources.size>0)
+    ctx=`[Manba: ${[...sources].join(', ')}]\n\n`+ctx;
+  return ctx;
+}
 
 // Chat history
 function renderChatList(){
@@ -486,7 +555,7 @@ window.newChat = function(){
   closeSb();
 };
 
-function loadChat(id){
+window.loadChat = function(id){
   const chat = chats.find(c=>c.id===id);
   if(!chat) return;
   currentChatId = id;
@@ -535,24 +604,7 @@ function expandQuery(query){
   return [...words].filter(w=>w.length>2);
 }
 
-function getContext(query, book, max=10000){
-  if(!book) return '';
-  const words=expandQuery(query);
-  const paras=book.split('\n').filter(p=>p.trim().length>30);
-  const scored=paras.map(p=>{
-    const pl=p.toLowerCase();
-    const score=words.reduce((s,w)=>s+(pl.includes(w)?Math.max(1,w.length/3):0),0);
-    return{p,score};
-  });
-  scored.sort((a,b)=>b.score-a.score);
-  let ctx='';
-  for(const{p,score}of scored){
-    if(score===0)break;
-    if(ctx.length+p.length>max)break;
-    ctx+=p+'\n';
-  }
-  return ctx||book.slice(0,max);
-}
+function getContextOld(){} // eski, ishlatilmaydi
 
 function now(){return new Date().toLocaleTimeString('uz',{hour:'2-digit',minute:'2-digit'})}
 
@@ -632,6 +684,8 @@ window.sendMsg=async function(){
       ? aiBookNames.map((n,i)=>`${i+1}. ${n}`).join('\n')
       : 'Hozircha hech qanday kitob yuklanmagan';
 
+    const context = getContext(msg);
+
     const system=`Siz AZMed AI — tibbiy maslahatchi sun'iy intellektsiz.
 
 MUHIM QOIDALAR:
@@ -641,11 +695,11 @@ ${bookListText}
 3. Agar savol kitoblarda yo'q bo'lsa — "Bu mavzu mening kitoblarimda yo'q, umumiy tibbiy bilimdan foydalanaman" deb ayting
 4. Agar "nechta kitob bor" deb so'ralsa — yuqoridagi ro'yxatni aniq ko'rsating
 5. O'zbek tilida javob bering
-6. Dori dozalari va protokol bosqichlarini ko'rsating
+6. Dori dozalari va protokol bosqichlarini aniq ko'rsating
 7. Oxirida: "⚠️ Yakuniy qaror shifokorga tegishli" deb yozing
 
-KITOBLAR MATNI (tegishli qismlar):
-${getContext(msg,aiBooks)}`;
+KITOBLARDAN TOPILGAN TEGISHLI BO'LAKLAR:
+${context || 'Tegishli ma\'lumot topilmadi, umumiy tibbiy bilimdan foydalanaman.'}`;
 
     const res=await fetch(GROQ_URL,{
       method:'POST',
