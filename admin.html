@@ -282,6 +282,7 @@
     <button class="admin-tab" onclick="showAdminTab('categories')">📂 Kategoriyalar</button>
     <button class="admin-tab" onclick="showAdminTab('admins')" id="adminsTabBtn" style="display:none">🔐 Adminlar</button>
     <button class="admin-tab" onclick="showAdminTab('background')" id="bgTabBtn" style="display:none">🖼️ Fon rasm</button>
+    <button class="admin-tab" onclick="showAdminTab('aibooks')" id="aiBooksTabBtn" style="display:none">🤖 AI Kitoblar</button>
   </div>
 
   <!-- KASALLIKLAR -->
@@ -544,6 +545,40 @@
     </div>
 
   </div>
+  <!-- AI KITOBLAR (faqat super admin) -->
+  <div class="section" id="section-aibooks">
+    <div class="form-card">
+      <h2>🤖 AI Maslahatchi Kitoblari</h2>
+      <div class="bg-info-box">
+        📚 Bu yerga tibbiy kitoblar matnini qo'shing — AI ulardan foydalanib klinik maslahat beradi.<br>
+        💡 Masalan: Ichki kasalliklar protokoli, Farmakologiya, Shoshilinch yordam qo'llanmasi
+      </div>
+
+      <!-- Yangi kitob qo'shish -->
+      <div class="form-group">
+        <label>Kitob nomi</label>
+        <input type="text" id="aiBookName" class="form-input" placeholder="Masalan: Ichki kasalliklar protokoli 2024">
+      </div>
+      <div class="form-group">
+        <label>Kitob matni (nusxalab kiriting)</label>
+        <textarea id="aiBookText" class="form-input" rows="8"
+          placeholder="Kitob matnini bu yerga nusxalab kiriting... (PDF dan nusxalash mumkin)"
+          style="resize:vertical;font-size:12px;line-height:1.6"></textarea>
+      </div>
+      <div id="aiBookMsg" style="font-size:13px;margin-bottom:10px;min-height:18px;color:var(--text-secondary)"></div>
+      <button class="btn-primary" onclick="saveAiBook()" style="width:100%;padding:12px">
+        📖 Kitobni saqlash
+      </button>
+
+      <hr style="margin:20px 0;border:none;border-top:1px solid var(--border)">
+
+      <!-- Saqlangan kitoblar -->
+      <h3 style="font-size:14px;font-weight:700;margin-bottom:12px;color:var(--text-primary)">
+        📚 Saqlangan kitoblar
+      </h3>
+      <div id="aiBookList"><div class="empty">Yuklanmoqda...</div></div>
+    </div>
+  </div>
 
 </div><!-- end container -->
 
@@ -690,6 +725,7 @@ onAuthStateChanged(auth, async (user) => {
   if (user.email === SUPER_ADMIN) {
     document.getElementById('adminsTabBtn').style.display = 'inline-block';
     document.getElementById('bgTabBtn').style.display = 'inline-block';
+    document.getElementById('aiBooksTabBtn').style.display = 'inline-block';
     loadBgSettings();
   } else {
     const snap = await getDocs(query(collection(db, 'admins'), where('email', '==', user.email)));
@@ -1000,7 +1036,7 @@ window.removeAdmin = async (id, email) => {
 };
 
 window.showAdminTab = (tab) => {
-  const tabs = ['diseases','drugs','users','categories','admins','background'];
+  const tabs = ['diseases','drugs','users','categories','admins','background','aibooks'];
   document.querySelectorAll('.admin-tab').forEach((b,i) => b.classList.toggle('active', tabs[i]===tab));
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById('section-'+tab).classList.add('active');
@@ -1157,7 +1193,70 @@ function clearCatForm() {
   document.querySelectorAll('.color-chip').forEach((c,i) => c.classList.toggle('selected', i===0));
 }
 
-window.goHome = () => window.location.href = 'index.html';
+// ===== AI KITOBLAR =====
+async function loadAiBookList() {
+  try {
+    const snap = await getDocs(collection(db, 'aiBooks'));
+    const list = document.getElementById('aiBookList');
+    if (snap.empty) { list.innerHTML = '<div class="empty">Hali kitob qo\'shilmagan</div>'; return; }
+    list.innerHTML = '';
+    snap.forEach(d => {
+      const data = d.data();
+      const words = data.content ? data.content.split(' ').length : 0;
+      const div = document.createElement('div');
+      div.style.cssText = 'background:var(--bg-faint);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:10px';
+      div.innerHTML = `
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--text-primary)">📖 ${data.name}</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px">~${words.toLocaleString()} so'z</div>
+        </div>
+        <button onclick="deleteAiBook('${d.id}')"
+          style="background:#FCEBEB;color:#E24B4A;border:1px solid #E24B4A;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer">
+          🗑 O'chirish
+        </button>`;
+      list.appendChild(div);
+    });
+  } catch(e) {
+    document.getElementById('aiBookList').innerHTML = '<div class="empty" style="color:#E24B4A">Xatolik: ' + e.message + '</div>';
+  }
+}
+
+window.saveAiBook = async function() {
+  const name = document.getElementById('aiBookName').value.trim();
+  const content = document.getElementById('aiBookText').value.trim();
+  const msg = document.getElementById('aiBookMsg');
+  if (!name) { msg.textContent = '⚠️ Kitob nomini kiriting'; msg.style.color = '#E24B4A'; return; }
+  if (!content || content.length < 50) { msg.textContent = '⚠️ Kitob matni juda qisqa'; msg.style.color = '#E24B4A'; return; }
+  msg.textContent = '⏳ Saqlanmoqda...'; msg.style.color = 'var(--text-muted)';
+  try {
+    await addDoc(collection(db, 'aiBooks'), {
+      name, content,
+      createdAt: serverTimestamp(),
+      createdBy: currentUserEmail
+    });
+    msg.textContent = '✅ Kitob saqlandi!'; msg.style.color = '#27ae60';
+    document.getElementById('aiBookName').value = '';
+    document.getElementById('aiBookText').value = '';
+    loadAiBookList();
+  } catch(e) {
+    msg.textContent = '❌ Xatolik: ' + e.message; msg.style.color = '#E24B4A';
+  }
+};
+
+window.deleteAiBook = async function(id) {
+  if (!confirm('Bu kitobni o\'chirasizmi?')) return;
+  try {
+    await deleteDoc(doc(db, 'aiBooks', id));
+    loadAiBookList();
+  } catch(e) { alert('Xatolik: ' + e.message); }
+};
+
+// AI kitoblar tab ochilganda yuklash
+const _origShowTab = window.showAdminTab;
+window.showAdminTab = (tab) => {
+  _origShowTab(tab);
+  if (tab === 'aibooks') loadAiBookList();
+};
 window.logoutAdmin = async () => { await signOut(auth); window.location.href = 'login.html'; };
 
 // ===== FON RASM (Glass + Light alohida) =====

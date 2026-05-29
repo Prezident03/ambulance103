@@ -775,7 +775,111 @@
     body.dark .section-modal-close{background:#2a2a4a;color:#aaa;}
     .section-modal-close:hover{background:#e0e0e0;}
     .section-modal-body{overflow-y:auto;padding:12px 16px 24px;flex:1;}
-  </style>
+    /* ===== AI MASLAHATCHI SIDEBAR ===== */
+    .ai-sidebar{
+      position:fixed;
+      top:0;right:0;bottom:0;
+      width:240px;
+      background:var(--bg-card);
+      border-left:1px solid var(--border);
+      display:flex;flex-direction:column;
+      z-index:7999;
+    }
+    body:not(.dark):not(.glass) .ai-sidebar{
+      background:#ffffff;
+      border-left:1px solid #e8e8e8;
+      box-shadow:-2px 0 12px rgba(0,0,0,0.06);
+    }
+    body.glass .ai-sidebar{
+      background:rgba(8,12,24,0.65);
+      backdrop-filter:blur(32px);
+      -webkit-backdrop-filter:blur(32px);
+      border-left:0.5px solid rgba(255,255,255,0.1);
+    }
+    .ai-sidebar-header{
+      height:48px;min-height:48px;
+      background:#E24B4A;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:0 14px;
+      flex-shrink:0;
+    }
+    .ai-avatar{
+      width:32px;height:32px;border-radius:50%;
+      background:rgba(255,255,255,0.2);
+      display:flex;align-items:center;justify-content:center;
+      font-size:16px;flex-shrink:0;
+    }
+    .ai-name{font-size:13px;font-weight:700;color:#fff}
+    .ai-status{display:flex;align-items:center;gap:4px;font-size:10px;color:rgba(255,255,255,0.75)}
+    .ai-dot{width:6px;height:6px;border-radius:50%;background:#4ade80;display:inline-block;animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+    .ai-clear-btn{background:rgba(255,255,255,0.15);border:none;color:white;border-radius:8px;padding:5px 8px;cursor:pointer;font-size:14px}
+    .ai-book-status{
+      padding:8px 12px;
+      background:rgba(226,75,74,0.08);
+      border-bottom:1px solid var(--border);
+      display:flex;align-items:center;gap:6px;
+      font-size:11px;color:var(--text-secondary);
+      flex-shrink:0;
+    }
+    body.glass .ai-book-status{background:rgba(226,75,74,0.12);border-bottom-color:rgba(255,255,255,0.1);color:rgba(255,255,255,0.6)}
+    .ai-book-status i{color:#E24B4A;font-size:14px}
+    .ai-messages{
+      flex:1;overflow-y:auto;padding:12px 10px;
+      display:flex;flex-direction:column;gap:10px;
+      scrollbar-width:thin;
+    }
+    .ai-msg{display:flex;flex-direction:column}
+    .ai-msg-bot .ai-msg-bubble{
+      background:rgba(226,75,74,0.08);
+      border:1px solid rgba(226,75,74,0.15);
+      border-radius:4px 14px 14px 14px;
+      padding:10px 12px;font-size:12px;
+      color:var(--text-primary);line-height:1.6;
+    }
+    body.glass .ai-msg-bot .ai-msg-bubble{background:rgba(226,75,74,0.15);border-color:rgba(226,75,74,0.25);color:#fff}
+    .ai-msg-user{align-items:flex-end}
+    .ai-msg-user .ai-msg-bubble{
+      background:#E24B4A;color:white;
+      border-radius:14px 14px 4px 14px;
+      padding:10px 12px;font-size:12px;line-height:1.6;
+    }
+    .ai-msg-time{font-size:10px;color:var(--text-muted);margin-top:3px;padding:0 4px}
+    .ai-typing{display:flex;gap:4px;padding:10px 12px;align-items:center}
+    .ai-typing span{width:6px;height:6px;border-radius:50%;background:#E24B4A;animation:typing .8s infinite}
+    .ai-typing span:nth-child(2){animation-delay:.15s}
+    .ai-typing span:nth-child(3){animation-delay:.3s}
+    @keyframes typing{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+    .ai-input-area{
+      padding:10px;border-top:1px solid var(--border);
+      flex-shrink:0;
+      background:var(--bg-card);
+    }
+    body.glass .ai-input-area{background:transparent;border-top-color:rgba(255,255,255,0.1)}
+    .ai-input-wrap{display:flex;gap:6px;align-items:flex-end}
+    .ai-input{
+      flex:1;resize:none;border:1px solid var(--border);
+      border-radius:10px;padding:8px 10px;font-size:12px;
+      color:var(--text-primary);background:var(--bg-input);
+      outline:none;font-family:inherit;max-height:80px;
+      transition:border-color .2s;
+    }
+    .ai-input:focus{border-color:#E24B4A}
+    body.glass .ai-input{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.15);color:#fff}
+    .ai-send-btn{
+      width:34px;height:34px;border-radius:10px;
+      background:#E24B4A;border:none;color:white;
+      cursor:pointer;display:flex;align-items:center;justify-content:center;
+      font-size:16px;flex-shrink:0;transition:background .2s;
+    }
+    .ai-send-btn:hover{background:#c0392b}
+    .ai-send-btn:disabled{opacity:.5;cursor:not-allowed}
+    .ai-input-hint{font-size:10px;color:var(--text-muted);margin-top:5px;text-align:center}
+    body.glass .ai-input-hint{color:rgba(255,255,255,0.3)}
+
+    @media(max-width:768px){
+      .ai-sidebar{display:none}
+    }
 </head>
 <body>
 <div class="profile-dropdown-overlay" id="profileOverlay" onclick="closeProfile()"></div>
@@ -1126,6 +1230,52 @@
 
 </div><!-- end main -->
 </div><!-- end page-content -->
+
+<!-- ===== AI MASLAHATCHI (O'ng sidebar) ===== -->
+<div class="ai-sidebar" id="aiSidebar">
+
+  <!-- Header -->
+  <div class="ai-sidebar-header">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="ai-avatar">🩺</div>
+      <div>
+        <div class="ai-name">AZMed AI</div>
+        <div class="ai-status"><span class="ai-dot"></span>Faol</div>
+      </div>
+    </div>
+    <button class="ai-clear-btn" onclick="clearAiChat()" title="Tozalash">🗑</button>
+  </div>
+
+  <!-- Kitob holati -->
+  <div class="ai-book-status" id="aiBookStatus">
+    <i class="ti ti-book-2"></i>
+    <span id="aiBookStatusText">Kitoblar yuklanmoqda...</span>
+  </div>
+
+  <!-- Messages -->
+  <div class="ai-messages" id="aiMessages">
+    <div class="ai-msg ai-msg-bot">
+      <div class="ai-msg-bubble">
+        Salom! Men <b>AZMed AI</b> — tibbiy protokollar asosida ishlaydigan klinik maslahatchi.<br><br>
+        Bemor holati, simptomlar yoki klinik savolaringizni yozing — kitoblar asosida fikrlab javob beraman. 🩺
+      </div>
+    </div>
+  </div>
+
+  <!-- Input -->
+  <div class="ai-input-area">
+    <div class="ai-input-wrap">
+      <textarea id="aiInput" class="ai-input" rows="1"
+        placeholder="Masalan: AQB 200/110, bradikardiya 48, bosh og'riq..."
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAiMessage()}"></textarea>
+      <button class="ai-send-btn" id="aiSendBtn" onclick="sendAiMessage()">
+        <i class="ti ti-send"></i>
+      </button>
+    </div>
+    <div class="ai-input-hint">Enter — yuborish &nbsp;|&nbsp; Shift+Enter — yangi qator</div>
+  </div>
+
+</div>
 
 <!-- ALL CATEGORIES MODAL -->
 <div class="section-modal-overlay" id="allCatModal" onclick="if(event.target===this)closeAllCategoriesModal()">
@@ -1874,6 +2024,127 @@ window.filterByCategory = function(catName) {
 };
 
 loadCategories();
+
+// ===== AI MASLAHATCHI =====
+const GEMINI_API_KEY = 'AQ.Ab8RN6IKY2njMhpL90R9wcfPUQp9zCMilzPtIYAgBP9c1o5fWg';
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+let aiBooks = '';
+let aiHistory = [];
+
+// Kitoblarni Firebase dan yuklash
+async function loadAiBooks() {
+  try {
+    const { db } = await import('./firebase.js');
+    const { collection, getDocs } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+    const snap = await getDocs(collection(db, 'aiBooks'));
+    if (snap.empty) {
+      document.getElementById('aiBookStatusText').textContent = 'Kitob yuklanmagan';
+      return;
+    }
+    let text = '';
+    snap.forEach(d => { text += `\n\n=== ${d.data().name} ===\n${d.data().content}`; });
+    aiBooks = text;
+    document.getElementById('aiBookStatusText').textContent = `${snap.size} ta kitob yuklangan ✓`;
+    document.querySelector('.ai-book-status i').style.color = '#27ae60';
+  } catch(e) {
+    document.getElementById('aiBookStatusText').textContent = 'Kitob yuklashda xato';
+  }
+}
+loadAiBooks();
+
+window.sendAiMessage = async function() {
+  const input = document.getElementById('aiInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  // User xabar
+  appendAiMsg(msg, 'user');
+  input.value = '';
+  input.style.height = 'auto';
+  aiHistory.push({ role: 'user', parts: [{ text: msg }] });
+
+  // Typing indicator
+  const typingId = showTyping();
+  document.getElementById('aiSendBtn').disabled = true;
+
+  try {
+    const systemPrompt = `Siz AZMed AI — o'zbek tibbiy protokollari va kitoblari asosida ishlaydigan klinik maslahatchi siz.
+
+QOIDALAR:
+1. Faqat tibbiy savollarga javob bering
+2. Quyidagi kitoblar mazmunidan foydalaning
+3. Kitobda yo'q bo'lsa, umumiy tibbiy bilimdan foydalaning
+4. Har doim oxirida: "Yakuniy qaror shifokorga tegishli" deb yozing
+5. O'zbek tilida javob bering
+6. Aniq, qisqa, klinik jihatdan foydali javob bering
+7. Dori dozalarini, protokol bosqichlarini ko'rsating
+
+KITOBLAR MATNI:
+${aiBooks || 'Hozircha kitob yuklanmagan, umumiy tibbiy bilimdan foydalanamiz.'}`;
+
+    const response = await fetch(GEMINI_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: systemPrompt }] },
+        contents: aiHistory,
+        generationConfig: { temperature: 0.3, maxOutputTokens: 1024 }
+      })
+    });
+
+    const data = await response.json();
+    removeTyping(typingId);
+
+    if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
+      const reply = data.candidates[0].content.parts[0].text;
+      appendAiMsg(reply, 'bot');
+      aiHistory.push({ role: 'model', parts: [{ text: reply }] });
+    } else {
+      appendAiMsg('Xatolik yuz berdi. Qaytadan urinib ko\'ring.', 'bot');
+    }
+  } catch(e) {
+    removeTyping(typingId);
+    appendAiMsg('Tarmoq xatosi: ' + e.message, 'bot');
+  }
+  document.getElementById('aiSendBtn').disabled = false;
+};
+
+function appendAiMsg(text, role) {
+  const msgs = document.getElementById('aiMessages');
+  const now = new Date().toLocaleTimeString('uz', {hour:'2-digit', minute:'2-digit'});
+  const div = document.createElement('div');
+  div.className = `ai-msg ai-msg-${role}`;
+  // Markdown-like formatting
+  const formatted = text
+    .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+    .replace(/\*(.*?)\*/g, '<i>$1</i>')
+    .replace(/\n/g, '<br>');
+  div.innerHTML = `<div class="ai-msg-bubble">${formatted}</div><div class="ai-msg-time">${now}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showTyping() {
+  const msgs = document.getElementById('aiMessages');
+  const id = 'typing_' + Date.now();
+  const div = document.createElement('div');
+  div.className = 'ai-msg ai-msg-bot';
+  div.id = id;
+  div.innerHTML = `<div class="ai-msg-bubble"><div class="ai-typing"><span></span><span></span><span></span></div></div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return id;
+}
+function removeTyping(id) {
+  document.getElementById(id)?.remove();
+}
+
+window.clearAiChat = function() {
+  aiHistory = [];
+  const msgs = document.getElementById('aiMessages');
+  msgs.innerHTML = `<div class="ai-msg ai-msg-bot"><div class="ai-msg-bubble">Salom! Men <b>AZMed AI</b> — tibbiy protokollar asosida ishlaydigan klinik maslahatchi.<br><br>Bemor holati, simptomlar yoki klinik savolaringizni yozing — kitoblar asosida fikrlab javob beraman. 🩺</div></div>`;
+};
 
 // ===== SIDEBAR =====
 window.toggleSidebar = function() {
