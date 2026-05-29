@@ -2067,18 +2067,21 @@ window.sendAiMessage = async function() {
   const msg = input.value.trim();
   if (!msg) return;
 
-  // User xabar
+  if (!geminiApiKey) {
+    appendAiMsg('⚠️ API key yuklanmagan. Sahifani yangilang yoki admin paneldan API keyni tekshiring.', 'bot');
+    return;
+  }
+
   appendAiMsg(msg, 'user');
   input.value = '';
   input.style.height = 'auto';
   aiHistory.push({ role: 'user', parts: [{ text: msg }] });
 
-  // Typing indicator
   const typingId = showTyping();
   document.getElementById('aiSendBtn').disabled = true;
 
   try {
-    const systemPrompt = `Siz AZMed AI — o'zbek tibbiy protokollari va kitoblari asosida ishlaydigan klinik maslahatchi siz.
+    const systemText = `Siz AZMed AI — o'zbek tibbiy protokollari asosida ishlaydigan klinik maslahatchi.
 
 QOIDALAR:
 1. Faqat tibbiy savollarga javob bering
@@ -2086,35 +2089,49 @@ QOIDALAR:
 3. Kitobda yo'q bo'lsa, umumiy tibbiy bilimdan foydalaning
 4. Har doim oxirida: "Yakuniy qaror shifokorga tegishli" deb yozing
 5. O'zbek tilida javob bering
-6. Aniq, qisqa, klinik jihatdan foydali javob bering
-7. Dori dozalarini, protokol bosqichlarini ko'rsating
+6. Aniq, klinik jihatdan foydali javob bering — dori dozalari, protokol bosqichlari
 
-KITOBLAR MATNI:
-${aiBooks || 'Hozircha kitob yuklanmagan, umumiy tibbiy bilimdan foydalanamiz.'}`;
+KITOBLAR:
+${aiBooks || 'Umumiy tibbiy bilimdan foydalanamiz.'}`;
+
+    // System promptni birinchi user xabar sifatida qo'shamiz
+    const contents = [
+      { role: 'user', parts: [{ text: systemText + '\n\nTushundingizmi? Tayyor bo\'lsangiz "Tayyor" deb yozing.' }] },
+      { role: 'model', parts: [{ text: 'Tayyor. Tibbiy savollaringizni yozing.' }] },
+      ...aiHistory
+    ];
 
     const response = await fetch(GEMINI_URL_BASE + geminiApiKey, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        system_instruction: { parts: [{ text: systemPrompt }] },
-        contents: aiHistory,
-        generationConfig: { temperature: 0.3, maxOutputTokens: 1024 }
+        contents,
+        generationConfig: {
+          temperature: 0.3,
+          maxOutputTokens: 1500,
+          topP: 0.8
+        }
       })
     });
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error?.message || response.statusText);
+    }
 
     const data = await response.json();
     removeTyping(typingId);
 
-    if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
-      const reply = data.candidates[0].content.parts[0].text;
+    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (reply) {
       appendAiMsg(reply, 'bot');
       aiHistory.push({ role: 'model', parts: [{ text: reply }] });
     } else {
-      appendAiMsg('Xatolik yuz berdi. Qaytadan urinib ko\'ring.', 'bot');
+      appendAiMsg('Javob kelmadi. Qaytadan urinib ko\'ring.', 'bot');
     }
   } catch(e) {
     removeTyping(typingId);
-    appendAiMsg('Tarmoq xatosi: ' + e.message, 'bot');
+    appendAiMsg('❌ Xatolik: ' + e.message, 'bot');
   }
   document.getElementById('aiSendBtn').disabled = false;
 };
