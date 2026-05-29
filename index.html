@@ -796,19 +796,32 @@
     .ai-wow-p1{width:200px;height:200px;top:-70px;left:-50px;background:#E24B4A}
     .ai-wow-p2{width:150px;height:150px;bottom:-50px;right:20%;background:#E24B4A}
     .ai-wow-p3{width:130px;height:130px;top:10px;right:-30px;background:#7c3aed}
-    .ai-wow-top{padding:22px 28px 14px;display:flex;align-items:center;gap:12px;position:relative;z-index:2;border-bottom:0.5px solid rgba(255,255,255,0.06)}
+    .ai-wow-top{padding:18px 20px 12px;display:flex;align-items:center;gap:10px;position:relative;z-index:2;border-bottom:0.5px solid rgba(255,255,255,0.06);flex-wrap:wrap}
     .ai-wow-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(226,74,74,0.2);border:1px solid rgba(226,74,74,0.45);color:#ff8a8a;font-size:11px;font-weight:700;padding:4px 11px;border-radius:20px;letter-spacing:.5px;flex-shrink:0}
     .ai-wow-dot{width:5px;height:5px;border-radius:50%;background:#E24B4A;display:inline-block;animation:aiDot 1.4s infinite;box-shadow:0 0 5px #E24B4A}
     @keyframes aiDot{0%,100%{opacity:1}50%{opacity:.2}}
-    .ai-wow-title{font-size:19px;font-weight:700;color:#fff;letter-spacing:-.2px;white-space:nowrap}
+    .ai-wow-title{font-size:17px;font-weight:700;color:#fff;letter-spacing:-.2px}
     .ai-wow-title span{color:#E24B4A;text-shadow:0 0 18px rgba(226,74,74,0.4)}
-    .ai-wow-mid{display:grid;grid-template-columns:1fr 1fr;padding:16px 28px;gap:8px;position:relative;z-index:2}
+
+    /* MIDDLE — Desktop: 2 ustun, Mobil: 1 ustun */
+    .ai-wow-mid{display:grid;grid-template-columns:1fr 1fr;padding:14px 20px;gap:12px;position:relative;z-index:2}
+    @media(max-width:600px){
+      .ai-wow-mid{grid-template-columns:1fr;padding:12px 16px;gap:14px}
+      .ai-wow-top{padding:16px 16px 12px}
+      .ai-wow-title{font-size:15px}
+      .ai-wow-bottom{padding:0 16px 18px}
+    }
+
     .ai-wow-left{display:flex;flex-direction:column;justify-content:center;gap:10px}
     .ai-wow-desc{font-size:12px;color:rgba(255,255,255,0.55);line-height:1.65}
     .ai-wow-feats{display:flex;flex-direction:column;gap:6px}
     .ai-wow-feat{display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,0.65);padding:6px 12px;background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.09);border-radius:10px}
     .ai-wow-feat i{font-size:14px;color:#E24B4A}
-    .ai-wow-right{display:flex;align-items:center;justify-content:center;gap:14px}
+
+    .ai-wow-right{display:flex;align-items:center;justify-content:center;gap:12px}
+    @media(max-width:600px){
+      .ai-wow-right{justify-content:flex-start}
+    }
     .ai-wow-robot{animation:aiFloat 3s ease-in-out infinite;flex-shrink:0;filter:drop-shadow(0 6px 20px rgba(226,74,74,0.25))}
     @keyframes aiFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
     .ai-wow-chats{display:flex;flex-direction:column;gap:7px;flex:1}
@@ -823,9 +836,9 @@
     .ai-wow-green{width:5px;height:5px;border-radius:50%;background:#4ade80;display:inline-block;animation:aiDot 2s infinite}
 
     /* BOTTOM BUTTON */
-    .ai-wow-bottom{padding:0 28px 22px;position:relative;z-index:2}
+    .ai-wow-bottom{padding:0 20px 20px;position:relative;z-index:2}
     .ai-wow-btn{
-      width:100%;background:#E24B4A;color:#fff;border-radius:14px;padding:14px;
+      width:100%;background:#E24B4A;color:#fff;border-radius:14px;padding:13px;
       font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;
       gap:10px;box-shadow:0 4px 24px rgba(226,74,74,0.4);letter-spacing:.1px;
       transition:background .15s,box-shadow .15s;position:relative;overflow:hidden;
