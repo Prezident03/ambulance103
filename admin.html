@@ -1326,18 +1326,48 @@ async function loadAiBookList() {
     const snap = await getDocs(collection(db, 'aiBooks'));
     const list = document.getElementById('aiBookList');
     if (snap.empty) { list.innerHTML = '<div class="empty">Hali kitob qo\'shilmagan</div>'; return; }
-    list.innerHTML = '';
+
+    // Qismlarni guruhlash
+    const groups = new Map();
+    const singles = [];
     snap.forEach(d => {
       const data = d.data();
-      const words = data.content ? data.content.split(' ').length : 0;
+      if (data.groupId) {
+        if (!groups.has(data.groupId)) {
+          groups.set(data.groupId, { ids:[], name: data.originalName||data.name, words:0, parts:data.parts, groupId:data.groupId });
+        }
+        const g = groups.get(data.groupId);
+        g.ids.push(d.id);
+        g.words += data.content ? data.content.split(' ').length : 0;
+      } else {
+        singles.push({ id:d.id, name:data.name, words: data.content ? data.content.split(' ').length : 0 });
+      }
+    });
+
+    list.innerHTML = '';
+    // Oddiy kitoblar
+    singles.forEach(b => {
       const div = document.createElement('div');
       div.style.cssText = 'background:var(--bg-faint);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:10px';
-      div.innerHTML = `
-        <div>
-          <div style="font-size:13px;font-weight:700;color:var(--text-primary)">📖 ${data.name}</div>
-          <div style="font-size:11px;color:var(--text-muted);margin-top:2px">~${words.toLocaleString()} so'z</div>
+      div.innerHTML = `<div>
+          <div style="font-size:13px;font-weight:700;color:var(--text-primary)">📖 ${b.name}</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px">~${b.words.toLocaleString()} so'z</div>
         </div>
-        <button onclick="deleteAiBook('${d.id}')"
+        <button onclick="deleteAiBook('${b.id}',null)"
+          style="background:#FCEBEB;color:#E24B4A;border:1px solid #E24B4A;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer">
+          🗑 O'chirish
+        </button>`;
+      list.appendChild(div);
+    });
+    // Katta kitoblar (qismlarga bo'lingan)
+    groups.forEach(g => {
+      const div = document.createElement('div');
+      div.style.cssText = 'background:var(--bg-faint);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:10px';
+      div.innerHTML = `<div>
+          <div style="font-size:13px;font-weight:700;color:var(--text-primary)">📖 ${g.name}</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px">~${g.words.toLocaleString()} so'z · ${g.parts} qismga bo'lingan</div>
+        </div>
+        <button onclick="deleteAiBook('${g.ids[0]}','${g.groupId}')"
           style="background:#FCEBEB;color:#E24B4A;border:1px solid #E24B4A;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer">
           🗑 O'chirish
         </button>`;
@@ -1352,28 +1382,66 @@ window.saveAiBook = async function() {
   const name = document.getElementById('aiBookName').value.trim();
   const content = document.getElementById('aiBookText').value.trim();
   const msg = document.getElementById('aiBookMsg');
+  const btn = document.getElementById('saveAiBookBtn');
   if (!name) { msg.textContent = '⚠️ Kitob nomini kiriting'; msg.style.color = '#E24B4A'; return; }
   if (!content || content.length < 50) { msg.textContent = '⚠️ Kitob matni juda qisqa'; msg.style.color = '#E24B4A'; return; }
-  msg.textContent = '⏳ Saqlanmoqda...'; msg.style.color = 'var(--text-muted)';
+
+  btn.disabled = true;
+  const MAX = 700000; // ~700KB — Firestore limiti 1MB, xavfsiz chegara
+
   try {
-    await addDoc(collection(db, 'aiBooks'), {
-      name, content,
-      createdAt: serverTimestamp(),
-      createdBy: currentUserEmail
-    });
-    msg.textContent = '✅ Kitob saqlandi!'; msg.style.color = '#27ae60';
+    if (content.length <= MAX) {
+      // Kichik kitob — bitta document
+      msg.textContent = '⏳ Saqlanmoqda...'; msg.style.color = 'var(--text-muted)';
+      await addDoc(collection(db, 'aiBooks'), {
+        name, content, parts: 1, part: 1,
+        createdAt: serverTimestamp(), createdBy: currentUserEmail
+      });
+      msg.textContent = '✅ Kitob saqlandi!'; msg.style.color = '#27ae60';
+    } else {
+      // Katta kitob — bo'laklarga bo'lib saqlash
+      const totalParts = Math.ceil(content.length / MAX);
+      msg.textContent = `⏳ Katta kitob: ${totalParts} qismga bo'linmoqda...`;
+      msg.style.color = 'var(--text-muted)';
+
+      // Bitta group ID bilan bog'laymiz
+      const groupId = 'book_' + Date.now();
+      for (let i = 0; i < totalParts; i++) {
+        const chunk = content.slice(i * MAX, (i + 1) * MAX);
+        await addDoc(collection(db, 'aiBooks'), {
+          name: `${name} (${i+1}/${totalParts})`,
+          content: chunk,
+          groupId, parts: totalParts, part: i + 1,
+          originalName: name,
+          createdAt: serverTimestamp(), createdBy: currentUserEmail
+        });
+        msg.textContent = `⏳ ${i+1}/${totalParts} qism saqlandi...`;
+        msg.style.color = 'var(--text-muted)';
+      }
+      msg.textContent = `✅ Kitob ${totalParts} qismga bo'lib saqlandi!`;
+      msg.style.color = '#27ae60';
+    }
     document.getElementById('aiBookName').value = '';
     document.getElementById('aiBookText').value = '';
     loadAiBookList();
   } catch(e) {
     msg.textContent = '❌ Xatolik: ' + e.message; msg.style.color = '#E24B4A';
   }
+  btn.disabled = false;
 };
 
-window.deleteAiBook = async function(id) {
+window.deleteAiBook = async function(id, groupId) {
   if (!confirm('Bu kitobni o\'chirasizmi?')) return;
   try {
-    await deleteDoc(doc(db, 'aiBooks', id));
+    if (groupId) {
+      // Barcha qismlarni o'chiramiz
+      const snap = await getDocs(collection(db, 'aiBooks'));
+      const batch = [];
+      snap.forEach(d => { if (d.data().groupId === groupId) batch.push(d.id); });
+      for (const bid of batch) await deleteDoc(doc(db, 'aiBooks', bid));
+    } else {
+      await deleteDoc(doc(db, 'aiBooks', id));
+    }
     loadAiBookList();
   } catch(e) { alert('Xatolik: ' + e.message); }
 };
