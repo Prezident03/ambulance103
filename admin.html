@@ -566,23 +566,50 @@
     <div class="form-card">
       <h2>🤖 AI Maslahatchi Kitoblari</h2>
       <div class="bg-info-box">
-        📚 Bu yerga tibbiy kitoblar matnini qo'shing — AI ulardan foydalanib klinik maslahat beradi.<br>
+        📚 PDF kitobni to'g'ridan-to'g'ri yuklang — matn avtomatik olinadi<br>
         💡 Masalan: Ichki kasalliklar protokoli, Farmakologiya, Shoshilinch yordam qo'llanmasi
       </div>
+
       <div class="form-group">
         <label>Kitob nomi</label>
-        <input type="text" id="aiBookName" class="form-input" placeholder="Masalan: Ichki kasalliklar protokoli 2024">
+        <input type="text" id="aiBookName" class="form-input" placeholder="Masalan: Shoshilinch tez tibbiy yordam">
       </div>
+
+      <!-- PDF yuklash -->
       <div class="form-group">
-        <label>Kitob matni (nusxalab kiriting)</label>
-        <textarea id="aiBookText" class="form-input" rows="8"
+        <label>PDF kitob yuklash</label>
+        <div class="bg-upload-area" id="pdfUploadArea"
+             ondragover="event.preventDefault();this.classList.add('drag-over')"
+             ondragleave="this.classList.remove('drag-over')"
+             ondrop="handlePdfDrop(event)">
+          <input type="file" accept=".pdf" id="pdfFileInput" onchange="handlePdfFile(event)">
+          <span class="bg-upload-icon">📄</span>
+          <div class="bg-upload-title">PDF faylni tanlang yoki tashlang</div>
+          <div class="bg-upload-hint">Faqat <b>PDF</b> format | Har qanday hajm</div>
+        </div>
+        <div id="pdfProgress" style="display:none;margin-top:10px">
+          <div style="height:4px;background:var(--border);border-radius:4px;overflow:hidden">
+            <div id="pdfProgressBar" style="height:100%;width:0%;background:#E24B4A;transition:width .3s"></div>
+          </div>
+          <div id="pdfProgressText" style="font-size:12px;color:var(--text-muted);margin-top:6px;text-align:center"></div>
+        </div>
+      </div>
+
+      <!-- Yoki matn kiriting -->
+      <div style="text-align:center;margin:8px 0;font-size:12px;color:var(--text-muted)">— yoki —</div>
+
+      <div class="form-group">
+        <label>Matnni nusxalab kiriting</label>
+        <textarea id="aiBookText" class="form-input" rows="6"
           placeholder="Kitob matnini bu yerga nusxalab kiriting..."
           style="resize:vertical;font-size:12px;line-height:1.6"></textarea>
       </div>
+
       <div id="aiBookMsg" style="font-size:13px;margin-bottom:10px;min-height:18px;color:var(--text-secondary)"></div>
-      <button class="btn-primary" onclick="saveAiBook()" style="width:100%;padding:12px">
+      <button class="btn-primary" onclick="saveAiBook()" id="saveAiBookBtn" style="width:100%;padding:12px">
         📖 Kitobni saqlash
       </button>
+
       <hr style="margin:20px 0;border:none;border-top:1px solid var(--border)">
       <h3 style="font-size:14px;font-weight:700;margin-bottom:12px;color:var(--text-primary)">
         📚 Saqlangan kitoblar
@@ -1205,6 +1232,83 @@ function clearCatForm() {
 }
 
 // ===== AI KITOBLAR =====
+// PDF.js CDN
+const PDFJS_URL = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+let pdfjsLib = null;
+
+async function loadPdfJs() {
+  if (pdfjsLib) return pdfjsLib;
+  return new Promise((resolve) => {
+    const script = document.createElement('script');
+    script.src = PDFJS_URL;
+    script.onload = () => {
+      pdfjsLib = window['pdfjs-dist/build/pdf'];
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      resolve(pdfjsLib);
+    };
+    document.head.appendChild(script);
+  });
+}
+
+window.handlePdfDrop = function(e) {
+  e.preventDefault();
+  document.getElementById('pdfUploadArea').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type === 'application/pdf') processPdfFile(file);
+};
+
+window.handlePdfFile = function(e) {
+  const file = e.target.files[0];
+  if (file) processPdfFile(file);
+};
+
+async function processPdfFile(file) {
+  const msg = document.getElementById('aiBookMsg');
+  const progress = document.getElementById('pdfProgress');
+  const bar = document.getElementById('pdfProgressBar');
+  const progressText = document.getElementById('pdfProgressText');
+  const btn = document.getElementById('saveAiBookBtn');
+
+  // Kitob nomi avtomatik
+  if (!document.getElementById('aiBookName').value.trim()) {
+    document.getElementById('aiBookName').value = file.name.replace('.pdf','').replace(/_/g,' ');
+  }
+
+  msg.textContent = '⏳ PDF o\'qilmoqda...'; msg.style.color = 'var(--text-muted)';
+  progress.style.display = 'block';
+  bar.style.width = '0%';
+  btn.disabled = true;
+
+  try {
+    const lib = await loadPdfJs();
+    const arrayBuffer = await file.arrayBuffer();
+    const pdfDoc = await lib.getDocument({ data: arrayBuffer }).promise;
+    const totalPages = pdfDoc.numPages;
+    let fullText = '';
+
+    for (let i = 1; i <= totalPages; i++) {
+      const page = await pdfDoc.getPage(i);
+      const content = await page.getTextContent();
+      const pageText = content.items.map(item => item.str).join(' ');
+      fullText += pageText + '\n';
+
+      const pct = Math.round((i / totalPages) * 100);
+      bar.style.width = pct + '%';
+      progressText.textContent = `${i} / ${totalPages} sahifa o'qildi (${pct}%)`;
+    }
+
+    document.getElementById('aiBookText').value = fullText;
+    const words = fullText.split(/\s+/).length;
+    msg.textContent = `✅ ${totalPages} sahifa o'qildi — ~${words.toLocaleString()} so'z tayyor!`;
+    msg.style.color = '#27ae60';
+    btn.disabled = false;
+  } catch(e) {
+    msg.textContent = '❌ PDF o\'qishda xato: ' + e.message;
+    msg.style.color = '#E24B4A';
+    btn.disabled = false;
+  }
+}
+
 window.saveGeminiKey = async function() {
   const key = document.getElementById('geminiKeyInput').value.trim();
   const msg = document.getElementById('geminiKeyMsg');
