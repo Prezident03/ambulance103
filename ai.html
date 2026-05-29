@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AZMed AI — Tibbiy Maslahatchi</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🩺</text></svg>">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+
+    :root{
+      --bg:#f0f4f8;
+      --bg-card:#ffffff;
+      --bg-input:#ffffff;
+      --text-primary:#111111;
+      --text-secondary:#555555;
+      --text-muted:#888888;
+      --border:#e0e0e0;
+      --red:#E24B4A;
+    }
+    body.dark{
+      --bg:#0f0f1a;
+      --bg-card:#1a1a2e;
+      --bg-input:#252535;
+      --text-primary:#f0f0f0;
+      --text-secondary:#aaaaaa;
+      --text-muted:#666666;
+      --border:#2a2a3e;
+    }
+    body.glass{
+      --bg:transparent;
+      --bg-card:rgba(255,255,255,0.06);
+      --text-primary:#ffffff;
+      --text-secondary:rgba(255,255,255,0.7);
+      --border:rgba(255,255,255,0.12);
+    }
+    body.glass::before{
+      content:'';position:fixed;inset:0;z-index:-2;
+      background:#050810;
+    }
+    body.glass::after{
+      content:'';position:fixed;inset:0;z-index:-1;
+      background:
+        radial-gradient(ellipse at 10% 15%,rgba(226,75,74,0.35) 0%,transparent 45%),
+        radial-gradient(ellipse at 90% 10%,rgba(52,100,219,0.38) 0%,transparent 45%),
+        radial-gradient(ellipse at 50% 50%,rgba(100,50,180,0.22) 0%,transparent 55%);
+    }
+
+    body{
+      font-family:Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text-primary);
+      height:100dvh;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      transition:background .3s,color .3s;
+    }
+
+    /* TOPBAR */
+    .ai-topbar{
+      background:var(--red);
+      color:white;
+      padding:0 16px;
+      height:56px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      flex-shrink:0;
+      z-index:100;
+    }
+    .ai-topbar-left{display:flex;align-items:center;gap:12px}
+    .ai-back-btn{
+      background:rgba(255,255,255,0.15);border:none;color:white;
+      width:34px;height:34px;border-radius:10px;
+      cursor:pointer;display:flex;align-items:center;justify-content:center;
+      font-size:18px;transition:background .15s;
+    }
+    .ai-back-btn:hover{background:rgba(255,255,255,0.25)}
+    .ai-topbar-avatar{
+      width:36px;height:36px;border-radius:50%;
+      background:rgba(255,255,255,0.2);
+      display:flex;align-items:center;justify-content:center;font-size:18px;
+    }
+    .ai-topbar-info h1{font-size:15px;font-weight:700;color:#fff}
+    .ai-topbar-status{display:flex;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,0.75)}
+    .ai-status-dot{width:6px;height:6px;border-radius:50%;background:#4ade80;animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+    .ai-topbar-right{display:flex;align-items:center;gap:8px}
+    .ai-book-badge{
+      background:rgba(255,255,255,0.15);color:#fff;
+      border-radius:20px;padding:4px 10px;
+      font-size:11px;font-weight:600;
+      display:flex;align-items:center;gap:4px;
+    }
+    .ai-clear-btn{
+      background:rgba(255,255,255,0.15);border:none;color:white;
+      width:34px;height:34px;border-radius:10px;
+      cursor:pointer;display:flex;align-items:center;justify-content:center;
+      font-size:16px;transition:background .15s;
+    }
+    .ai-clear-btn:hover{background:rgba(255,255,255,0.25)}
+
+    /* CHAT AREA */
+    .ai-chat{
+      flex:1;overflow-y:auto;
+      padding:20px 16px;
+      display:flex;flex-direction:column;gap:14px;
+      scrollbar-width:thin;
+    }
+    @media(min-width:768px){
+      .ai-chat{padding:24px calc(50% - 340px)}
+    }
+
+    /* MESSAGES */
+    .ai-msg{display:flex;flex-direction:column;max-width:85%}
+    .ai-msg-bot{align-self:flex-start}
+    .ai-msg-user{align-self:flex-end}
+    .ai-bubble-bot{
+      background:var(--bg-card);
+      border:1px solid var(--border);
+      border-radius:4px 16px 16px 16px;
+      padding:12px 16px;
+      font-size:14px;line-height:1.7;
+      color:var(--text-primary);
+    }
+    body.glass .ai-bubble-bot{
+      background:rgba(255,255,255,0.08);
+      backdrop-filter:blur(12px);
+      border:0.5px solid rgba(255,255,255,0.15);
+    }
+    .ai-bubble-user{
+      background:var(--red);color:white;
+      border-radius:16px 16px 4px 16px;
+      padding:12px 16px;font-size:14px;line-height:1.7;
+    }
+    .ai-msg-time{font-size:11px;color:var(--text-muted);margin-top:4px;padding:0 4px}
+    .ai-msg-user .ai-msg-time{text-align:right}
+
+    /* TYPING */
+    .ai-typing{display:flex;gap:5px;align-items:center;padding:12px 16px}
+    .ai-typing span{width:7px;height:7px;border-radius:50%;background:var(--red);animation:typing .8s infinite}
+    .ai-typing span:nth-child(2){animation-delay:.15s}
+    .ai-typing span:nth-child(3){animation-delay:.3s}
+    @keyframes typing{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+
+    /* WELCOME */
+    .ai-welcome{
+      text-align:center;padding:40px 20px;
+    }
+    .ai-welcome-icon{
+      width:72px;height:72px;border-radius:50%;
+      background:rgba(226,75,74,0.1);border:2px solid rgba(226,75,74,0.2);
+      display:flex;align-items:center;justify-content:center;
+      margin:0 auto 16px;font-size:32px;
+    }
+    body.glass .ai-welcome-icon{background:rgba(226,75,74,0.2)}
+    .ai-welcome h2{font-size:20px;font-weight:700;color:var(--text-primary);margin-bottom:8px}
+    .ai-welcome p{font-size:14px;color:var(--text-secondary);line-height:1.6;max-width:400px;margin:0 auto 24px}
+    .ai-suggestions{display:flex;flex-direction:column;gap:8px;max-width:480px;margin:0 auto}
+    .ai-suggestion{
+      background:var(--bg-card);border:1px solid var(--border);
+      border-radius:12px;padding:12px 16px;
+      font-size:13px;color:var(--text-primary);
+      cursor:pointer;text-align:left;
+      transition:all .15s;display:flex;align-items:center;gap:10px;
+    }
+    .ai-suggestion:hover{border-color:var(--red);color:var(--red);transform:translateX(4px)}
+    body.glass .ai-suggestion{background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.12)}
+    .ai-suggestion i{color:var(--red);font-size:16px;flex-shrink:0}
+
+    /* INPUT */
+    .ai-input-wrap{
+      padding:12px 16px;
+      border-top:1px solid var(--border);
+      background:var(--bg-card);
+      flex-shrink:0;
+    }
+    body.glass .ai-input-wrap{
+      background:rgba(15,15,30,0.7);
+      backdrop-filter:blur(20px);
+      border-top-color:rgba(255,255,255,0.1);
+    }
+    @media(min-width:768px){
+      .ai-input-wrap{padding:12px calc(50% - 340px)}
+    }
+    .ai-input-row{display:flex;gap:10px;align-items:flex-end}
+    .ai-textarea{
+      flex:1;resize:none;
+      border:1.5px solid var(--border);
+      border-radius:14px;padding:12px 16px;
+      font-size:14px;color:var(--text-primary);
+      background:var(--bg-input);
+      outline:none;font-family:inherit;
+      max-height:120px;line-height:1.5;
+      transition:border-color .2s;
+    }
+    .ai-textarea:focus{border-color:var(--red)}
+    body.glass .ai-textarea{
+      background:rgba(255,255,255,0.08);
+      border-color:rgba(255,255,255,0.15);color:#fff;
+    }
+    .ai-textarea::placeholder{color:var(--text-muted)}
+    .ai-send{
+      width:44px;height:44px;border-radius:14px;
+      background:var(--red);border:none;color:white;
+      cursor:pointer;display:flex;align-items:center;justify-content:center;
+      font-size:18px;flex-shrink:0;transition:background .15s,transform .1s;
+    }
+    .ai-send:hover{background:#c0392b;transform:scale(1.05)}
+    .ai-send:disabled{opacity:.5;cursor:not-allowed;transform:none}
+    .ai-input-hint{font-size:11px;color:var(--text-muted);margin-top:6px;text-align:center}
+  </style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="ai-topbar">
+  <div class="ai-topbar-left">
+    <button class="ai-back-btn" onclick="window.location.href='index.html'" title="Orqaga">
+      <i class="ti ti-arrow-left"></i>
+    </button>
+    <div class="ai-topbar-avatar">🩺</div>
+    <div class="ai-topbar-info">
+      <h1>AZMed AI</h1>
+      <div class="ai-topbar-status">
+        <span class="ai-status-dot"></span>
+        <span>Faol — klinik maslahatchi</span>
+      </div>
+    </div>
+  </div>
+  <div class="ai-topbar-right">
+    <div class="ai-book-badge" id="bookBadge">
+      <i class="ti ti-book-2"></i>
+      <span id="bookBadgeText">Yuklanmoqda...</span>
+    </div>
+    <button class="ai-clear-btn" onclick="clearChat()" title="Chatni tozalash">
+      <i class="ti ti-trash"></i>
+    </button>
+  </div>
+</div>
+
+<!-- CHAT -->
+<div class="ai-chat" id="aiChat">
+  <!-- Welcome screen -->
+  <div class="ai-welcome" id="aiWelcome">
+    <div class="ai-welcome-icon">🩺</div>
+    <h2>AZMed AI ga xush kelibsiz</h2>
+    <p>Tibbiy protokollar va kitoblar asosida klinik fikrlaydigan sun'iy intellekt. Bemor holati, simptomlar yoki klinik savollaringizni yozing.</p>
+    <div class="ai-suggestions">
+      <button class="ai-suggestion" onclick="fillInput(this.dataset.q)" data-q="Bemor AQB 200/110, bosh og'riq, ko'ngil aynish. Gipertonik kriz. Birinchi yordam qanday?">
+        <i class="ti ti-heart-rate-monitor"></i>
+        Gipertonik kriz — birinchi yordam
+      </button>
+      <button class="ai-suggestion" onclick="fillInput(this.dataset.q)" data-q="Bemor 60 yoshda, ko'krak og'rig'i, sovuq ter, qo'l og'rig'i. Miokard infarkti shubhasi. Nima qilaman?">
+        <i class="ti ti-heart"></i>
+        Miokard infarkti shubhasi
+      </button>
+      <button class="ai-suggestion" onclick="fillInput(this.dataset.q)" data-q="Anafilaktik shok — belgilari va shoshilinch yordam protokoli qanday?">
+        <i class="ti ti-alert-triangle"></i>
+        Anafilaktik shok protokoli
+      </button>
+      <button class="ai-suggestion" onclick="fillInput(this.dataset.q)" data-q="Qand kasalligi, gipoglikemiya holati. Bemor hushini yo'qotish arafasida. Qanday yordam beraman?">
+        <i class="ti ti-droplet"></i>
+        Gipoglikemiya — shoshilinch yordam
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- INPUT -->
+<div class="ai-input-wrap">
+  <div class="ai-input-row">
+    <textarea id="aiInput" class="ai-textarea" rows="1"
+      placeholder="Bemor holati, simptomlar yoki klinik savolni yozing..."
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}"
+      oninput="autoResize(this)"></textarea>
+    <button class="ai-send" id="sendBtn" onclick="sendMsg()">
+      <i class="ti ti-send"></i>
+    </button>
+  </div>
+  <div class="ai-input-hint">Enter — yuborish &nbsp;·&nbsp; Shift+Enter — yangi qator</div>
+</div>
+
+<script type="module" src="app.js"></script>
+<script>
+// Dark/glass mode
+const savedDark = localStorage.getItem('darkMode') === 'true';
+if (savedDark) document.body.classList.add('dark');
+const savedGlass = localStorage.getItem('glassMode') === 'true';
+if (savedGlass) document.body.classList.add('glass');
+
+// AI config
+const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
+let groqKey = '';
+let aiBooks = '';
+let history = [];
+
+async function loadConfig() {
+  try {
+    const { db } = await import('./firebase.js');
+    const { collection, getDocs, doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+    const keySnap = await getDoc(doc(db, 'settings', 'aiConfig'));
+    if (keySnap.exists()) groqKey = keySnap.data().groqKey || '';
+    const booksSnap = await getDocs(collection(db, 'aiBooks'));
+    let txt = '';
+    booksSnap.forEach(d => { txt += `\n\n=== ${d.data().name} ===\n${d.data().content}`; });
+    aiBooks = txt;
+    const badge = document.getElementById('bookBadgeText');
+    badge.textContent = booksSnap.empty ? 'Kitob yo\'q' : `${booksSnap.size} ta kitob`;
+    document.getElementById('bookBadge').style.background = booksSnap.empty ? 'rgba(255,255,255,0.1)' : 'rgba(74,222,128,0.25)';
+  } catch(e) {
+    document.getElementById('bookBadgeText').textContent = 'Xato';
+  }
+}
+loadConfig();
+
+function expandQuery(query) {
+  const synonyms = {
+    'gipertoniya':['arterial gipertenziya','aqb yuqori','qon bosimi','gipertenziya','bosim'],
+    'gipertenziya':['gipertoniya','arterial gipertenziya','aqb','qon bosimi'],
+    'aqb':['arterial qon bosimi','qon bosimi','bosim','gipertenziya'],
+    'kriz':['gipertonik kriz','gipertenziv kriz','bosim ko\'tarilishi'],
+    'infarkt':['miokard infarkti','yurak infarkti','omi'],
+    'insult':['miya qon aylanishi','miya infarkti','gemorragik','ishemik insult'],
+    'stenokardiya':['yurak og\'rig\'i','angina pectoris','koronar'],
+    'taxikardiya':['yurak tez urishi','aritmiya'],
+    'bradikardiya':['yurak sekin urishi','aritmiya'],
+    'aritmiya':['yurak ritmi','taxikardiya','bradikardiya'],
+    'astma':['bronxial astma','nafas qisilishi','bronxospazm'],
+    'diabet':['qand kasalligi','giperglikemiya','insulin','saxarli diabet'],
+    'giperglikemiya':['qand yuqori','diabet','glyukoza'],
+    'gipoglikemiya':['qand past','insulin','glyukoza past'],
+    'shok':['gipovolemik shok','anafilaktik shok','septik shok','kardiogen shok'],
+    'anafilaksiya':['anafilaktik shok','allergik shok'],
+    'reanimatsiya':['yurak to\'xtashi','nafas to\'xtashi','cpr'],
+    'isitma':['temperatura','gipetermiya','febril'],
+    'zaharlanish':['intoksikatsiya','toksikoz'],
+  };
+  const ql = query.toLowerCase();
+  const words = new Set(ql.split(/\s+/).filter(w=>w.length>2));
+  for(const [k,syns] of Object.entries(synonyms)){
+    if(ql.includes(k)) syns.forEach(s=>s.split(' ').forEach(w=>words.add(w)));
+    for(const s of syns) if(ql.includes(s)){words.add(k);syns.forEach(x=>x.split(' ').forEach(w=>words.add(w)));}
+  }
+  return [...words].filter(w=>w.length>2);
+}
+
+function getContext(query, book, maxChars=10000) {
+  if(!book) return '';
+  const words = expandQuery(query);
+  const paras = book.split('\n').filter(p=>p.trim().length>30);
+  const scored = paras.map(p=>{
+    const pl=p.toLowerCase();
+    const score=words.reduce((s,w)=>s+(pl.includes(w)?Math.max(1,w.length/3):0),0);
+    return {p,score};
+  });
+  scored.sort((a,b)=>b.score-a.score);
+  let ctx='';
+  for(const {p,score} of scored){
+    if(score===0) break;
+    if(ctx.length+p.length>maxChars) break;
+    ctx+=p+'\n';
+  }
+  return ctx||book.slice(0,maxChars);
+}
+
+function now(){return new Date().toLocaleTimeString('uz',{hour:'2-digit',minute:'2-digit'})}
+
+function appendMsg(text, role) {
+  document.getElementById('aiWelcome')?.remove();
+  const chat = document.getElementById('aiChat');
+  const div = document.createElement('div');
+  div.className = `ai-msg ai-msg-${role}`;
+  const formatted = text.replace(/\*\*(.*?)\*\*/g,'<b>$1</b>').replace(/\*(.*?)\*/g,'<i>$1</i>').replace(/\n/g,'<br>');
+  div.innerHTML = `<div class="ai-bubble-${role}">${formatted}</div><div class="ai-msg-time">${now()}</div>`;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function showTyping() {
+  document.getElementById('aiWelcome')?.remove();
+  const chat = document.getElementById('aiChat');
+  const id = 'typing_'+Date.now();
+  const div = document.createElement('div');
+  div.id = id; div.className = 'ai-msg ai-msg-bot';
+  div.innerHTML = `<div class="ai-bubble-bot"><div class="ai-typing"><span></span><span></span><span></span></div></div>`;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+  return id;
+}
+
+window.fillInput = function(q) {
+  document.getElementById('aiInput').value = q;
+  autoResize(document.getElementById('aiInput'));
+  document.getElementById('aiInput').focus();
+};
+
+window.clearChat = function() {
+  history = [];
+  const chat = document.getElementById('aiChat');
+  chat.innerHTML = '';
+  // Welcome qayta ko'rsatish
+  const w = document.createElement('div');
+  w.id = 'aiWelcome'; w.className = 'ai-welcome';
+  w.innerHTML = `<div class="ai-welcome-icon">🩺</div><h2>Chat tozalandi</h2><p>Yangi savol yozing.</p>`;
+  chat.appendChild(w);
+};
+
+window.autoResize = function(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+};
+
+window.sendMsg = async function() {
+  const input = document.getElementById('aiInput');
+  const msg = input.value.trim();
+  if(!msg) return;
+  if(!groqKey){ appendMsg('⚠️ API key yuklanmagan.', 'bot'); return; }
+
+  appendMsg(msg, 'user');
+  history.push({role:'user', content:msg});
+  input.value=''; input.style.height='auto';
+
+  const tid = showTyping();
+  document.getElementById('sendBtn').disabled = true;
+
+  try {
+    const ctx = getContext(msg, aiBooks);
+    const system = `Siz AZMed AI — o'zbek tibbiy protokollari asosida ishlaydigan klinik maslahatchi.
+QOIDALAR: Faqat tibbiy savollarga javob bering. O'zbek tilida, aniq va klinik jihatdan foydali javob bering. Dori dozalari va protokol bosqichlarini ko'rsating. Oxirida: "⚠️ Yakuniy qaror shifokorga tegishli" deb yozing.
+KITOB PARCHALARI:\n${ctx||'Umumiy tibbiy bilimdan foydalanamiz.'}`;
+
+    const res = await fetch(GROQ_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${groqKey}`},
+      body:JSON.stringify({
+        model:'llama-3.3-70b-versatile',
+        messages:[{role:'system',content:system},...history.slice(-6)],
+        temperature:0.3, max_tokens:1500
+      })
+    });
+    if(!res.ok){const e=await res.json();throw new Error(e.error?.message||res.statusText);}
+    const data = await res.json();
+    document.getElementById(tid)?.remove();
+    const reply = data.choices?.[0]?.message?.content;
+    if(reply){appendMsg(reply,'bot');history.push({role:'assistant',content:reply});}
+    else appendMsg('Javob kelmadi.','bot');
+  } catch(e) {
+    document.getElementById(tid)?.remove();
+    appendMsg('❌ Xatolik: '+e.message,'bot');
+  }
+  document.getElementById('sendBtn').disabled = false;
+};
+</script>
+</body>
+</html>
