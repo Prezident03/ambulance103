@@ -255,7 +255,7 @@
       min-width:240px;
       position:fixed;
       top:0;left:0;bottom:0;
-      z-index:9000;
+      z-index:7999;
       background:var(--bg-card);
       border-right:1px solid var(--border);
       display:flex;
@@ -353,13 +353,14 @@
       min-width:0;
       transition:margin .3s;
     }
-    .topbar{padding-left:16px}
+    .topbar{padding-left:16px;position:sticky;top:0;z-index:8000}
 
     /* Mobile — sidebar yashirin */
     @media(max-width:768px){
       .sidebar{transform:translateX(-100%)}
       .sidebar.open{transform:translateX(0)}
       .page-content{margin-left:0}
+      .topbar{padding-left:8px}
       .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:8999}
       .sidebar-overlay.show{display:block}
       .sidebar-menu-btn{display:flex !important}
