@@ -367,12 +367,22 @@
 
     /* Mobile — sidebar yashirin */
     @media(max-width:768px){
-      .sidebar{transform:translateX(-100%)}
+      .sidebar{
+        transform:translateX(-100%);
+        z-index:99000;
+        box-shadow:4px 0 20px rgba(0,0,0,0.3);
+      }
       .sidebar.open{transform:translateX(0)}
-      .page-content{margin-left:0}
-      .main{max-width:100%;padding:10px 14px}
-      .topbar{padding-left:8px}
-      .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:8999}
+      .page-content{margin-left:0 !important}
+      .main{padding:10px 14px}
+      .topbar{padding-left:4px}
+      .sidebar-overlay{
+        display:none;
+        position:fixed;
+        inset:0;
+        background:rgba(0,0,0,0.55);
+        z-index:98999;
+      }
       .sidebar-overlay.show{display:block}
       .sidebar-menu-btn{display:flex !important}
     }
@@ -382,10 +392,17 @@
     }
     .sidebar-menu-btn{
       display:none;
-      background:none;border:none;
-      color:white;font-size:22px;cursor:pointer;
-      padding:4px 8px;margin-right:4px;
-      align-items:center;justify-content:center;
+      background:rgba(255,255,255,0.15);
+      border:none;
+      border-radius:8px;
+      color:white;
+      font-size:20px;
+      cursor:pointer;
+      padding:5px 8px;
+      margin-right:6px;
+      align-items:center;
+      justify-content:center;
+      line-height:1;
     }
 
     /* ===== INFO NEON CARDS — LIGHT MODE OVERRIDE ===== */
