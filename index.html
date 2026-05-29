@@ -2026,17 +2026,25 @@ window.filterByCategory = function(catName) {
 loadCategories();
 
 // ===== AI MASLAHATCHI =====
-const GEMINI_API_KEY = 'AQ.Ab8RN6IKY2njMhpL90R9wcfPUQp9zCMilzPtIYAgBP9c1o5fWg';
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+const GEMINI_URL_BASE = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=';
 
 let aiBooks = '';
 let aiHistory = [];
+let geminiApiKey = '';
 
-// Kitoblarni Firebase dan yuklash
-async function loadAiBooks() {
+// API key va kitoblarni Firebase dan yuklash
+async function loadAiConfig() {
   try {
     const { db } = await import('./firebase.js');
-    const { collection, getDocs } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+    const { collection, getDocs, doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+
+    // API key
+    const keySnap = await getDoc(doc(db, 'settings', 'aiConfig'));
+    if (keySnap.exists() && keySnap.data().geminiKey) {
+      geminiApiKey = keySnap.data().geminiKey;
+    }
+
+    // Kitoblar
     const snap = await getDocs(collection(db, 'aiBooks'));
     if (snap.empty) {
       document.getElementById('aiBookStatusText').textContent = 'Kitob yuklanmagan';
@@ -2048,10 +2056,10 @@ async function loadAiBooks() {
     document.getElementById('aiBookStatusText').textContent = `${snap.size} ta kitob yuklangan ✓`;
     document.querySelector('.ai-book-status i').style.color = '#27ae60';
   } catch(e) {
-    document.getElementById('aiBookStatusText').textContent = 'Kitob yuklashda xato';
+    document.getElementById('aiBookStatusText').textContent = 'Yuklashda xato';
   }
 }
-loadAiBooks();
+loadAiConfig();
 
 window.sendAiMessage = async function() {
   const input = document.getElementById('aiInput');
@@ -2083,7 +2091,7 @@ QOIDALAR:
 KITOBLAR MATNI:
 ${aiBooks || 'Hozircha kitob yuklanmagan, umumiy tibbiy bilimdan foydalanamiz.'}`;
 
-    const response = await fetch(GEMINI_URL, {
+    const response = await fetch(GEMINI_URL_BASE + geminiApiKey, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

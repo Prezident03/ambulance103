@@ -547,14 +547,28 @@
   </div>
   <!-- AI KITOBLAR (faqat super admin) -->
   <div class="section" id="section-aibooks">
+    <div class="form-card" style="margin-bottom:16px">
+      <h2>🔑 Gemini API Key</h2>
+      <div class="bg-info-box">
+        🔒 API key GitHub da ko'rinmaydi — Firebase da xavfsiz saqlanadi<br>
+        🌐 <a href="https://aistudio.google.com" target="_blank" style="color:#378ADD">aistudio.google.com</a> dan oling — bepul!
+      </div>
+      <div class="form-group">
+        <label>API Key</label>
+        <input type="password" id="geminiKeyInput" class="form-input" placeholder="AQ.Ab8...">
+      </div>
+      <div id="geminiKeyMsg" style="font-size:13px;margin-bottom:10px;min-height:18px;color:var(--text-secondary)"></div>
+      <button class="btn-primary" onclick="saveGeminiKey()" style="width:100%;padding:12px">
+        🔑 API Keyni saqlash
+      </button>
+    </div>
+
     <div class="form-card">
       <h2>🤖 AI Maslahatchi Kitoblari</h2>
       <div class="bg-info-box">
         📚 Bu yerga tibbiy kitoblar matnini qo'shing — AI ulardan foydalanib klinik maslahat beradi.<br>
         💡 Masalan: Ichki kasalliklar protokoli, Farmakologiya, Shoshilinch yordam qo'llanmasi
       </div>
-
-      <!-- Yangi kitob qo'shish -->
       <div class="form-group">
         <label>Kitob nomi</label>
         <input type="text" id="aiBookName" class="form-input" placeholder="Masalan: Ichki kasalliklar protokoli 2024">
@@ -562,17 +576,14 @@
       <div class="form-group">
         <label>Kitob matni (nusxalab kiriting)</label>
         <textarea id="aiBookText" class="form-input" rows="8"
-          placeholder="Kitob matnini bu yerga nusxalab kiriting... (PDF dan nusxalash mumkin)"
+          placeholder="Kitob matnini bu yerga nusxalab kiriting..."
           style="resize:vertical;font-size:12px;line-height:1.6"></textarea>
       </div>
       <div id="aiBookMsg" style="font-size:13px;margin-bottom:10px;min-height:18px;color:var(--text-secondary)"></div>
       <button class="btn-primary" onclick="saveAiBook()" style="width:100%;padding:12px">
         📖 Kitobni saqlash
       </button>
-
       <hr style="margin:20px 0;border:none;border-top:1px solid var(--border)">
-
-      <!-- Saqlangan kitoblar -->
       <h3 style="font-size:14px;font-weight:700;margin-bottom:12px;color:var(--text-primary)">
         📚 Saqlangan kitoblar
       </h3>
@@ -1194,6 +1205,17 @@ function clearCatForm() {
 }
 
 // ===== AI KITOBLAR =====
+window.saveGeminiKey = async function() {
+  const key = document.getElementById('geminiKeyInput').value.trim();
+  const msg = document.getElementById('geminiKeyMsg');
+  if (!key) { msg.textContent = '⚠️ API keyni kiriting'; msg.style.color = '#E24B4A'; return; }
+  msg.textContent = '⏳ Saqlanmoqda...'; msg.style.color = 'var(--text-muted)';
+  try {
+    await setDoc(doc(db, 'settings', 'aiConfig'), { geminiKey: key, updatedAt: serverTimestamp() }, { merge: true });
+    msg.textContent = '✅ API key xavfsiz saqlandi!'; msg.style.color = '#27ae60';
+    document.getElementById('geminiKeyInput').value = '';
+  } catch(e) { msg.textContent = '❌ ' + e.message; msg.style.color = '#E24B4A'; }
+};
 async function loadAiBookList() {
   try {
     const snap = await getDocs(collection(db, 'aiBooks'));
