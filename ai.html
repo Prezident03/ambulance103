@@ -659,7 +659,18 @@ function appendMsg(text, role, scroll=true){
       <div class="ai-msg-avatar user"><i class="ti ti-user"></i></div>`;
   }
   inner.appendChild(div);
-  if(scroll){const c=document.getElementById('aiChat');c.scrollTop=c.scrollHeight;}
+  if(scroll){
+    const chatEl = document.getElementById('aiChat');
+    if(role === 'bot'){
+      // Bot javobini boshidan o'qisin — xabar tepasiga scroll
+      setTimeout(()=>{
+        div.scrollIntoView({behavior:'smooth', block:'start'});
+      }, 50);
+    } else {
+      // User xabari — pastga scroll
+      chatEl.scrollTop = chatEl.scrollHeight;
+    }
+  }
 }
 
 function showTyping(){
