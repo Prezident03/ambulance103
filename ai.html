@@ -453,13 +453,30 @@ class BM25 {
   }
 }
 
-function chunkText(text, size=400, overlap=80){
-  const words=text.split(/\s+/);
-  const chunks=[];
-  for(let i=0;i<words.length;i+=size-overlap){
-    const chunk=words.slice(i,i+size).join(' ');
-    if(chunk.trim().length>50) chunks.push(chunk);
-    if(i+size>=words.length) break;
+function chunkText(text, size=300, overlap=60){
+  // Paragraflar bo'yicha bo'lish — mazmunli bo'laklar
+  const paragraphs = text.split(/\n{2,}/).filter(p=>p.trim().length>30);
+  const chunks = [];
+  let current = '';
+  for(const para of paragraphs){
+    if((current+para).split(/\s+/).length > size){
+      if(current.trim()) chunks.push(current.trim());
+      // Overlap: oxirgi 60 so'zni keyingi bo'lakka qo'shamiz
+      const words = current.split(/\s+/);
+      current = words.slice(-overlap).join(' ') + '\n\n' + para;
+    } else {
+      current += (current ? '\n\n' : '') + para;
+    }
+  }
+  if(current.trim()) chunks.push(current.trim());
+  // Agar paragraf bo'linmasa — oddiy so'z bo'yicha
+  if(chunks.length === 0){
+    const words = text.split(/\s+/);
+    for(let i=0;i<words.length;i+=size-overlap){
+      const chunk=words.slice(i,i+size).join(' ');
+      if(chunk.trim().length>50) chunks.push(chunk);
+      if(i+size>=words.length) break;
+    }
   }
   return chunks;
 }
@@ -467,8 +484,10 @@ function chunkText(text, size=400, overlap=80){
 function buildRagIndex(books){
   ragChunks=[];
   books.forEach(book=>{
+    // Originalname bo'lsa uni ishlatamiz
+    const bookName = book.originalName || book.name;
     const chunks=chunkText(book.content);
-    chunks.forEach((text,idx)=>ragChunks.push({text,bookName:book.name,idx}));
+    chunks.forEach((text,idx)=>ragChunks.push({text,bookName,idx}));
   });
   if(ragChunks.length>0)
     bm25Index=new BM25(ragChunks.map(c=>c.text));
@@ -497,20 +516,30 @@ async function loadConfig(){
 loadConfig();
 renderChatList();
 
-function getContext(query, max=10000){
+function getContext(query, max=12000){
   if(!bm25Index || !ragChunks.length) return '';
-  const expandedQ = [...expandQuery(query), ...query.split(/\s+/)].join(' ');
-  const results = bm25Index.search(expandedQ, 10);
+
+  // Kengaytirilgan qidiruv
+  const expanded = expandQuery(query);
+  const allWords = [...new Set([...expanded, ...query.toLowerCase().split(/\s+/).filter(w=>w.length>2)])];
+  const searchQ = allWords.join(' ');
+
+  // Ko'proq natija olamiz — keyin filtramiz
+  const results = bm25Index.search(searchQ, 20);
+
+  // Score > 0 bo'lganlarnigina olamiz
+  const good = results.filter(r=>r.s > 0.1);
+
   let ctx='', sources=new Set();
-  for(const {i} of results){
+  for(const {i,s} of good){
     const chunk=ragChunks[i];
     if(ctx.length+chunk.text.length>max) break;
-    ctx+=chunk.text+'\n\n';
+    ctx+=chunk.text+'\n\n---\n\n';
     sources.add(chunk.bookName);
   }
-  if(sources.size>0)
-    ctx=`[Manba: ${[...sources].join(', ')}]\n\n`+ctx;
-  return ctx;
+
+  if(!ctx) return '';
+  return `[Manba: ${[...sources].join(', ')}]\n\n${ctx}`;
 }
 
 // Chat history
@@ -690,13 +719,16 @@ window.sendMsg=async function(){
 
 MUHIM QOIDALAR:
 1. Faqat HAQIQIY ma'lumot bering — hech qachon yolg'on yoki to'qima ma'lumot bermang
-2. Faqat quyidagi kitoblar mavjud — boshqa kitoblar YO'Q:
+2. Sizda mavjud kitoblar:
 ${bookListText}
-3. Agar savol kitoblarda yo'q bo'lsa — "Bu mavzu mening kitoblarimda yo'q, umumiy tibbiy bilimdan foydalanaman" deb ayting
-4. Agar "nechta kitob bor" deb so'ralsa — yuqoridagi ro'yxatni aniq ko'rsating
-5. O'zbek tilida javob bering
-6. Dori dozalari va protokol bosqichlarini aniq ko'rsating
-7. Oxirida: "⚠️ Yakuniy qaror shifokorga tegishli" deb yozing
+3. HAR BIR MA'LUMOT KEYIN MANBASINI KO'RSATING — qaysi kitobdan olganingizni yozing
+   Misol: "Nitroglitserin 0.5 mg til ostiga qo'yiladi (📖 Klinik farmakologiya)"
+   Misol: "AQB 180 dan yuqori bo'lsa darhol harakat qiling (📖 Shoshilinch tez tibbiy yordam)"
+4. Agar ma'lumot kitobda yo'q bo'lsa — "Bu haqida kitoblarimda ma'lumot yo'q, umumiy tibbiy bilimdan: ..." deb boshlang
+5. Agar "nechta kitob bor" deb so'ralsa — ro'yxatni aniq ko'rsating
+6. O'zbek tilida javob bering
+7. Dori dozalari va protokol bosqichlarini aniq ko'rsating
+8. Oxirida: "⚠️ Yakuniy qaror shifokorga tegishli" deb yozing
 
 KITOBLARDAN TOPILGAN TEGISHLI BO'LAKLAR:
 ${context || 'Tegishli ma\'lumot topilmadi, umumiy tibbiy bilimdan foydalanaman.'}`;
@@ -706,8 +738,9 @@ ${context || 'Tegishli ma\'lumot topilmadi, umumiy tibbiy bilimdan foydalanaman.
       headers:{'Content-Type':'application/json','Authorization':`Bearer ${groqKey}`},
       body:JSON.stringify({
         model:'llama-3.3-70b-versatile',
-        messages:[{role:'system',content:system},...history.slice(-8)],
-        temperature:0.3,max_tokens:1500
+        messages:[{role:'system',content:system},...history.slice(-6)],
+        temperature:0.2,
+        max_tokens:3000
       })
     });
     if(!res.ok){const e=await res.json();throw new Error(e.error?.message||res.statusText);}
