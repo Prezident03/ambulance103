@@ -1452,6 +1452,7 @@ window.showAdminTab = (tab) => {
   _origShowTab(tab);
   if (tab === 'aibooks') loadAiBookList();
 };
+window.goHome = () => window.location.href = 'index.html';
 window.logoutAdmin = async () => { await signOut(auth); window.location.href = 'login.html'; };
 
 // ===== FON RASM (Glass + Light alohida) =====
