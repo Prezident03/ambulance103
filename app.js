@@ -54,14 +54,12 @@ onAuthStateChanged(auth, async (user) => {
   loadFromFirestore();
 });
 
-const logoutBtn = document.getElementById('logoutBtn');
-if (logoutBtn) logoutBtn.addEventListener('click', async () => {
+document.getElementById('logoutBtn').addEventListener('click', async () => {
   await signOut(auth);
   window.location.href = 'login.html';
 });
 
-const adminBtnEl = document.getElementById('adminBtn');
-if (adminBtnEl) adminBtnEl.addEventListener('click', () => {
+document.getElementById('adminBtn').addEventListener('click', () => {
   window.location.href = 'admin.html';
 });
 
@@ -206,7 +204,50 @@ window.renderFSDrugTab = function(tab) {
   if (!d) return;
   let html = '';
   if (tab === 'umumiy') {
-    html = `<h3>${d.name}</h3><span class="drug-group-badge">${d.group || '—'}</span><div class="di-box blue"><strong>Doza:</strong> ${d.dose || '—'} | <strong>Yo'li:</strong> ${d.route || '—'}</div>`;
+    html = `
+      <div style="display:flex;flex-direction:column;gap:10px">
+
+        ${d.about ? `
+        <div style="background:var(--bg-card,#fff);border:1px solid var(--border,#e8e8e8);border-radius:12px;padding:14px 16px">
+          <div style="font-size:11px;font-weight:700;color:var(--text-secondary,#777);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Umumiy ma'lumot</div>
+          <div style="font-size:13px;color:var(--text-primary,#111);line-height:1.7">${d.about}</div>
+        </div>` : ''}
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          ${d.inn ? `
+          <div style="background:var(--bg-card,#fff);border:1px solid var(--border,#e8e8e8);border-radius:12px;padding:14px 16px">
+            <div style="font-size:11px;font-weight:700;color:var(--text-secondary,#777);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:flex;align-items:center;gap:6px">
+              <span style="width:6px;height:6px;border-radius:50%;background:#2563eb;display:inline-block"></span>
+              Ta'sir etuvchi modda
+            </div>
+            <div style="font-size:13px;font-weight:600;color:var(--text-primary,#111)">${d.inn}</div>
+          </div>` : ''}
+
+          ${d.group ? `
+          <div style="background:var(--bg-card,#fff);border:1px solid var(--border,#e8e8e8);border-radius:12px;padding:14px 16px">
+            <div style="font-size:11px;font-weight:700;color:var(--text-secondary,#777);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:flex;align-items:center;gap:6px">
+              <span style="width:6px;height:6px;border-radius:50%;background:#16a34a;display:inline-block"></span>
+              Farmakologik guruh
+            </div>
+            <div style="font-size:13px;font-weight:600;color:var(--text-primary,#111)">${d.group}</div>
+          </div>` : ''}
+        </div>
+
+        <div style="background:var(--bg-card,#fff);border:1px solid var(--border,#e8e8e8);border-radius:12px;padding:14px 16px">
+          <div style="font-size:11px;font-weight:700;color:var(--text-secondary,#777);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Dozalash</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <div style="flex:1;min-width:120px;background:rgba(37,99,235,0.06);border:1px solid rgba(37,99,235,0.15);border-radius:8px;padding:10px 12px">
+              <div style="font-size:10px;color:#2563eb;font-weight:700;margin-bottom:3px">DOZA</div>
+              <div style="font-size:13px;font-weight:600;color:var(--text-primary,#111)">${d.dose || '—'}</div>
+            </div>
+            <div style="flex:1;min-width:120px;background:rgba(22,163,74,0.06);border:1px solid rgba(22,163,74,0.15);border-radius:8px;padding:10px 12px">
+              <div style="font-size:10px;color:#16a34a;font-weight:700;margin-bottom:3px">YO'LI</div>
+              <div style="font-size:13px;font-weight:600;color:var(--text-primary,#111)">${d.route || '—'}</div>
+            </div>
+          </div>
+        </div>
+
+      </div>`;
   } else if (tab === 'mexanizm') {
     html = d.mech ? `<div class="di-box blue">${d.mech}</div>` : `<div class="di-box blue">Kiritilmagan</div>`;
   } else if (tab === 'doza') {

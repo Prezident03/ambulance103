@@ -377,7 +377,7 @@
       <div class="form-grid">
         <div class="form-group"><label>Dori nomi</label><input type="text" id="drugName" placeholder="Atenolol"></div>
         <div class="form-group"><label>Dozasi</label><input type="text" id="drugDose" placeholder="25/50/100 mg"></div>
-        <div class="form-group"><label>Guruh</label><input type="text" id="drugGroup" placeholder="Beta-blokator"></div>
+        <div class="form-group"><label>Farmakologik guruh</label><input type="text" id="drugGroup" placeholder="Beta-blokator"></div>
         <div class="form-group"><label>Yo'li</label>
           <select id="drugRoute">
             <option>V/I (vena ichiga)</option><option>M/I (mushak ichiga)</option>
@@ -385,6 +385,8 @@
             <option>Til osti</option><option>Tashqi</option>
           </select>
         </div>
+        <div class="form-group full"><label>Ta'sir etuvchi modda (INN)</label><input type="text" id="drugInn" placeholder="Masalan: Metoprolol tartrat"></div>
+        <div class="form-group full"><label>Umumiy ma'lumot</label><textarea id="drugAbout" placeholder="Dori haqida qisqacha umumiy ma'lumot..."></textarea></div>
         <div class="form-group full"><label>Farmakodinamika</label><textarea id="drugMech" placeholder="Dori qanday ishlaydi..."></textarea></div>
         <div class="form-group full"><label>Ko'rsatmalar</label><textarea id="drugKorsatma" placeholder="Qachon ishlatiladi..."></textarea></div>
         <div class="form-group full"><label>Qarshi ko'rsatmalar</label><textarea id="drugQarshi" placeholder="Qachon ishlatilmaydi..."></textarea></div>
@@ -992,6 +994,8 @@ window.editDrug = async (id) => {
   document.getElementById('drugDose').value = data.dose || '';
   document.getElementById('drugGroup').value = data.group || '';
   document.getElementById('drugRoute').value = data.route || 'V/I (vena ichiga)';
+  document.getElementById('drugInn').value = data.inn || '';
+  document.getElementById('drugAbout').value = data.about || '';
   document.getElementById('drugMech').value = data.mech || '';
   document.getElementById('drugKorsatma').value = data.korsatma || '';
   document.getElementById('drugQarshi').value = data.qarshi || '';
@@ -1008,7 +1012,7 @@ window.submitDrug = async () => {
   const name = document.getElementById('drugName').value.trim();
   const dose = document.getElementById('drugDose').value.trim();
   if (!name || !dose) return alert('Nom va dozani kiriting!');
-  const payload = { name, dose, group: document.getElementById('drugGroup').value.trim(), route: document.getElementById('drugRoute').value, mech: document.getElementById('drugMech').value.trim(), korsatma: document.getElementById('drugKorsatma').value.trim(), qarshi: document.getElementById('drugQarshi').value.trim(), yon: document.getElementById('drugYon').value.trim() };
+  const payload = { name, dose, group: document.getElementById('drugGroup').value.trim(), route: document.getElementById('drugRoute').value, inn: document.getElementById('drugInn').value.trim(), about: document.getElementById('drugAbout').value.trim(), mech: document.getElementById('drugMech').value.trim(), korsatma: document.getElementById('drugKorsatma').value.trim(), qarshi: document.getElementById('drugQarshi').value.trim(), yon: document.getElementById('drugYon').value.trim() };
   if (id) { await updateDoc(doc(db, 'drugs', id), payload); showSuccess('drugSuccess', 'Dori yangilandi!'); cancelDrugEdit(); }
   else { await addDoc(collection(db, 'drugs'), { ...payload, createdAt: serverTimestamp() }); showSuccess('drugSuccess', 'Dori qo\'shildi!'); clearDrugForm(); }
   loadDrugs();
@@ -1023,7 +1027,7 @@ window.cancelDrugEdit = () => {
   clearDrugForm();
 };
 
-function clearDrugForm() { ['drugName','drugDose','drugGroup','drugMech','drugKorsatma','drugQarshi','drugYon'].forEach(id => document.getElementById(id).value = ''); }
+function clearDrugForm() { ['drugName','drugDose','drugGroup','drugInn','drugAbout','drugMech','drugKorsatma','drugQarshi','drugYon'].forEach(id => document.getElementById(id).value = ''); }
 window.deleteDrug = async (id) => { if (!confirm('Dorini o\'chirasizmi?')) return; await deleteDoc(doc(db, 'drugs', id)); loadDrugs(); };
 
 // ===== FOYDALANUVCHILAR =====
