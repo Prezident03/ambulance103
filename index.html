@@ -2225,11 +2225,19 @@ loadCategories();
 let modalFontSize = parseInt(localStorage.getItem('modalFontSize') || '100');
 
 function applyModalFont() {
-  const targets = ['tabContent', 'drugDetailContent'];
-  targets.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.style.fontSize = modalFontSize + '%';
-  });
+  // Style tag orqali — render bo'lganda ham saqlanadi
+  let styleEl = document.getElementById('modalFontStyle');
+  if (!styleEl) {
+    styleEl = document.createElement('style');
+    styleEl.id = 'modalFontStyle';
+    document.head.appendChild(styleEl);
+  }
+  styleEl.textContent = `
+    #tabContent, #drugDetailContent,
+    #tabContent *, #drugDetailContent * {
+      font-size: ${modalFontSize}% !important;
+    }
+  `;
   ['fontSizeVal','fontSizeVal2'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.textContent = modalFontSize + '%';
@@ -2238,9 +2246,7 @@ function applyModalFont() {
 applyModalFont();
 
 window.changeModalFont = function(dir) {
-  // dir: +1 = kattalashtirish, -1 = kichraytirish
-  const step = 10;
-  modalFontSize = Math.min(150, Math.max(70, modalFontSize + dir * step));
+  modalFontSize = Math.min(150, Math.max(70, modalFontSize + dir * 10));
   localStorage.setItem('modalFontSize', modalFontSize);
   applyModalFont();
 };
