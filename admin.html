@@ -388,6 +388,8 @@
         <div class="form-group full"><label>Ta'sir etuvchi modda (INN)</label><input type="text" id="drugInn" placeholder="Masalan: Metoprolol tartrat"></div>
         <div class="form-group full"><label>Umumiy ma'lumot</label><textarea id="drugAbout" placeholder="Dori haqida qisqacha umumiy ma'lumot..."></textarea></div>
         <div class="form-group full"><label>Farmakodinamika</label><textarea id="drugMech" placeholder="Dori qanday ishlaydi..."></textarea></div>
+        <div class="form-group full"><label>Farmakokinetika</label><textarea id="drugFarmakokinetika" placeholder="So'rilishi, taqsimlanishi, metabolizmi, chiqarilishi..."></textarea></div>
+        <div class="form-group full"><label>Qo'llash usuli</label><textarea id="drugQollash" placeholder="Qanday dozada va qanday yo'l bilan qo'llaniladi..."></textarea></div>
         <div class="form-group full"><label>Ko'rsatmalar</label><textarea id="drugKorsatma" placeholder="Qachon ishlatiladi..."></textarea></div>
         <div class="form-group full"><label>Qarshi ko'rsatmalar</label><textarea id="drugQarshi" placeholder="Qachon ishlatilmaydi..."></textarea></div>
         <div class="form-group full"><label>Yon ta'sirlar</label><textarea id="drugYon" placeholder="Mumkin bo'lgan yon ta'sirlar..."></textarea></div>
@@ -997,6 +999,8 @@ window.editDrug = async (id) => {
   document.getElementById('drugInn').value = data.inn || '';
   document.getElementById('drugAbout').value = data.about || '';
   document.getElementById('drugMech').value = data.mech || '';
+  document.getElementById('drugFarmakokinetika').value = data.farmakokinetika || '';
+  document.getElementById('drugQollash').value = data.qollash || '';
   document.getElementById('drugKorsatma').value = data.korsatma || '';
   document.getElementById('drugQarshi').value = data.qarshi || '';
   document.getElementById('drugYon').value = data.yon || '';
@@ -1012,7 +1016,7 @@ window.submitDrug = async () => {
   const name = document.getElementById('drugName').value.trim();
   const dose = document.getElementById('drugDose').value.trim();
   if (!name || !dose) return alert('Nom va dozani kiriting!');
-  const payload = { name, dose, group: document.getElementById('drugGroup').value.trim(), route: document.getElementById('drugRoute').value, inn: document.getElementById('drugInn').value.trim(), about: document.getElementById('drugAbout').value.trim(), mech: document.getElementById('drugMech').value.trim(), korsatma: document.getElementById('drugKorsatma').value.trim(), qarshi: document.getElementById('drugQarshi').value.trim(), yon: document.getElementById('drugYon').value.trim() };
+  const payload = { name, dose, group: document.getElementById('drugGroup').value.trim(), route: document.getElementById('drugRoute').value, inn: document.getElementById('drugInn').value.trim(), about: document.getElementById('drugAbout').value.trim(), mech: document.getElementById('drugMech').value.trim(), farmakokinetika: document.getElementById('drugFarmakokinetika').value.trim(), qollash: document.getElementById('drugQollash').value.trim(), korsatma: document.getElementById('drugKorsatma').value.trim(), qarshi: document.getElementById('drugQarshi').value.trim(), yon: document.getElementById('drugYon').value.trim() };
   if (id) { await updateDoc(doc(db, 'drugs', id), payload); showSuccess('drugSuccess', 'Dori yangilandi!'); cancelDrugEdit(); }
   else { await addDoc(collection(db, 'drugs'), { ...payload, createdAt: serverTimestamp() }); showSuccess('drugSuccess', 'Dori qo\'shildi!'); clearDrugForm(); }
   loadDrugs();
@@ -1027,7 +1031,7 @@ window.cancelDrugEdit = () => {
   clearDrugForm();
 };
 
-function clearDrugForm() { ['drugName','drugDose','drugGroup','drugInn','drugAbout','drugMech','drugKorsatma','drugQarshi','drugYon'].forEach(id => document.getElementById(id).value = ''); }
+function clearDrugForm() { ['drugName','drugDose','drugGroup','drugInn','drugAbout','drugMech','drugFarmakokinetika','drugQollash','drugKorsatma','drugQarshi','drugYon'].forEach(id => document.getElementById(id).value = ''); }
 window.deleteDrug = async (id) => { if (!confirm('Dorini o\'chirasizmi?')) return; await deleteDoc(doc(db, 'drugs', id)); loadDrugs(); };
 
 // ===== FOYDALANUVCHILAR =====

@@ -250,8 +250,14 @@ window.renderFSDrugTab = function(tab) {
       </div>`;
   } else if (tab === 'mexanizm') {
     html = d.mech ? `<div class="di-box blue">${d.mech}</div>` : `<div class="di-box blue">Kiritilmagan</div>`;
-  } else if (tab === 'doza') {
-    html = `<div class="di-box green"><strong>Doza:</strong> ${d.dose || '—'}<br><strong>Yo'li:</strong> ${d.route || '—'}</div>`;
+  } else if (tab === 'farmakokinetika') {
+    html = d.farmakokinetika
+      ? `<div class="di-box blue">${d.farmakokinetika.replace(/\n/g,'<br>')}</div>`
+      : `<div class="di-box blue" style="color:#aaa">Kiritilmagan</div>`;
+  } else if (tab === 'qollash') {
+    html = d.qollash
+      ? `<div class="di-box green">${d.qollash.replace(/\n/g,'<br>')}</div>`
+      : `<div class="di-box green" style="color:#aaa">Kiritilmagan</div>`;
   } else if (tab === 'korsatma') {
     html = d.korsatma ? `<ul class="di-list">${d.korsatma.split('\n').filter(l=>l.trim()).map(l=>`<li>${l}</li>`).join('')}</ul>` : `<div class="di-box green">Kiritilmagan</div>`;
   } else if (tab === 'qarshi') {
