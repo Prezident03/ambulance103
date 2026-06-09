@@ -729,14 +729,12 @@ window.autoResize=function(el){
   el.style.height=Math.min(el.scrollHeight,140)+'px';
 };
 
-window.sendMsg=async function(){
+window.sendMsg=async function(fromVoice){
   const input=document.getElementById('aiInput');
   const msg=input.value.trim();
   if(!msg) return;
   if(!groqKey){appendMsg('⚠️ API key yuklanmagan.','bot');return;}
-  const autoSpeak = isListening === false && isSpeaking === false
-    ? false
-    : true; // Ovoz bilan yuborilgan bo'lsa — javobni ham ovozda o'qi
+  const autoSpeak = fromVoice || voiceMode;
 
   appendMsg(msg,'user');
   history.push({role:'user',content:msg});
@@ -817,103 +815,119 @@ ${context || 'Tegishli ma\'lumot topilmadi, umumiy tibbiy bilimdan foydalanaman.
   document.getElementById('sendBtn').disabled=false;
 };
 
-// ===== OVOZ BILAN GAPIRISH =====
+// ===== OVOZLI MULOQOT TIZIMI (ChatGPT uslubida) =====
 let recognition = null;
 let isListening = false;
 let isSpeaking = false;
-let currentUtterance = null;
+let voiceMode = false;
 
-// Speech Recognition boshlash
 window.toggleVoice = function(){
-  if(isSpeaking){ stopSpeaking(); return; }
   if(!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)){
-    appendMsg('⚠️ Brauzeringiz ovoz tanishni qo\'llab-quvvatlamaydi. Chrome ishlatib ko\'ring.','bot');
+    alert('Chrome brauzerini ishlatib ko\'ring!');
     return;
   }
-  if(isListening){ stopListening(); return; }
-  startListening();
+  voiceMode = !voiceMode;
+  if(voiceMode){ startVoiceMode(); } else { stopVoiceMode(); }
 };
 
-function startListening(){
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  recognition = new SpeechRecognition();
-  recognition.lang = 'uz-UZ';
-  recognition.continuous = false;
-  recognition.interimResults = true;
+function startVoiceMode(){
+  const btn = document.getElementById('micBtn');
+  const icon = document.getElementById('micIcon');
+  btn.classList.add('listening');
+  icon.className = 'ti ti-microphone-off';
+  document.getElementById('aiInput').placeholder = '\uD83C\uDF99\uFE0F Gapiring...';
+  startListening();
+}
 
-  recognition.onstart = ()=>{
-    isListening = true;
-    document.getElementById('micBtn').classList.add('listening');
-    document.getElementById('micIcon').className = 'ti ti-microphone-off';
-    document.getElementById('aiInput').placeholder = '🎤 Gapiring...';
-  };
+function stopVoiceMode(){
+  voiceMode = false;
+  stopListening();
+  stopSpeaking();
+  document.getElementById('micBtn').classList.remove('listening');
+  document.getElementById('micIcon').className = 'ti ti-microphone';
+  document.getElementById('micBtn').style.cssText = '';
+  document.getElementById('aiInput').placeholder = 'Bemor holati yoki klinik savolni yozing...';
+}
+
+function startListening(){
+  if(isSpeaking || !voiceMode) return;
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.lang = 'ru-RU';
+  recognition.continuous = false;
+  recognition.interimResults = false;
 
   recognition.onresult = (e)=>{
-    const transcript = [...e.results].map(r=>r[0].transcript).join('');
-    document.getElementById('aiInput').value = transcript;
-    autoResize(document.getElementById('aiInput'));
-    // Gapirish tugasa avtomatik yuborish
-    if(e.results[e.results.length-1].isFinal){
-      stopListening();
-      setTimeout(()=>sendMsg(), 300);
+    const text = e.results[0][0].transcript.trim();
+    if(text){
+      document.getElementById('aiInput').value = text;
+      sendMsg(true);
     }
   };
 
   recognition.onerror = (e)=>{
-    stopListening();
-    if(e.error === 'not-allowed')
-      appendMsg('⚠️ Mikrofon ruxsati berilmagan. Brauzer sozlamalaridan ruxsat bering.','bot');
+    if(e.error === 'not-allowed'){
+      alert('Mikrofon ruxsati yo\'q!\nManzil satri yonidagi lokga bosib ruxsat bering.');
+      stopVoiceMode();
+    }
   };
 
-  recognition.onend = ()=>stopListening();
-  recognition.start();
+  recognition.onend = ()=>{
+    isListening = false;
+    if(voiceMode && !isSpeaking){
+      setTimeout(()=> startListening(), 600);
+    }
+  };
+
+  try{ recognition.start(); isListening = true; } catch(e){}
 }
 
 function stopListening(){
   isListening = false;
-  if(recognition) recognition.stop();
-  document.getElementById('micBtn').classList.remove('listening');
-  document.getElementById('micIcon').className = 'ti ti-microphone';
-  document.getElementById('aiInput').placeholder = 'Bemor holati yoki klinik savolni yozing...';
+  if(recognition){ try{ recognition.stop(); }catch(e){} }
 }
 
-// Text-to-Speech
-function speakText(text){
+function speakText(text, auto){
   if(!('speechSynthesis' in window)) return;
   stopSpeaking();
-  // Markdown va emoji larni tozalash
   const clean = text
-    .replace(/\*\*(.*?)\*\*/g,'$1')
-    .replace(/\*(.*?)\*/g,'$1')
-    .replace(/📖|⚠️|✅|❌|🔬|💊|💉/g,'')
-    .replace(/\[Manba:.*?\]/g,'')
-    .slice(0, 2000); // Max 2000 belgi
+    .replace(/\*\*(.*?)\*\*/g,'$1').replace(/\*(.*?)\*/g,'$1')
+    .replace(/\[Manba:.*?\]/g,'').replace(/<br>/g,' ').slice(0,1500);
 
-  currentUtterance = new SpeechSynthesisUtterance(clean);
-  currentUtterance.lang = 'ru-RU'; // O'zbek tili yo'q — rus eng yaqin
-  currentUtterance.rate = 0.95;
-  currentUtterance.pitch = 1;
+  const utt = new SpeechSynthesisUtterance(clean);
+  utt.lang = 'ru-RU'; utt.rate = 1.0; utt.pitch = 1;
+  const voices = speechSynthesis.getVoices();
+  const ruVoice = voices.find(v=>v.lang.startsWith('ru'));
+  if(ruVoice) utt.voice = ruVoice;
 
-  currentUtterance.onstart = ()=>{
-    isSpeaking = true;
-    document.getElementById('micIcon').className = 'ti ti-volume';
-    document.getElementById('micBtn').style.background = 'rgba(226,74,74,0.1)';
-    document.getElementById('micBtn').style.color = 'var(--red)';
+  utt.onstart = ()=>{
+    isSpeaking = true; stopListening();
+    if(voiceMode){
+      document.getElementById('micIcon').className = 'ti ti-volume';
+      document.getElementById('micBtn').style.background = 'rgba(37,99,235,0.15)';
+      document.getElementById('micBtn').style.color = '#2563eb';
+      document.getElementById('micBtn').style.borderColor = '#2563eb';
+    }
   };
-  currentUtterance.onend = ()=>stopSpeaking();
-  currentUtterance.onerror = ()=>stopSpeaking();
-  speechSynthesis.speak(currentUtterance);
+  utt.onend = ()=>{
+    isSpeaking = false;
+    document.getElementById('micBtn').style.cssText = '';
+    if(voiceMode){
+      document.getElementById('micIcon').className = 'ti ti-microphone-off';
+      document.getElementById('micBtn').classList.add('listening');
+      setTimeout(()=> startListening(), 500);
+    }
+  };
+  utt.onerror = ()=>{ isSpeaking = false; };
+  speechSynthesis.speak(utt);
 }
+window.speakText = speakText;
 
-function stopSpeaking(){
-  isSpeaking = false;
-  speechSynthesis.cancel();
-  document.getElementById('micIcon').className = 'ti ti-microphone';
-  document.getElementById('micBtn').style.background = '';
-  document.getElementById('micBtn').style.color = '';
-}
+function stopSpeaking(){ isSpeaking=false; speechSynthesis.cancel(); }
+speechSynthesis.onvoiceschanged = ()=> speechSynthesis.getVoices();
 
-// Voice tizimi yuqorida to'liq yozildi
+
+// Voice tizimi yangilandi
 </script>
 </body>
 </html>
