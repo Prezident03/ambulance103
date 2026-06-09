@@ -228,6 +228,31 @@
       background:var(--topbar);flex-shrink:0;
     }
     body.glass .ai-input-area{backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+
+    /* Ovoz tugmasi */
+    .ai-mic-btn{
+      width:36px;height:36px;border-radius:10px;
+      background:var(--input-bg);border:1.5px solid var(--input-border);
+      color:var(--text2);cursor:pointer;
+      display:flex;align-items:center;justify-content:center;
+      font-size:17px;flex-shrink:0;transition:all .2s;
+    }
+    .ai-mic-btn:hover{border-color:var(--red);color:var(--red)}
+    .ai-mic-btn.listening{
+      background:var(--red);color:#fff;border-color:var(--red);
+      animation:micPulse 1s ease-in-out infinite;
+    }
+    @keyframes micPulse{0%,100%{box-shadow:0 0 0 0 rgba(226,74,74,0.5)}50%{box-shadow:0 0 0 8px rgba(226,74,74,0)}}
+
+    /* TTS tugmasi xabar yonida */
+    .ai-tts-btn{
+      background:none;border:none;cursor:pointer;
+      color:var(--text3);font-size:14px;padding:4px 6px;
+      border-radius:6px;transition:all .15s;margin-top:4px;
+      display:flex;align-items:center;gap:4px;
+    }
+    .ai-tts-btn:hover{color:var(--red);background:rgba(226,74,74,0.08)}
+    .ai-tts-btn.speaking{color:var(--red)}
     .ai-input-inner{max-width:720px;margin:0 auto}
     .ai-input-box{
       display:flex;align-items:flex-end;gap:8px;
@@ -355,6 +380,9 @@
   <div class="ai-input-area">
     <div class="ai-input-inner">
       <div class="ai-input-box">
+        <button class="ai-mic-btn" id="micBtn" onclick="toggleVoice()" title="Ovoz bilan gapiring">
+          <i class="ti ti-microphone" id="micIcon"></i>
+        </button>
         <textarea id="aiInput" class="ai-textarea" rows="1"
           placeholder="Bemor holati yoki klinik savolni yozing..."
           onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}"
@@ -363,7 +391,7 @@
           <i class="ti ti-send"></i>
         </button>
       </div>
-      <div class="ai-input-hint">Enter — yuborish &nbsp;·&nbsp; Shift+Enter — yangi qator</div>
+      <div class="ai-input-hint">🎤 Mikrofon — ovoz bilan &nbsp;·&nbsp; Enter — yuborish &nbsp;·&nbsp; Shift+Enter — yangi qator</div>
     </div>
   </div>
 </div>
@@ -648,7 +676,12 @@ function appendMsg(text, role, scroll=true){
       <div class="ai-msg-content">
         <div class="ai-msg-name">AZMed AI</div>
         <div class="ai-msg-bubble">${formatted}</div>
-        <div class="ai-msg-time">${now()}</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="ai-msg-time">${now()}</div>
+          <button class="ai-tts-btn" onclick="speakText(this.dataset.text)" data-text="${text.replace(/"/g,'&quot;')}" title="Ovozda eshitish">
+            <i class="ti ti-volume"></i> Eshitish
+          </button>
+        </div>
       </div>`;
   } else {
     div.innerHTML=`<div class="ai-msg-content">
@@ -701,6 +734,9 @@ window.sendMsg=async function(){
   const msg=input.value.trim();
   if(!msg) return;
   if(!groqKey){appendMsg('⚠️ API key yuklanmagan.','bot');return;}
+  const autoSpeak = isListening === false && isSpeaking === false
+    ? false
+    : true; // Ovoz bilan yuborilgan bo'lsa — javobni ham ovozda o'qi
 
   appendMsg(msg,'user');
   history.push({role:'user',content:msg});
@@ -771,6 +807,8 @@ ${context || 'Tegishli ma\'lumot topilmadi, umumiy tibbiy bilimdan foydalanaman.
       history.push({role:'assistant',content:reply});
       if(chat) chat.messages.push({role:'assistant',content:reply});
       saveChats();
+      // Ovoz bilan gapirilgan bo'lsa — javobni ham ovozda o'qi
+      if(autoSpeak) speakText(reply);
     } else appendMsg('Javob kelmadi.','bot');
   }catch(e){
     document.getElementById(tid)?.remove();
@@ -778,6 +816,104 @@ ${context || 'Tegishli ma\'lumot topilmadi, umumiy tibbiy bilimdan foydalanaman.
   }
   document.getElementById('sendBtn').disabled=false;
 };
+
+// ===== OVOZ BILAN GAPIRISH =====
+let recognition = null;
+let isListening = false;
+let isSpeaking = false;
+let currentUtterance = null;
+
+// Speech Recognition boshlash
+window.toggleVoice = function(){
+  if(isSpeaking){ stopSpeaking(); return; }
+  if(!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)){
+    appendMsg('⚠️ Brauzeringiz ovoz tanishni qo\'llab-quvvatlamaydi. Chrome ishlatib ko\'ring.','bot');
+    return;
+  }
+  if(isListening){ stopListening(); return; }
+  startListening();
+};
+
+function startListening(){
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SpeechRecognition();
+  recognition.lang = 'uz-UZ';
+  recognition.continuous = false;
+  recognition.interimResults = true;
+
+  recognition.onstart = ()=>{
+    isListening = true;
+    document.getElementById('micBtn').classList.add('listening');
+    document.getElementById('micIcon').className = 'ti ti-microphone-off';
+    document.getElementById('aiInput').placeholder = '🎤 Gapiring...';
+  };
+
+  recognition.onresult = (e)=>{
+    const transcript = [...e.results].map(r=>r[0].transcript).join('');
+    document.getElementById('aiInput').value = transcript;
+    autoResize(document.getElementById('aiInput'));
+    // Gapirish tugasa avtomatik yuborish
+    if(e.results[e.results.length-1].isFinal){
+      stopListening();
+      setTimeout(()=>sendMsg(), 300);
+    }
+  };
+
+  recognition.onerror = (e)=>{
+    stopListening();
+    if(e.error === 'not-allowed')
+      appendMsg('⚠️ Mikrofon ruxsati berilmagan. Brauzer sozlamalaridan ruxsat bering.','bot');
+  };
+
+  recognition.onend = ()=>stopListening();
+  recognition.start();
+}
+
+function stopListening(){
+  isListening = false;
+  if(recognition) recognition.stop();
+  document.getElementById('micBtn').classList.remove('listening');
+  document.getElementById('micIcon').className = 'ti ti-microphone';
+  document.getElementById('aiInput').placeholder = 'Bemor holati yoki klinik savolni yozing...';
+}
+
+// Text-to-Speech
+function speakText(text){
+  if(!('speechSynthesis' in window)) return;
+  stopSpeaking();
+  // Markdown va emoji larni tozalash
+  const clean = text
+    .replace(/\*\*(.*?)\*\*/g,'$1')
+    .replace(/\*(.*?)\*/g,'$1')
+    .replace(/📖|⚠️|✅|❌|🔬|💊|💉/g,'')
+    .replace(/\[Manba:.*?\]/g,'')
+    .slice(0, 2000); // Max 2000 belgi
+
+  currentUtterance = new SpeechSynthesisUtterance(clean);
+  currentUtterance.lang = 'ru-RU'; // O'zbek tili yo'q — rus eng yaqin
+  currentUtterance.rate = 0.95;
+  currentUtterance.pitch = 1;
+
+  currentUtterance.onstart = ()=>{
+    isSpeaking = true;
+    document.getElementById('micIcon').className = 'ti ti-volume';
+    document.getElementById('micBtn').style.background = 'rgba(226,74,74,0.1)';
+    document.getElementById('micBtn').style.color = 'var(--red)';
+  };
+  currentUtterance.onend = ()=>stopSpeaking();
+  currentUtterance.onerror = ()=>stopSpeaking();
+  speechSynthesis.speak(currentUtterance);
+}
+
+function stopSpeaking(){
+  isSpeaking = false;
+  speechSynthesis.cancel();
+  document.getElementById('micIcon').className = 'ti ti-microphone';
+  document.getElementById('micBtn').style.background = '';
+  document.getElementById('micBtn').style.color = '';
+}
+
+// Voice tizimi yuqorida to'liq yozildi
 </script>
 </body>
 </html>
