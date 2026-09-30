@@ -2252,11 +2252,11 @@ window.changeModalFont = function(dir) {
 };
 
 // ===== AI MASLAHATCHI =====
-const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
+const GROQ_URL = '/api/groq';
 
 let aiBooks = '';
 let aiHistory = [];
-let groqApiKey = '';
+let groqApiKey = 'server';
 
 // API key va kitoblarni Firebase dan yuklash
 async function loadAiConfig() {
@@ -2264,11 +2264,6 @@ async function loadAiConfig() {
     const { db } = await import('./firebase.js');
     const { collection, getDocs, doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
 
-    // API key
-    const keySnap = await getDoc(doc(db, 'settings', 'aiConfig'));
-    if (keySnap.exists() && keySnap.data().groqKey) {
-      groqApiKey = keySnap.data().groqKey;
-    }
 
     // Kitoblar
     const snap = await getDocs(collection(db, 'aiBooks'));
@@ -2426,8 +2421,7 @@ ${relevantContext || 'Umumiy tibbiy bilimdan foydalanamiz.'}`;
     const response = await fetch(GROQ_URL, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${groqApiKey}`
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',

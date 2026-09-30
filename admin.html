@@ -554,16 +554,16 @@
     <div class="form-card" style="margin-bottom:16px">
       <h2>🔑 Groq API Key</h2>
       <div class="bg-info-box">
-        🔑 API key Firebase sozlamalarida saqlanadi. Hozirgi AI sahifalari uni brauzerda ishlatadi.<br>
+        🔒 AI kaliti Vercel serverida sozlangan. Bu maydon eski Firebase sozlamasi uchun; yangi AI unga bog‘liq emas.<br>
         🌐 <a href="https://console.groq.com" target="_blank" style="color:#378ADD">console.groq.com</a> dan oling — bepul!<br>
         Key <b>gsk_...</b> bilan boshlanishi kerak
       </div>
       <div class="form-group">
         <label>Groq API Key</label>
-        <input type="password" id="geminiKeyInput" autocomplete="off" spellcheck="false" class="form-input" placeholder="gsk_...">
+        <input type="password" id="geminiKeyInput" class="form-input" placeholder="gsk_...">
       </div>
       <div id="geminiKeyMsg" style="font-size:13px;margin-bottom:10px;min-height:18px;color:var(--text-secondary)"></div>
-      <button id="saveGroqKeyBtn" class="btn-primary" onclick="saveGeminiKey()" style="width:100%;padding:12px">
+      <button class="btn-primary" onclick="saveGeminiKey()" style="width:100%;padding:12px">
         🔑 API Keyni saqlash
       </button>
     </div>
@@ -1319,69 +1319,15 @@ async function processPdfFile(file) {
 }
 
 window.saveGeminiKey = async function() {
-  const input = document.getElementById('geminiKeyInput');
-  const key = input.value.trim();
+  const key = document.getElementById('geminiKeyInput').value.trim();
   const msg = document.getElementById('geminiKeyMsg');
-  const btn = document.getElementById('saveGroqKeyBtn');
-  const fail = (text) => { msg.textContent = text; msg.style.color = '#E24B4A'; };
-  if (!auth.currentUser || auth.currentUser.email !== SUPER_ADMIN) {
-    fail('❌ API kalitni faqat super admin saqlashi mumkin.'); return;
-  }
-  if (!/^gsk_[A-Za-z0-9]+$/.test(key)) {
-    fail('⚠️ gsk_ bilan boshlanadigan Groq API kalitini kiriting.'); return;
-  }
-  if (btn.disabled) return;
-  btn.disabled = true;
-  msg.textContent = '⏳ Kalit va AI modeli tekshirilmoqda...';
-  msg.style.color = 'var(--text-muted)';
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 20000);
-  let stage = 'api';
+  if (!key) { msg.textContent = '⚠️ API keyni kiriting'; msg.style.color = '#E24B4A'; return; }
+  msg.textContent = '⏳ Saqlanmoqda...'; msg.style.color = 'var(--text-muted)';
   try {
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
-      body: JSON.stringify({ model: 'llama-3.3-70b-versatile',
-        messages: [{ role: 'user', content: 'Reply only: OK' }], max_tokens: 8, temperature: 0 }),
-      signal: controller.signal
-    });
-    if (!response.ok) {
-      const errors = {
-        401: '❌ Kalit noto‘g‘ri yoki bekor qilingan. Groq panelidan yangi kalit oling.',
-        403: '❌ Groq ushbu kalit uchun so‘rovga ruxsat bermadi.',
-        429: '❌ Groq limiti tugagan. Keyinroq qayta urinib ko‘ring.',
-        400: '❌ Groq model yoki so‘rovni qabul qilmadi. AI modelini tekshirish kerak.'
-      };
-      fail(errors[response.status] || `❌ Groq xatosi (${response.status}). Kalit saqlanmadi.`);
-      return;
-    }
-    const result = await response.json();
-    if (!result.choices?.[0]?.message?.content) {
-      fail('❌ AI sinovida javob olinmadi. Kalit saqlanmadi.'); return;
-    }
-    clearTimeout(timer);
-    stage = 'firebase';
-    msg.textContent = '⏳ Kalit ishladi. Firebase’ga saqlanmoqda...';
-    await setDoc(doc(db, 'settings', 'aiConfig'), {
-      groqKey: key, updatedAt: serverTimestamp()
-    }, { merge: true });
-    msg.textContent = '✅ Kalit tekshirildi va saqlandi. AI sahifasini yangilab sinang.';
-    msg.style.color = '#27ae60';
-    input.value = '';
-  } catch (e) {
-    if (stage === 'firebase') {
-      fail(e.code === 'permission-denied'
-        ? '❌ Kalit ishlaydi, lekin Firebase saqlashga ruxsat bermadi. Firestore qoidalarini tekshiring.'
-        : '❌ Kalit ishlaydi, lekin Firebase’ga saqlanmadi. Ulanishni tekshirib qayta urinib ko‘ring.');
-    } else {
-      fail(e.name === 'AbortError'
-        ? '❌ Groq tekshiruvi vaqti tugadi. Qayta urinib ko‘ring.'
-        : '❌ Groq bilan bog‘lanib bo‘lmadi. Internet va brauzer cheklovlarini tekshiring.');
-    }
-  } finally {
-    clearTimeout(timer);
-    btn.disabled = false;
-  }
+    await setDoc(doc(db, 'settings', 'aiConfig'), { groqKey: key, updatedAt: serverTimestamp() }, { merge: true });
+    msg.textContent = '✅ API key xavfsiz saqlandi!'; msg.style.color = '#27ae60';
+    document.getElementById('geminiKeyInput').value = '';
+  } catch(e) { msg.textContent = '❌ ' + e.message; msg.style.color = '#E24B4A'; }
 };
 async function loadAiBookList() {
   try {

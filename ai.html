@@ -445,8 +445,8 @@ window.closeSb = function(){
 };
 
 // AI config
-const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
-let groqKey = '';
+const GROQ_URL = '/api/groq';
+let groqKey = 'server';
 let aiBookNames = [];
 let aiBooksList = []; // [{name, content}]
 let ragChunks = [];   // [{text, bookName, idx}]
@@ -526,8 +526,6 @@ async function loadConfig(){
   try {
     const {db} = await import('./firebase.js');
     const {collection, getDocs, doc, getDoc} = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
-    const keySnap = await getDoc(doc(db,'settings','aiConfig'));
-    if(keySnap.exists()) groqKey = keySnap.data().groqKey||'';
     const booksSnap = await getDocs(collection(db,'aiBooks'));
     aiBookNames=[]; aiBooksList=[];
     booksSnap.forEach(d=>{
@@ -539,7 +537,7 @@ async function loadConfig(){
     if(el) el.textContent=booksSnap.empty
       ? 'Kitob yuklanmagan'
       : `${booksSnap.size} ta kitob · ${ragChunks.length} bo'lak`;
-  } catch(e){ console.error('Config xato:',e); }
+  } catch(e){ console.error('Config xato:',e); const el=document.getElementById('sbBookText'); if(el) el.textContent='Kitoblarni yuklashda xato'; }
 }
 loadConfig();
 renderChatList();
@@ -788,7 +786,7 @@ ${context || 'Tegishli ma\'lumot topilmadi, umumiy tibbiy bilimdan foydalanaman.
 
     const res=await fetch(GROQ_URL,{
       method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':`Bearer ${groqKey}`},
+      headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
         model:'llama-3.3-70b-versatile',
         messages:[{role:'system',content:system},...history.slice(-6)],
