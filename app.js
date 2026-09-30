@@ -1,13 +1,13 @@
 import { auth, db } from './firebase.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { collection, getDocs, getDoc, setDoc, doc, serverTimestamp, orderBy, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { collection, getDocs, setDoc, doc, serverTimestamp, orderBy, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const SUPER_ADMIN = "abdurasul1406z@gmail.com";
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) { window.location.href = 'login.html'; return; }
 
-  // Foydalanuvchini saqlash (merge — photoBase64 o'chib ketmasin)
+  // Foydalanuvchini saqlash
   await setDoc(doc(db, 'users', user.uid), {
     name: user.displayName || '',
     email: user.email,
@@ -19,11 +19,11 @@ onAuthStateChanged(auth, async (user) => {
   const un = document.getElementById('userName');
   if (un) un.textContent = name;
 
-  // Firestore dan avatar olish (getDoc — to'g'ri usul)
+  // Firestore dan avatar olish
   try {
-    const userSnap = await getDoc(doc(db, 'users', user.uid));
-    if (userSnap.exists()) {
-      const data = userSnap.data();
+    const userDoc = await getDocs(query(collection(db, 'users'), where('__name__', '==', user.uid)));
+    if (!userDoc.empty) {
+      const data = userDoc.docs[0].data();
       if (data.photoBase64 && typeof window._setProfileUser === 'function') {
         window._setProfileUser({ ...user, photoURL: data.photoBase64 });
       } else if (typeof window._setProfileUser === 'function') {
