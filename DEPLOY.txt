@@ -1,0 +1,17 @@
+VERCEL UCHUN
+
+1. Arxivni oching. ambulance103 papkasi ichidagi barcha fayllarni Vercel loyihangizga yuklang.
+2. api/groq.js fayli ham bo‘lishi shart. Faqat HTML fayllarni almashtirish yetmaydi.
+3. Framework Preset: Other. Build Command: bo‘sh. Output Directory: bo‘sh (yoki .).
+4. Deploy qiling va Ctrl+Shift+R bilan sahifani yangilang.
+
+AI kaliti server faylida joylashgan; brauzerga yuborilmaydi.
+Arxivni yoki server kodini ommaviy GitHub reposiga joylamang: unda kalit bor.
+Keyinchalik Vercel Settings > Environment Variables bo‘limida GROQ_API_KEY kiriting,
+api/groq.js ichidagi bundledKey qiymatini bo‘shating va qayta deploy qiling.
+Admin paneldagi eski Firebase kalit maydoni yangi AI uchun ishlatilmaydi.
+Kitoblar Firebase’dan avvalgidek yuklanadi.
+
+Jonli Groq/Firebase ulanishi sinovdan o‘tkazilmadi. Kalit bekor qilingan bo‘lsa,
+AI xato qaytaradi. Ochiq endpoint uchun foydalanuvchi autentifikatsiyasi va
+server tomonida foydalanish limiti keyingi mustahkamlash bosqichida qo‘shilishi kerak.
