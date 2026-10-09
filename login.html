@@ -4,6 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tez Tibbiy Yordam — Kirish</title>
+  <meta name="theme-color" content="#E24B4A">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -183,14 +191,25 @@
       margin-bottom: 14px;
       display: none;
     }
+    /* Dizayn tizimi v2 */
+    body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif !important;-webkit-font-smoothing:antialiased}
+    button,input{font-family:inherit}
+    .logo .icon{width:64px;height:64px;margin:0 auto 12px;border-radius:18px;background:#E24B4A;color:#fff;display:flex;align-items:center;justify-content:center;font-size:34px;box-shadow:0 10px 24px rgba(226,75,74,0.35)}
+    .dark-toggle{display:flex;align-items:center;justify-content:center}
+    .dark-toggle i{font-size:18px}
+    .guest-link{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:18px;font-size:14px;font-weight:600;color:#E24B4A;text-decoration:none}
+    .guest-link:hover{text-decoration:underline}
+    body:not(.dark){background:radial-gradient(70% 60% at 50% 0%,rgba(226,75,74,0.12) 0%,transparent 60%),#F4F6FA !important}
+    body:not(.dark) .card{box-shadow:0 4px 12px rgba(15,23,42,0.06),0 24px 60px rgba(15,23,42,0.10) !important;border:1px solid #E2E8F0}
+    .guest-note{text-align:center;font-size:12px;color:#94A3B8;margin-top:6px;line-height:1.5}
   </style>
 </head>
 <body>
 <div class="card">
-  <button class="dark-toggle" onclick="toggleDark()" id="darkBtn" title="Tungi rejim">🌙</button>
+  <button class="dark-toggle" onclick="toggleDark()" id="darkBtn" title="Tungi rejim"><i class="ti ti-moon"></i></button>
 
   <div class="logo">
-    <div class="icon">🚑</div>
+    <div class="icon"><i class="ti ti-ambulance"></i></div>
     <h1>Tez Tibbiy Yordam</h1>
     <p>Professional tibbiy ma'lumotnoma</p>
   </div>
@@ -237,6 +256,9 @@
     <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
     Google bilan kirish
   </button>
+
+  <a class="guest-link" href="index.html">Ro'yxatdan o'tmasdan davom etish <i class="ti ti-arrow-right"></i></a>
+  <p class="guest-note">Kasalliklar, dorilar va birinchi yordam hammaga ochiq.<br>AI maslahatchi va profil uchun kirish kerak.</p>
 </div>
 
 <script type="module">
@@ -253,7 +275,7 @@ import {
 // Dark mode
 function applyDark(dark) {
   document.body.classList.toggle('dark', dark);
-  document.getElementById('darkBtn').textContent = dark ? '☀️' : '🌙';
+  document.getElementById('darkBtn').innerHTML = dark ? '<i class="ti ti-sun"></i>' : '<i class="ti ti-moon"></i>';
 }
 const savedDark = localStorage.getItem('darkMode') === 'true';
 applyDark(savedDark);
@@ -264,8 +286,11 @@ window.toggleDark = () => {
 };
 
 // Agar kirgan bo'lsa index.html ga o'tkazish
+// ?next=ai.html — kirgandan keyin o'sha sahifaga qaytish (faqat shu saytdagi .html sahifalar)
+const nextParam = new URLSearchParams(location.search).get('next') || '';
+const nextPage = /^[a-z0-9_-]+\.html$/i.test(nextParam) ? nextParam : 'index.html';
 onAuthStateChanged(auth, (user) => {
-  if (user) window.location.href = 'index.html';
+  if (user) window.location.href = nextPage;
 });
 
 function showError(msg) {

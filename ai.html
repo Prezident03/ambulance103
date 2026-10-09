@@ -287,7 +287,7 @@
     }
   </style>
 </head>
-<body>
+<body data-auth="required">
 
 <div class="sb-overlay" id="sbOverlay" onclick="closeSb()"></div>
 
@@ -524,7 +524,8 @@ function buildRagIndex(books){
 
 async function loadConfig(){
   try {
-    const {db} = await import('./firebase.js');
+    const {db, authReady} = await import('./firebase.js');
+    await authReady;
     const {collection, getDocs, doc, getDoc} = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
     const booksSnap = await getDocs(collection(db,'aiBooks'));
     aiBookNames=[]; aiBooksList=[];
