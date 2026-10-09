@@ -266,7 +266,6 @@
       border-radius:22px;
       box-shadow:0 12px 40px rgba(0,0,0,0.25);
       z-index:999999;
-      overflow:hidden;
       display:none;
       pointer-events:auto;
     }
@@ -405,7 +404,6 @@
     /* Sidebar ochiq bo'lganda content siljishi */
     .page-content{
       margin-left:240px;
-      margin-right:240px;
       flex:1;
       min-width:0;
       transition:margin-left .3s;
@@ -621,7 +619,7 @@
     /* PROFIL MODAL */
     .pmodal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.55);z-index:2000;align-items:center;justify-content:center;padding:16px}
     .pmodal.open{display:flex}
-    .pmodal-box{background:var(--bg-card);border-radius:20px;width:100%;max-width:400px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.25)}
+    .pmodal-box{background:var(--bg-card);border-radius:20px;width:100%;max-width:400px;max-height:calc(100dvh - 32px);overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.25)}
     .pmodal-top{background:linear-gradient(135deg,#E24B4A,#c0392b);padding:28px 20px 20px;text-align:center;position:relative}
     .pmodal-close{position:absolute;top:12px;right:14px;background:rgba(255,255,255,0.2);border:none;color:white;width:30px;height:30px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
     .pmodal-close:hover{background:rgba(255,255,255,0.35)}
@@ -1686,9 +1684,24 @@ window.toggleProfile = function() {
   const dd = document.getElementById('profileDropdown');
   const ov = document.getElementById('profileOverlay');
   const opening = !dd.classList.contains('open');
+  if (opening) positionProfileDropdown();
   dd.classList.toggle('open');
   if(ov) ov.classList.toggle('open', opening);
 };
+function positionProfileDropdown() {
+  const r = document.getElementById('profileBtn').getBoundingClientRect();
+  const dd = document.getElementById('profileDropdown');
+  dd.style.top = (r.bottom + 8) + 'px';
+  dd.style.right = Math.max(8, window.innerWidth - r.right) + 'px';
+}
+window.addEventListener('resize', () => {
+  if (document.getElementById('profileDropdown').classList.contains('open')) positionProfileDropdown();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  closeProfile();
+  if (document.getElementById('profileModal').classList.contains('open')) closeProfileModal();
+});
 window.closeProfile = function() {
   document.getElementById('profileDropdown').classList.remove('open');
   const ov = document.getElementById('profileOverlay');
@@ -1711,27 +1724,45 @@ window.doLogout = async function() {
   window.location.href = 'login.html';
 };
 
-// userName → profil uchun
-window._setProfileUser = function(user) {
-  const name = user.displayName || user.email.split('@')[0];
-  const email = user.email;
-  const photo = user.photoURL;
-  // Topbar avatar
-  const btnText = document.getElementById('profileBtnText');
-  const pdAvatar = document.getElementById('pdAvatar');
+// ===== PROFIL MA'LUMOTLARI =====
+window._profile = { name: '', email: '', photo: '' };
+
+function renderAvatar(el, photo, letter) {
+  el.textContent = '';
   if (photo) {
-    btnText.innerHTML = `<img src="${photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
-    pdAvatar.innerHTML = `<img src="${photo}">`;
+    const img = document.createElement('img');
+    img.src = photo;
+    img.alt = '';
+    img.onerror = () => { el.textContent = letter; };
+    el.appendChild(img);
   } else {
-    const letter = name[0].toUpperCase();
-    btnText.textContent = letter;
-    pdAvatar.textContent = letter;
+    el.textContent = letter;
   }
-  document.getElementById('pdName').textContent = name;
-  document.getElementById('pdEmail').textContent = email;
-  // userName (app.js uchun)
+}
+
+window._renderProfile = function() {
+  const p = window._profile;
+  const letter = (p.name || p.email || '?').trim()[0].toUpperCase();
+  ['profileBtnText', 'pdAvatar', 'pmAvatar'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) renderAvatar(el, p.photo, letter);
+  });
+  ['pdName', 'pmName'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = p.name; });
+  ['pdEmail', 'pmEmail'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = p.email; });
+  const btn = document.getElementById('profileBtn');
+  if (btn) btn.title = p.name ? p.name + ' — profil' : 'Profil';
   const un = document.getElementById('userName');
-  if (un) un.textContent = name;
+  if (un) un.textContent = p.name;
+};
+
+window._setProfileUser = function(user, photoOverride) {
+  const email = user.email || '';
+  window._profile = {
+    name: user.displayName || (email ? email.split('@')[0] : 'Foydalanuvchi'),
+    email,
+    photo: photoOverride || user.photoURL || window._profile.photo || ''
+  };
+  window._renderProfile();
 };
 
 // adminBtn ko'rinishi app.js da boshqariladi
@@ -1776,26 +1807,20 @@ window.heroSearch = function(q) {
 };
 // ===== PROFIL MODAL =====
 window.openProfileModal = function() {
-  document.getElementById('profileDropdown').classList.remove('open');
-  const modal = document.getElementById('profileModal');
-  modal.classList.add('open');
-  // Ma'lumotlarni to'ldirish
-  const name = document.getElementById('pdName').textContent;
-  const email = document.getElementById('pdEmail').textContent;
-  document.getElementById('pmNameInput').value = name !== '—' ? name : '';
-  document.getElementById('pmEmailInput').value = email !== '—' ? email : '';
-  // Avatar
-  const pdAv = document.getElementById('pdAvatar');
-  const pmAv = document.getElementById('pmAvatar');
-  pmAv.innerHTML = pdAv.innerHTML;
-  document.getElementById('pmName').textContent = name;
-  document.getElementById('pmEmail').textContent = email;
+  closeProfile();
+  const p = window._profile;
+  document.getElementById('pmNameInput').value = p.name;
+  document.getElementById('pmEmailInput').value = p.email;
+  window._renderProfile();
   hidePmMessages();
+  document.getElementById('profileModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
 };
 
 window.closeProfileModal = function() {
   document.getElementById('profileModal').classList.remove('open');
   document.getElementById('pmPassSection').style.display = 'none';
+  document.body.style.overflow = '';
 };
 
 window.closeProfileModalOutside = function(e) {
@@ -1834,11 +1859,13 @@ window.saveProfile = async function() {
     const { auth } = await import('./firebase.js');
     const { updateProfile } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
     await updateProfile(auth.currentUser, { displayName: newName });
-    // UI yangilash
-    document.getElementById('pmName').textContent = newName;
-    document.getElementById('pdName').textContent = newName;
-    document.getElementById('profileBtnText').textContent = newName[0].toUpperCase();
-    document.getElementById('pdAvatar').textContent = newName[0].toUpperCase();
+    window._profile.name = newName;
+    window._renderProfile();
+    try {
+      const { db } = await import('./firebase.js');
+      const { doc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+      await setDoc(doc(db, 'users', auth.currentUser.uid), { name: newName }, { merge: true });
+    } catch (e) { console.warn('Ism Firestore ga yozilmadi:', e.code || e.message); }
     showPmSuccess('Ism muvaffaqiyatli saqlandi!');
   } catch (e) {
     showPmError('Xatolik: ' + e.message);
@@ -1870,8 +1897,11 @@ window.savePassword = async function() {
 
 window.uploadAvatar = async function(input) {
   const file = input.files[0];
+  input.value = '';
   if (!file) return;
-  if (file.size > 500 * 1024) return showPmError('Rasm 500KB dan kichik bo\'lsin!');
+  if (!file.type.startsWith('image/')) return showPmError('Faqat rasm fayl tanlang!');
+  // Rasm 200px gacha siqiladi, shuning uchun katta telefon rasmlari ham bo'ladi
+  if (file.size > 15 * 1024 * 1024) return showPmError('Rasm 15MB dan kichik bo\'lsin!');
   showPmSuccess('Rasm siqilmoqda...');
   try {
     const dataUrl = await compressImage(file, 200);
@@ -1881,11 +1911,8 @@ window.uploadAvatar = async function(input) {
     await setDoc(doc(db, 'users', auth.currentUser.uid), {
       photoBase64: dataUrl
     }, { merge: true });
-    // UI yangilash
-    const imgHtml = `<img src="${dataUrl}">`;
-    document.getElementById('pmAvatar').innerHTML = imgHtml;
-    document.getElementById('pdAvatar').innerHTML = imgHtml;
-    document.getElementById('profileBtnText').innerHTML = `<img src="${dataUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    window._profile.photo = dataUrl;
+    window._renderProfile();
     showPmSuccess('Rasm muvaffaqiyatli saqlandi!');
   } catch (e) {
     showPmError('Xatolik: ' + e.message);
@@ -1894,8 +1921,9 @@ window.uploadAvatar = async function(input) {
 
 // Rasmni kichraytirish funksiyasi
 function compressImage(file, maxSize) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Faylni o\'qib bo\'lmadi'));
     reader.onload = (e) => {
       const img = new Image();
       img.onload = () => {
@@ -1907,6 +1935,7 @@ function compressImage(file, maxSize) {
         canvas.getContext('2d').drawImage(img, 0, 0, w, h);
         resolve(canvas.toDataURL('image/jpeg', 0.7));
       };
+      img.onerror = () => reject(new Error('Bu rasm formatini ochib bo\'lmadi (JPG yoki PNG tanlang)'));
       img.src = e.target.result;
     };
     reader.readAsDataURL(file);
@@ -2183,6 +2212,7 @@ async function loadCategories() {
     }
 
     scroll.innerHTML = '';
+    window._allCatsData = [];
     catSnap.forEach(doc => {
       const d = doc.data();
       // Exact + normalized matching
@@ -2206,6 +2236,9 @@ async function loadCategories() {
     });
   } catch(e) {
     console.log('loadCategories error:', e.message);
+    const scroll = document.getElementById('catScroll');
+    if (scroll) scroll.innerHTML = `<div style="color:var(--text-muted);font-size:13px;padding:10px;display:flex;align-items:center;gap:10px">Kategoriyalarni yuklab bo'lmadi
+      <button onclick="this.parentElement.textContent='Yuklanmoqda...';loadCategories()" style="background:#E24B4A;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer">Qayta urinish</button></div>`;
   }
 }
 
