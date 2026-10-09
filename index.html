@@ -664,32 +664,34 @@
     .footer{text-align:center;padding:16px;font-size:12px;color:var(--footer-color);margin-top:12px}
 
     /* ===== BANNER ===== */
+    /* Banner o'lchami bannerning o'z kengligiga bog'langan (cqw) — har qanday monitorda bir xil kompozitsiya */
+    .hero-wrap{container-type:inline-size}
     .hero-banner{
       position:relative;width:100%;overflow:hidden;border-radius:16px;margin-bottom:12px;
-      /* Balandlik ekran kengligiga qarab o'sadi, lekin chegaralangan */
-      height:clamp(200px,20vw,360px);
-      /* Rasmning chap chetidagi rang bilan bir xil fon — rasm unga silliq qo'shiladi */
+      height:clamp(220px,30cqw,480px);
+      /* Rasmning chap chetidagi rang bilan bir xil fon */
       background:linear-gradient(180deg,#dce5f4 0%,#cfdbed 100%);
     }
-    /* Rasm hech qachon kesilmaydi: balandlik bo'yicha to'liq, o'ng tomonga tekislangan */
+    /* Rasm kesilmaydi: banner balandligi bo'yicha to'liq, o'ngga tekislangan.
+       Rasmning chap qismi o'zi och fon — matn aynan shu qism ustida turadi */
     .hero-banner img{
       position:absolute;top:0;right:0;height:100%;width:auto;max-width:none;display:block;
-      -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 18%);
-      mask-image:linear-gradient(90deg,transparent 0,#000 18%);
+      -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 12%);
+      mask-image:linear-gradient(90deg,transparent 0,#000 12%);
     }
-    .hero-overlay{position:absolute;inset:0;background:linear-gradient(90deg,rgba(234,244,255,0.85) 0%,rgba(234,244,255,0.5) 35%,rgba(234,244,255,0) 55%);border-radius:16px;pointer-events:none}
-    body.dark .hero-overlay{background:linear-gradient(90deg,rgba(234,244,255,0.85) 0%,rgba(234,244,255,0.5) 35%,rgba(234,244,255,0) 55%)}
-    .hero-text{position:absolute;top:52%;left:0;transform:translateY(-50%);padding:0 clamp(30px,3vw,56px);max-width:54%}
-    .hero-title-main{font-size:clamp(26px,2.4vw,44px);font-weight:900;color:#111;line-height:1.1;margin-bottom:5px;letter-spacing:-.5px;white-space:nowrap}
+    .hero-overlay{position:absolute;inset:0;background:linear-gradient(90deg,rgba(234,244,255,0.75) 0%,rgba(234,244,255,0.35) 40%,rgba(234,244,255,0) 55%);border-radius:16px;pointer-events:none}
+    body.dark .hero-overlay{background:linear-gradient(90deg,rgba(234,244,255,0.75) 0%,rgba(234,244,255,0.35) 40%,rgba(234,244,255,0) 55%)}
+    .hero-text{position:absolute;top:50%;left:0;transform:translateY(-50%);padding:0 0 0 clamp(24px,4.5cqw,72px);width:48%}
+    .hero-title-main{font-size:clamp(24px,3.6cqw,56px);font-weight:900;color:#111;line-height:1.05;margin-bottom:.25em;letter-spacing:-.02em;white-space:nowrap}
     body.dark .hero-title-main{color:#111}
-    .hero-title-sub{font-size:clamp(14px,1.15vw,20px);font-weight:700;color:#1a6fc4;margin-bottom:10px}
+    .hero-title-sub{font-size:clamp(13px,1.7cqw,26px);font-weight:700;color:#1a6fc4;margin-bottom:.7em}
     body.dark .hero-title-sub{color:#1a6fc4}
-    .hero-desc{font-size:clamp(12px,0.95vw,16px);color:#555;margin-bottom:18px;line-height:1.6;max-width:clamp(290px,26vw,460px)}
-    body.dark .hero-desc{color:#555}
-    .hero-search{display:flex;align-items:center;gap:8px;background:white;border-radius:12px;padding:10px 16px;margin-bottom:0;max-width:clamp(340px,28vw,480px);box-shadow:0 4px 20px rgba(0,0,0,0.15);border:1px solid #e8e8e8}
+    .hero-desc{font-size:clamp(12px,1.2cqw,18px);color:#4a5568;margin-bottom:1.6em;line-height:1.6;max-width:34cqw}
+    body.dark .hero-desc{color:#4a5568}
+    .hero-search{display:flex;align-items:center;gap:10px;background:white;border-radius:14px;padding:clamp(10px,1cqw,15px) clamp(14px,1.4cqw,20px);margin-bottom:0;width:min(100%,38cqw);min-width:240px;box-shadow:0 6px 24px rgba(26,60,110,0.15);border:1px solid #e3e9f2}
     body.dark .hero-search{background:white;border-color:#e8e8e8;box-shadow:0 4px 16px rgba(0,0,0,0.12)}
-    .hero-search i{color:#aaa;font-size:15px;flex-shrink:0}
-    .hero-search input{border:none;outline:none;font-size:13px;color:#333;background:transparent;width:100%}
+    .hero-search i{color:#8a97a8;font-size:clamp(15px,1.3cqw,19px);flex-shrink:0}
+    .hero-search input{border:none;outline:none;font-size:clamp(13px,1.1cqw,16px);color:#333;background:transparent;width:100%}
     body.dark .hero-search input{color:#333}
     .hero-search input::placeholder{color:#bbb}
     .hero-btns{display:none}
@@ -699,12 +701,13 @@
     .hero-btn-secondary:hover{background:#219a52;transform:translateY(-1px)}
     @media(max-width:600px){
       .hero-banner{height:200px}
+      .hero-banner img{-webkit-mask-image:none;mask-image:none}
       .hero-overlay,body.dark .hero-overlay{background:linear-gradient(90deg,rgba(234,244,255,0.97) 0%,rgba(234,244,255,0.90) 38%,rgba(234,244,255,0.55) 58%,rgba(234,244,255,0) 75%)}
-      .hero-text{max-width:60%;padding:0 16px;top:56%}
+      .hero-text{width:60%;padding:0 16px;top:56%}
       .hero-title-main{font-size:22px;white-space:nowrap}
       .hero-title-sub{font-size:12px;margin-bottom:8px}
       .hero-desc{font-size:11px;margin-bottom:14px;display:block;max-width:200px}
-      .hero-search{max-width:100%;padding:8px 12px;display:flex}
+      .hero-search{width:100%;min-width:0;padding:8px 12px;display:flex}
       .hero-search input{font-size:12px}
     }
 
@@ -1232,6 +1235,7 @@
 
 <div class="main">
   <!-- HERO BANNER -->
+  <div class="hero-wrap">
   <div class="hero-banner" id="heroBanner">
     <img src="1.jpg" alt="Tez Tibbiy Yordam" id="heroBannerImg">
     <div class="hero-overlay"></div>
@@ -1252,6 +1256,7 @@
         </button>
       </div>
     </div>
+  </div>
   </div>
 
 
