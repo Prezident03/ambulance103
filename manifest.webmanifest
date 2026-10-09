@@ -1,0 +1,16 @@
+{
+  "name": "Tez Tibbiy Yordam — Ambulance 103",
+  "short_name": "Ambulance 103",
+  "description": "Kasalliklar, dorilar va birinchi yordam bo'yicha tibbiy ma'lumotnoma",
+  "lang": "uz",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F4F6FA",
+  "theme_color": "#E24B4A",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -4,8 +4,20 @@ import { collection, getDocs, getDoc, setDoc, doc, serverTimestamp, orderBy, que
 
 const SUPER_ADMIN = "abdurasul1406z@gmail.com";
 
+// Kontent hammaga ochiq; faqat <body data-auth="required"> sahifalar (AI) kirishni talab qiladi
+const AUTH_REQUIRED = document.body.dataset.auth === 'required';
+
 onAuthStateChanged(auth, async (user) => {
-  if (!user) { window.location.href = 'login.html'; return; }
+  if (!user) {
+    if (AUTH_REQUIRED) {
+      const page = location.pathname.split('/').pop() || 'index.html';
+      window.location.href = 'login.html?next=' + encodeURIComponent(page);
+      return;
+    }
+    showGuestUI();
+    loadFromFirestore();
+    return;
+  }
 
   // Profilni darhol ko'rsatamiz — Firestore javobini kutmaymiz
   if (typeof window._setProfileUser === 'function') window._setProfileUser(user);
@@ -16,6 +28,13 @@ onAuthStateChanged(auth, async (user) => {
   checkAdmin(user);
   loadFromFirestore();
 });
+
+function showGuestUI() {
+  const loginBtn = document.getElementById('loginBtn');
+  if (loginBtn) loginBtn.style.display = '';
+  const profileBtn = document.getElementById('profileBtn');
+  if (profileBtn) profileBtn.style.display = 'none';
+}
 
 async function saveUserDoc(user) {
   try {
@@ -60,12 +79,12 @@ async function checkAdmin(user) {
   }
 }
 
-document.getElementById('logoutBtn').addEventListener('click', async () => {
+document.getElementById('logoutBtn')?.addEventListener('click', async () => {
   await signOut(auth);
   window.location.href = 'login.html';
 });
 
-document.getElementById('adminBtn').addEventListener('click', () => {
+document.getElementById('adminBtn')?.addEventListener('click', () => {
   window.location.href = 'admin.html';
 });
 
@@ -128,6 +147,7 @@ function addFirestoreDiseasesToGrid() {
   const diseases = window._firestoreDiseases || [];
   if (diseases.length === 0) return;
   const grid = document.getElementById('diseaseGrid');
+  if (!grid) return;
   diseases.forEach(d => {
     if (document.getElementById('card-fs-' + d.id)) return;
     const div = document.createElement('div');
@@ -176,6 +196,7 @@ function addFirestoreDrugsToList() {
   const drugs = window._firestoreDrugs || [];
   if (drugs.length === 0) return;
   const grid = document.getElementById('drugListGrid');
+  if (!grid) return;
   drugs.forEach(d => {
     if (document.getElementById('dcard-fs-' + d.id)) return;
     const div = document.createElement('div');
