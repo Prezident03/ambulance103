@@ -664,18 +664,29 @@
     .footer{text-align:center;padding:16px;font-size:12px;color:var(--footer-color);margin-top:12px}
 
     /* ===== BANNER ===== */
-    .hero-banner{position:relative;width:100%;overflow:hidden;background:#EAF4FF;border-radius:16px;margin-bottom:12px}
-    .hero-banner img{width:100%;height:200px;object-fit:cover;object-position:right center;display:block;border-radius:16px}
-    .hero-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(90deg,rgba(234,244,255,0.97) 0%,rgba(234,244,255,0.90) 38%,rgba(234,244,255,0.55) 58%,rgba(234,244,255,0) 75%);border-radius:16px}
-    body.dark .hero-overlay{background:linear-gradient(90deg,rgba(234,244,255,0.97) 0%,rgba(234,244,255,0.90) 38%,rgba(234,244,255,0.55) 58%,rgba(234,244,255,0) 75%)}
-    .hero-text{position:absolute;top:55%;left:0;transform:translateY(-50%);padding:0 30px;max-width:54%}
-    .hero-title-main{font-size:26px;font-weight:900;color:#111;line-height:1.1;margin-bottom:5px;letter-spacing:-.5px;white-space:nowrap}
+    .hero-banner{
+      position:relative;width:100%;overflow:hidden;border-radius:16px;margin-bottom:12px;
+      /* Balandlik ekran kengligiga qarab o'sadi, lekin chegaralangan */
+      height:clamp(200px,20vw,360px);
+      /* Rasmning chap chetidagi rang bilan bir xil fon — rasm unga silliq qo'shiladi */
+      background:linear-gradient(180deg,#dce5f4 0%,#cfdbed 100%);
+    }
+    /* Rasm hech qachon kesilmaydi: balandlik bo'yicha to'liq, o'ng tomonga tekislangan */
+    .hero-banner img{
+      position:absolute;top:0;right:0;height:100%;width:auto;max-width:none;display:block;
+      -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 18%);
+      mask-image:linear-gradient(90deg,transparent 0,#000 18%);
+    }
+    .hero-overlay{position:absolute;inset:0;background:linear-gradient(90deg,rgba(234,244,255,0.85) 0%,rgba(234,244,255,0.5) 35%,rgba(234,244,255,0) 55%);border-radius:16px;pointer-events:none}
+    body.dark .hero-overlay{background:linear-gradient(90deg,rgba(234,244,255,0.85) 0%,rgba(234,244,255,0.5) 35%,rgba(234,244,255,0) 55%)}
+    .hero-text{position:absolute;top:52%;left:0;transform:translateY(-50%);padding:0 clamp(30px,3vw,56px);max-width:54%}
+    .hero-title-main{font-size:clamp(26px,2.4vw,44px);font-weight:900;color:#111;line-height:1.1;margin-bottom:5px;letter-spacing:-.5px;white-space:nowrap}
     body.dark .hero-title-main{color:#111}
-    .hero-title-sub{font-size:14px;font-weight:700;color:#1a6fc4;margin-bottom:10px}
+    .hero-title-sub{font-size:clamp(14px,1.15vw,20px);font-weight:700;color:#1a6fc4;margin-bottom:10px}
     body.dark .hero-title-sub{color:#1a6fc4}
-    .hero-desc{font-size:12px;color:#555;margin-bottom:18px;line-height:1.6;max-width:290px}
+    .hero-desc{font-size:clamp(12px,0.95vw,16px);color:#555;margin-bottom:18px;line-height:1.6;max-width:clamp(290px,26vw,460px)}
     body.dark .hero-desc{color:#555}
-    .hero-search{display:flex;align-items:center;gap:8px;background:white;border-radius:12px;padding:10px 16px;margin-bottom:0;max-width:340px;box-shadow:0 4px 20px rgba(0,0,0,0.15);border:1px solid #e8e8e8}
+    .hero-search{display:flex;align-items:center;gap:8px;background:white;border-radius:12px;padding:10px 16px;margin-bottom:0;max-width:clamp(340px,28vw,480px);box-shadow:0 4px 20px rgba(0,0,0,0.15);border:1px solid #e8e8e8}
     body.dark .hero-search{background:white;border-color:#e8e8e8;box-shadow:0 4px 16px rgba(0,0,0,0.12)}
     .hero-search i{color:#aaa;font-size:15px;flex-shrink:0}
     .hero-search input{border:none;outline:none;font-size:13px;color:#333;background:transparent;width:100%}
@@ -687,7 +698,8 @@
     .hero-btn-secondary{background:#27ae60;color:white;border:none;padding:10px 16px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;box-shadow:0 4px 12px rgba(39,174,96,0.3);white-space:nowrap}
     .hero-btn-secondary:hover{background:#219a52;transform:translateY(-1px)}
     @media(max-width:600px){
-      .hero-banner img{height:200px;object-position:72% center}
+      .hero-banner{height:200px}
+      .hero-overlay,body.dark .hero-overlay{background:linear-gradient(90deg,rgba(234,244,255,0.97) 0%,rgba(234,244,255,0.90) 38%,rgba(234,244,255,0.55) 58%,rgba(234,244,255,0) 75%)}
       .hero-text{max-width:60%;padding:0 16px;top:56%}
       .hero-title-main{font-size:22px;white-space:nowrap}
       .hero-title-sub{font-size:12px;margin-bottom:8px}
