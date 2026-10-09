@@ -2273,7 +2273,8 @@ window.openCategory = function(i) {
 async function loadCategories() {
   const scroll = document.getElementById('catScroll');
   try {
-    const { db } = await import('./firebase.js');
+    const { db, authReady } = await import('./firebase.js');
+    await authReady;
     const { collection, getDocs, query, orderBy } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
 
     // Kasalliklar va kategoriyalarni parallel yuklaymiz
@@ -2378,7 +2379,8 @@ let groqApiKey = 'server';
 // API key va kitoblarni Firebase dan yuklash
 async function loadAiConfig() {
   try {
-    const { db } = await import('./firebase.js');
+    const { db, authReady } = await import('./firebase.js');
+    await authReady;
     const { collection, getDocs, doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
 
 
@@ -2651,7 +2653,8 @@ document.addEventListener('DOMContentLoaded', () => {
 // ===== FON RASM YUKLASH =====
 async function loadSiteBg() {
   try {
-    const { db } = await import('./firebase.js');
+    const { db, authReady } = await import('./firebase.js');
+    await authReady;
     const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
     const snap = await getDoc(doc(db, 'settings', 'siteSettings'));
     if (snap.exists() && snap.data().bgImageUrl) {
