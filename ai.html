@@ -285,6 +285,20 @@
       .ai-chat-inner{padding:0 14px}
       .ai-sugg-grid{grid-template-columns:1fr}
     }
+    /* Manbalar va tekshiruv */
+    .cite{display:inline-flex;align-items:center;justify-content:center;min-width:17px;height:17px;padding:0 4px;margin:0 1px;border-radius:5px;background:rgba(226,75,74,0.12);color:#E24B4A;font-size:10.5px;font-weight:700;vertical-align:super;line-height:1}
+    .unverified{background:rgba(234,179,8,0.14);border-radius:6px;padding:1px 4px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+    .unverified i{color:#B45309}
+    .verify-ok,.verify-warn{display:flex;align-items:center;gap:6px;margin-top:12px;padding:8px 10px;border-radius:10px;font-size:12.5px;font-weight:600}
+    .verify-ok{background:rgba(22,163,74,0.1);color:#15803D}
+    .verify-warn{background:rgba(234,179,8,0.14);color:#B45309}
+    .ai-sources{margin-top:10px;border:1px solid rgba(148,163,184,0.35);border-radius:12px;overflow:hidden}
+    .ai-sources summary{cursor:pointer;padding:9px 12px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;list-style:none}
+    .ai-sources summary::-webkit-details-marker{display:none}
+    .ai-src{padding:10px 12px;border-top:1px solid rgba(148,163,184,0.25)}
+    .ai-src-head{font-size:12.5px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:6px}
+    .ai-src-head .cite{vertical-align:baseline}
+    .ai-src-text{font-size:12.5px;line-height:1.6;opacity:.8;white-space:pre-wrap;max-height:220px;overflow:auto}
   </style>
 </head>
 <body data-auth="required">
@@ -455,6 +469,23 @@ let history = [];
 let chats = JSON.parse(localStorage.getItem('azmedChats') || '[]');
 let currentChatId = null;
 
+// ===== MATN NORMALIZATSIYASI (o'zbekcha) =====
+// o' / o‘ / oʻ / o` variantlari bir xil; qo'shimchalar olib tashlanadi: "krizda" → "kriz"
+const UZ_SUFFIXES = ['larining','laridagi','laridan','larning','lardagi','laridan','lariga','larini','larida','lardan','larga','larni','larda','lari','ning','dagi','idagi','dan','ning','lar','ga','ka','qa','ni','da','ta','si','ini','iga','ida','dir','mi'];
+const STOPWORDS = new Set(['va','bilan','uchun','qanday','nima','nimalar','qilish','qilinadi','kerak','bu','shu','u','bo','lsa','haqida','ham','yoki','qaysi','qancha','necha','mumkin','emas','bor','yo','birinchi','yordam','ber','bering','ayting','haqda','holat','holatda','the','and']);
+function normWord(w){
+  w = w.toLowerCase().replace(/[‘’ʻʼ`´']/g,'');
+  for (const suf of UZ_SUFFIXES) {
+    if (w.length - suf.length >= 4 && w.endsWith(suf)) { w = w.slice(0, -suf.length); break; }
+  }
+  return w;
+}
+function tokenize(t){
+  return String(t).toLowerCase().replace(/[‘’ʻʼ`´]/g,"'").split(/[^\p{L}\p{N}']+/u)
+    .map(normWord).filter(w=>w.length>2);
+}
+function contentTerms(t){ return [...new Set(tokenize(t).filter(w=>!STOPWORDS.has(w)))]; }
+
 // ===== BM25 RAG TIZIMI =====
 class BM25 {
   constructor(docs, k1=1.5, b=0.75) {
@@ -467,7 +498,7 @@ class BM25 {
     for(const[w,f]of Object.entries(df))
       this.idf[w]=Math.log((this.N-f+0.5)/(f+0.5)+1);
   }
-  tok(t){ return t.toLowerCase().split(/[\s,.:;()\[\]]+/).filter(w=>w.length>2); }
+  tok(t){ return tokenize(t); }
   score(query,i){
     const{tf,len}=this.tf[i];
     return this.tok(query).reduce((s,w)=>{
@@ -543,30 +574,63 @@ async function loadConfig(){
 loadConfig();
 renderChatList();
 
-function getContext(query, max=12000){
-  if(!bm25Index || !ragChunks.length) return '';
-
-  // Kengaytirilgan qidiruv
-  const expanded = expandQuery(query);
-  const allWords = [...new Set([...expanded, ...query.toLowerCase().split(/\s+/).filter(w=>w.length>2)])];
-  const searchQ = allWords.join(' ');
-
-  // Ko'proq natija olamiz — keyin filtramiz
-  const results = bm25Index.search(searchQ, 20);
-
-  // Score > 0 bo'lganlarnigina olamiz
-  const good = results.filter(r=>r.s > 0.1);
-
-  let ctx='', sources=new Set();
-  for(const {i,s} of good){
-    const chunk=ragChunks[i];
-    if(ctx.length+chunk.text.length>max) break;
-    ctx+=chunk.text+'\n\n---\n\n';
-    sources.add(chunk.bookName);
+// Savolga mos kitob parchalarini qaytaradi: [{n, bookName, text}]
+// Hech narsa ishonchli topilmasa — bo'sh ro'yxat (u holda AI umuman chaqirilmaydi)
+const MAX_EXCERPTS = 6, MAX_CONTEXT_CHARS = 10000;
+function getExcerpts(query){
+  if(!bm25Index || !ragChunks.length) return [];
+  const terms = contentTerms(expandQuery(query).join(' ') + ' ' + query);
+  if(!terms.length) return [];
+  const results = bm25Index.search(terms.join(' '), 20);
+  if(!results.length) return [];
+  const top = results[0].s;
+  const qTerms = contentTerms(query);
+  const need = Math.min(2, Math.max(1, qTerms.length));
+  const picked = [];
+  let total = 0;
+  for(const {i,s} of results){
+    if(s < top * 0.35) break;
+    const chunk = ragChunks[i];
+    const chunkTerms = new Set(tokenize(chunk.text));
+    const hits = qTerms.filter(t => chunkTerms.has(t)).length;
+    // Savoldagi asosiy so'zlardan kamida 1–2 tasi parchada bo'lishi shart
+    if(hits < need && picked.length === 0) continue;
+    if(hits < 1) continue;
+    if(total + chunk.text.length > MAX_CONTEXT_CHARS) break;
+    picked.push({ n: picked.length + 1, bookName: chunk.bookName, text: chunk.text });
+    total += chunk.text.length;
+    if(picked.length >= MAX_EXCERPTS) break;
   }
+  return picked;
+}
 
-  if(!ctx) return '';
-  return `[Manba: ${[...sources].join(', ')}]\n\n${ctx}`;
+// Javobni manbalar bilan solishtirish: har jumlada [n] bo'lishi va raqamlar manbada bo'lishi kerak
+function verifyAnswer(reply, excerpts){
+  const byN = new Map(excerpts.map(e => [e.n, e]));
+  const lines = reply.split('\n');
+  let unsupported = 0;
+  const checked = lines.map(line => {
+    const plain = line.replace(/\*\*|\*/g,'').trim();
+    // Sarlavhalar ("...:" bilan tugaydigan) va qisqa qatorlar tekshirilmaydi
+    if(!plain || /^#+\s/.test(plain) || /:\s*$/.test(plain) || plain.length < 25 || /topilmadi/i.test(plain)) return { line, ok: true };
+    const cites = [...plain.matchAll(/\[(\d+)\]/g)].map(m => +m[1]).filter(n => byN.has(n));
+    if(!cites.length) { unsupported++; return { line, ok: false, why: 'manba ko\'rsatilmagan' }; }
+    const srcText = cites.map(n => byN.get(n).text).join(' ').replace(/,/g,'.');
+    const body = plain.replace(/^\s*(?:\d+[.)]|[-•*])\s+/,'').replace(/\[\d+\]/g,'');
+    const nums = (body.match(/\d+(?:[.,]\d+)?/g) || []).map(x => x.replace(',','.'));
+    const missing = nums.filter(x => !srcText.includes(x));
+    if(missing.length) { unsupported++; return { line, ok: false, why: 'raqam manbada yo\'q: ' + missing.join(', ') }; }
+    // Jumladagi asosiy so'zlarning kamida yarmi manba parchasida bo'lishi kerak (dori nomlari ham shu yerda tekshiriladi)
+    const srcTerms = new Set(tokenize(srcText));
+    const lineTerms = contentTerms(body);
+    const found = lineTerms.filter(t => srcTerms.has(t)).length;
+    if(lineTerms.length >= 2 && found / lineTerms.length < 0.5) {
+      unsupported++;
+      return { line, ok: false, why: 'manbada yo\'q so\'zlar: ' + lineTerms.filter(t => !srcTerms.has(t)).slice(0, 4).join(', ') };
+    }
+    return { line, ok: true };
+  });
+  return { checked, unsupported };
 }
 
 // Chat history
@@ -620,7 +684,7 @@ window.loadChat = function(id){
   const inner = document.getElementById('aiChatInner');
   inner.innerHTML='';
   chat.messages.forEach(m=>{
-    appendMsg(m.content, m.role==='user'?'user':'bot', false);
+    appendMsg(m.content, m.role==='user'?'user':'bot', false, m.excerpts ? { excerpts: m.excerpts } : null);
   });
   renderChatList();
   closeSb();
@@ -664,20 +728,40 @@ function getContextOld(){} // eski, ishlatilmaydi
 
 function now(){return new Date().toLocaleTimeString('uz',{hour:'2-digit',minute:'2-digit'})}
 
-function appendMsg(text, role, scroll=true){
+function escapeHtml(t){ return String(t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function formatLine(t){
+  return escapeHtml(t).replace(/\*\*(.*?)\*\*/g,'<b>$1</b>').replace(/\*(.*?)\*/g,'<i>$1</i>')
+    .replace(/\[(\d+)\]/g,'<sup class="cite" title="Manba $1">$1</sup>');
+}
+
+function appendMsg(text, role, scroll=true, meta=null){
   document.getElementById('aiWelcome')?.remove();
   const inner=document.getElementById('aiChatInner');
   const div=document.createElement('div');
   div.className=`ai-msg-row ${role}`;
-  const formatted=text.replace(/\*\*(.*?)\*\*/g,'<b>$1</b>').replace(/\*(.*?)\*/g,'<i>$1</i>').replace(/\n/g,'<br>');
+  let bodyHtml;
+  let extra = '';
+  if(role==='bot' && meta && meta.excerpts && meta.excerpts.length){
+    const { checked, unsupported } = verifyAnswer(text, meta.excerpts);
+    bodyHtml = checked.map(c => c.ok ? formatLine(c.line)
+      : `<span class="unverified" title="Tasdiqlanmadi: ${escapeHtml(c.why)}"><i class="ti ti-alert-triangle"></i> ${formatLine(c.line)}</span>`).join('<br>');
+    if(unsupported) extra += `<div class="verify-warn"><i class="ti ti-alert-triangle"></i> ${unsupported} ta jumla kitob parchalari bilan tasdiqlanmadi — ularga tayanmang.</div>`;
+    else extra += `<div class="verify-ok"><i class="ti ti-circle-check"></i> Barcha ma'lumotlar quyidagi kitob parchalaridan olingan</div>`;
+    extra += `<details class="ai-sources"><summary><i class="ti ti-book-2"></i> Manbalar (${meta.excerpts.length})</summary>` +
+      meta.excerpts.map(e => `<div class="ai-src"><div class="ai-src-head"><span class="cite">${e.n}</span> ${escapeHtml(e.bookName)}</div><div class="ai-src-text">${escapeHtml(e.text.length > 900 ? e.text.slice(0, 900) + '…' : e.text)}</div></div>`).join('') +
+      `</details>`;
+  } else {
+    bodyHtml = text.split('\n').map(formatLine).join('<br>');
+  }
+  const speakable = text.replace(/\[\d+\]/g,'');
   if(role==='bot'){
     div.innerHTML=`<div class="ai-msg-avatar bot"><i class="ti ti-stethoscope"></i></div>
       <div class="ai-msg-content">
         <div class="ai-msg-name">AZMed AI</div>
-        <div class="ai-msg-bubble">${formatted}</div>
+        <div class="ai-msg-bubble">${bodyHtml}${extra}</div>
         <div style="display:flex;align-items:center;gap:8px">
           <div class="ai-msg-time">${now()}</div>
-          <button class="ai-tts-btn" onclick="speakText(this.dataset.text)" data-text="${text.replace(/"/g,'&quot;')}" title="Ovozda eshitish">
+          <button class="ai-tts-btn" onclick="speakText(this.dataset.text)" data-text="${escapeHtml(speakable)}" title="Ovozda eshitish">
             <i class="ti ti-volume"></i> Eshitish
           </button>
         </div>
@@ -685,7 +769,7 @@ function appendMsg(text, role, scroll=true){
   } else {
     div.innerHTML=`<div class="ai-msg-content">
         <div class="ai-msg-name">Siz</div>
-        <div class="ai-msg-bubble">${formatted}</div>
+        <div class="ai-msg-bubble">${bodyHtml}</div>
         <div class="ai-msg-time">${now()}</div>
       </div>
       <div class="ai-msg-avatar user"><i class="ti ti-user"></i></div>`;
@@ -753,63 +837,73 @@ window.sendMsg=async function(fromVoice){
   document.getElementById('sendBtn').disabled=true;
 
   try{
-    const bookListText=aiBookNames.length>0
-      ? aiBookNames.map((n,i)=>`${i+1}. ${n}`).join('\n')
-      : 'Hozircha hech qanday kitob yuklanmagan';
+    // Qisqa davom savollari ("dozasi qancha?") uchun oldingi savolni ham qo'shib qidiramiz
+    const prevUser = [...history].reverse().find((m, i) => i > 0 && m.role === 'user');
+    const isFollowUp = !!prevUser && /(^|[^\p{L}])(u|bu|shu|ushbu|uning|buning|shuning|dozasi|qancha|keyin|yana|davomi|batafsil|boshqa)(?=$|[^\p{L}])/iu.test(msg);
+    const isMeta = /(kim yarat|muallif|siz kim|platforma|azmed nima|nechta kitob|qaysi kitob)/i.test(msg);
+    // Avval savolning o'zi bo'yicha; topilmasa va bu davom savoli bo'lsa — oldingi savol bilan birga
+    let searchQuery = msg;
+    let excerpts = isMeta ? [] : getExcerpts(msg);
+    if(!isMeta && !excerpts.length && isFollowUp){
+      searchQuery = prevUser.content + ' ' + msg;
+      excerpts = getExcerpts(searchQuery);
+    }
 
-    const context = getContext(msg);
-
-    const system=`Siz AZMed AI — tibbiy maslahatchi sun'iy intellektsiz.
-
-PLATFORMA HAQIDA MA'LUMOT:
-- Nomi: AZMed (Ambulance 103)
-- Manzil: azmed.uz | ambulance103.vercel.app
-- Muallif: Abdurasul Zokirov (tibbiyot xodimi va dasturchi)
-- Maqsad: Tibbiy ma'lumotlarni shifokorlar, talabalar va aholi uchun qulay va ishonchli tarzda yetkazish
-- Foydalanuvchilar: Shifokorlar, tibbiyot talabalari va oddiy aholi
-- Agar "kim yaratdi", "muallif kim", "siz kimsiz", "bu platforma nima" kabi savollar bo'lsa — yuqoridagi ma'lumotni do'stona tarzda aytib bering
-
-MUHIM QOIDALAR:
-1. Faqat HAQIQIY ma'lumot bering — hech qachon yolg'on yoki to'qima ma'lumot bermang
-2. Sizda mavjud kitoblar:
+    let reply, meta = null;
+    if(!isMeta && !excerpts.length){
+      // Kitoblarda hech narsa topilmadi — AI umuman chaqirilmaydi, to'qib chiqarish imkoni yo'q
+      reply = "Kitoblarda bu savol bo'yicha ma'lumot topilmadi.\n\nSavolni boshqacha yozib ko'ring: kasallik yoki dori nomini aniq yozing (masalan, \"gipertonik kriz\", \"nitroglitserin dozasi\").";
+    } else {
+      const sourcesText = excerpts.map(e => `[${e.n}] «${e.bookName}»:\n${e.text}`).join('\n\n---\n\n');
+      const bookListText = aiBookNames.length ? aiBookNames.map((n,i)=>`${i+1}. ${n}`).join('\n') : 'Kitob yuklanmagan';
+      const system = isMeta ? `Siz AZMed AI — Ambulance 103 platformasining tibbiy maslahatchisisiz.
+Platforma: AZMed (Ambulance 103), ambulance103.vercel.app. Muallif: Abdurasul Zokirov (tibbiyot xodimi va dasturchi).
+Maqsad: tibbiy ma'lumotlarni shifokorlar, talabalar va aholiga qulay yetkazish.
+Yuklangan kitoblar:
 ${bookListText}
-3. HAR BIR MA'LUMOT KEYIN MANBASINI KO'RSATING — qaysi kitobdan olganingizni yozing
-   Misol: "Nitroglitserin 0.5 mg til ostiga qo'yiladi (📖 Klinik farmakologiya)"
-   Misol: "AQB 180 dan yuqori bo'lsa darhol harakat qiling (📖 Shoshilinch tez tibbiy yordam)"
-4. Agar ma'lumot kitobda yo'q bo'lsa — "Bu haqida kitoblarimda ma'lumot yo'q, umumiy tibbiy bilimdan: ..." deb boshlang
-5. Agar "nechta kitob bor" deb so'ralsa — ro'yxatni aniq ko'rsating
-6. O'zbek tilida javob bering
-7. Dori dozalari va protokol bosqichlarini aniq ko'rsating
-8. Oxirida: "⚠️ Yakuniy qaror shifokorga tegishli" deb yozing
+Faqat shu ma'lumotlar asosida, o'zbek tilida qisqa javob bering. Tibbiy maslahat bermang.`
+      : `Siz AZMed AI — tibbiy ma'lumotnoma yordamchisisiz. Siz FAQAT quyida berilgan KITOB PARCHALARI asosida javob berasiz.
 
-KITOBLARDAN TOPILGAN TEGISHLI BO'LAKLAR:
-${context || 'Tegishli ma\'lumot topilmadi, umumiy tibbiy bilimdan foydalanaman.'}`;
+QAT'IY QOIDALAR:
+1. Faqat parchalarda aniq yozilgan ma'lumotni bering. O'zingizdan, umumiy bilimdan yoki xotiradan HECH NARSA qo'shmang, taxmin qilmang, to'ldirmang.
+2. Har bir jumla yoki ro'yxat bandi oxirida manba raqamini kvadrat qavsda yozing: [1], [2] yoki [1][3]. Manbasiz jumla yozmang.
+3. Dori nomlari, dozalar, raqamlar va bosqichlarni parchadagidek aynan ko'chiring — o'zgartirmang, yaxlitlamang.
+4. Savolning biror qismiga parchalarda javob bo'lmasa, o'sha qism uchun "Kitoblarda bu haqda ma'lumot topilmadi" deb yozing. Yetishmagan joyni hech qachon o'zingizdan to'ldirmang.
+5. Parchalar savolga umuman tegishli bo'lmasa, faqat "Kitoblarda bu savol bo'yicha ma'lumot topilmadi" deb javob bering.
+6. O'zbek tilida, qisqa va tartibli yozing (bosqichlar, ro'yxat). Kirish so'zlari va xulosa qo'shmang.
 
-    const res=await fetch(GROQ_URL,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'llama-3.3-70b-versatile',
-        messages:[{role:'system',content:system},...history.slice(-6)],
-        temperature:0.2,
-        max_tokens:3000
-      })
-    });
-    if(!res.ok){const e=await res.json();throw new Error(e.error?.message||res.statusText);}
-    const data=await res.json();
+KITOB PARCHALARI:
+${sourcesText}`;
+
+      // Oldingi javoblar yuborilmaydi — AI faqat hozirgi parchalarga tayanadi
+      const question = searchQuery !== msg ? `Oldingi savol: ${prevUser.content}\nHozirgi savol: ${msg}` : msg;
+      const userTurns = [{ role: 'user', content: question }];
+      const res=await fetch(GROQ_URL,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          messages:[{role:'system',content:system},...userTurns],
+          temperature:0,
+          max_tokens:2000
+        })
+      });
+      if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error?.message||res.statusText);}
+      const data=await res.json();
+      reply = data.choices?.[0]?.message?.content;
+      if(excerpts.length) meta = { excerpts };
+    }
     document.getElementById(tid)?.remove();
-    const reply=data.choices?.[0]?.message?.content;
     if(reply){
-      appendMsg(reply,'bot');
+      appendMsg(reply,'bot',true,meta);
       history.push({role:'assistant',content:reply});
-      if(chat) chat.messages.push({role:'assistant',content:reply});
+      if(chat) chat.messages.push(meta ? {role:'assistant',content:reply,excerpts:meta.excerpts} : {role:'assistant',content:reply});
       saveChats();
       // Ovoz bilan gapirilgan bo'lsa — javobni ham ovozda o'qi
-      if(autoSpeak) speakText(reply);
+      if(autoSpeak) speakText(reply.replace(/\[\d+\]/g,''));
     } else appendMsg('Javob kelmadi.','bot');
   }catch(e){
     document.getElementById(tid)?.remove();
-    appendMsg('❌ Xatolik: '+e.message,'bot');
+    appendMsg('Xatolik: '+e.message,'bot');
   }
   document.getElementById('sendBtn').disabled=false;
 };

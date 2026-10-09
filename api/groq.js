@@ -60,7 +60,8 @@ module.exports = async function handler(req, res) {
         body: JSON.stringify({
           model: process.env.GROQ_MODEL || 'openai/gpt-oss-120b',
           messages: body.messages,
-          temperature: 0.2,
+          // Kitobga qat'iy tayanish uchun past harorat; mijoz 0–1 oralig'ida berishi mumkin
+          temperature: Math.min(1, Math.max(0, Number.isFinite(Number(body.temperature)) ? Number(body.temperature) : 0)),
           max_tokens: Math.min(
             3000,
             Math.max(1, Number(body.max_tokens) || 1500)
