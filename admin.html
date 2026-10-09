@@ -1070,7 +1070,8 @@ window.addAdmin = async () => {
   if (email === SUPER_ADMIN) return alert('Bu allaqachon Super Admin!');
   const existing = await getDocs(query(collection(db, 'admins'), where('email', '==', email)));
   if (!existing.empty) return alert('Bu email allaqachon admin!');
-  await addDoc(collection(db, 'admins'), { email, addedBy: currentUserEmail, addedAt: serverTimestamp() });
+  // Hujjat ID = email: Firestore qoidalari adminlikni shu orqali tekshiradi (firestore.rules)
+  await setDoc(doc(db, 'admins', email), { email, addedBy: currentUserEmail, addedAt: serverTimestamp() });
   document.getElementById('newAdminEmail').value = '';
   showSuccess('adminAddSuccess', `${email} admin qilindi!`);
   loadAdmins();

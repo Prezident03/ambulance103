@@ -1,0 +1,38 @@
+rules_version = '2';
+
+// Ambulance 103 — Firestore xavfsizlik qoidalari.
+// Firebase Console → Firestore Database → Rules ga nusxa qilib, "Publish" bosing.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function email() { return request.auth.token.email; }
+    function isSuperAdmin() { return signedIn() && email() == 'abdurasul1406z@gmail.com'; }
+    // Adminlar admins/{email} hujjatida saqlanadi (admin.html shunday yozadi)
+    function isAdmin() {
+      return isSuperAdmin()
+        || (signedIn() && exists(/databases/$(database)/documents/admins/$(email())));
+    }
+
+    // Kontent: kirgan foydalanuvchilar o'qiydi, faqat adminlar o'zgartiradi
+    match /diseases/{id}   { allow read: if signedIn(); allow write: if isAdmin(); }
+    match /drugs/{id}      { allow read: if signedIn(); allow write: if isAdmin(); }
+    match /categories/{id} { allow read: if signedIn(); allow write: if isAdmin(); }
+    match /aiBooks/{id}    { allow read: if signedIn(); allow write: if isAdmin(); }
+
+    // Sozlamalar (fon rasmi va h.k.)
+    match /settings/{id}   { allow read: if signedIn(); allow write: if isAdmin(); }
+
+    // Har kim faqat o'z profilini o'qiydi/yozadi; adminlar ro'yxatni ko'radi
+    match /users/{uid} {
+      allow read, write: if signedIn() && request.auth.uid == uid;
+      allow read: if isAdmin();
+    }
+
+    // Foydalanuvchi faqat o'zining adminlik yozuvini ko'ra oladi; boshqaruv — Super Admin
+    match /admins/{id} {
+      allow read: if isSuperAdmin() || (signedIn() && resource.data.email == email());
+      allow write: if isSuperAdmin();
+    }
+  }
+}
