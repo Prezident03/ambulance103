@@ -18,3 +18,7 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
+
+// Sahifa ochilganda Firebase saqlangan sessiyani tiklaguncha kutish uchun.
+// Firestore qoidalari kirgan foydalanuvchini talab qilsa, so'rovlar shundan keyin yuborilishi kerak.
+export const authReady = auth.authStateReady();
