@@ -698,41 +698,89 @@
 
 
     /* ===== KATEGORIYALAR ===== */
-    .categories-section{margin-bottom:16px;}
-    .cat-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
-    .cat-title{font-size:15px;font-weight:700;color:#222;}
+    .categories-section{margin-bottom:18px;}
+    .cat-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:12px}
+    .cat-title{font-size:16px;font-weight:800;color:#1a1a2e;display:flex;align-items:center;gap:8px;letter-spacing:-.2px}
+    .cat-title i{font-size:20px;color:#E24B4A}
+    .cat-title .cat-total{font-size:11px;font-weight:700;color:#E24B4A;background:rgba(226,75,74,0.1);padding:2px 8px;border-radius:20px}
     body.dark .cat-title{color:#eee;}
-    .cat-scroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none;}
+    .cat-more{background:none;border:none;color:#E24B4A;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:4px;padding:6px 10px;border-radius:10px;transition:background .2s}
+    .cat-more:hover{background:rgba(226,75,74,0.08)}
+    .cat-more i{font-size:15px;transition:transform .2s}
+    .cat-more:hover i{transform:translateX(3px)}
+
+    /* Telefon: gorizontal aylanuvchi qator; desktop: panjara */
+    .cat-scroll{display:flex;gap:12px;overflow-x:auto;padding:4px 2px 10px;scroll-snap-type:x mandatory;scrollbar-width:none;}
     .cat-scroll::-webkit-scrollbar{display:none;}
+    .cat-scroll .cat-card{width:140px;flex-shrink:0;scroll-snap-align:start}
+    @media(min-width:769px){
+      .cat-scroll{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));overflow:visible;padding:4px 0 8px}
+      .cat-scroll .cat-card{width:auto}
+    }
+    .cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;padding:4px 0}
+
     .cat-card{
-      flex-shrink:0;width:110px;background:#fff;border-radius:20px;
-      padding:16px 10px 14px;text-align:center;cursor:pointer;
-      box-shadow:0 3px 14px rgba(0,0,0,0.07),0 1px 3px rgba(0,0,0,0.04);
-      transition:transform .28s cubic-bezier(.34,1.56,.64,1),box-shadow .28s;
-      border:1.5px solid rgba(0,0,0,0.04);
+      --c:#e74c3c;
+      --ci:var(--c);
+      position:relative;overflow:hidden;
+      display:flex;flex-direction:column;align-items:flex-start;gap:10px;
+      padding:14px;border-radius:18px;cursor:pointer;text-align:left;
+      background:var(--bg-card,#fff);
+      border:1px solid var(--border,#eee);
+      box-shadow:0 1px 2px rgba(16,24,40,0.04),0 4px 14px rgba(16,24,40,0.05);
+      transition:transform .25s cubic-bezier(.34,1.56,.64,1),box-shadow .25s,border-color .25s;
+      font:inherit;color:inherit;
     }
-    body.dark .cat-card{background:#16213e;border-color:rgba(255,255,255,0.05);box-shadow:0 3px 14px rgba(0,0,0,0.35);}
-    .cat-card:hover{transform:translateY(-6px) scale(1.03);box-shadow:0 16px 36px rgba(0,0,0,0.12),0 4px 10px rgba(0,0,0,0.06);}
-    .cat-card.active{border-color:currentColor;}
+    body:not(.dark):not(.glass) .cat-card{background:#fff;border-color:#eef0f3}
+    body.dark .cat-card,body.glass .cat-card{--ci:color-mix(in srgb,var(--c) 55%,#fff)}
+    .cat-card::before{
+      content:'';position:absolute;inset:0 0 auto 0;height:64px;
+      background:linear-gradient(180deg,color-mix(in srgb,var(--c) 12%,transparent),transparent);
+      pointer-events:none;
+    }
+    .cat-card:hover,.cat-card:focus-visible{
+      transform:translateY(-4px);
+      border-color:color-mix(in srgb,var(--c) 45%,transparent);
+      box-shadow:0 14px 30px color-mix(in srgb,var(--c) 18%,transparent),0 2px 6px rgba(16,24,40,0.06);
+      outline:none;
+    }
+    .cat-card:active{transform:translateY(-1px) scale(.98)}
     .cat-icon{
-      width:62px;height:62px;border-radius:50%;
-      display:flex;align-items:center;justify-content:center;
-      margin:0 auto 10px;
-      transition:transform .28s cubic-bezier(.34,1.56,.64,1);
+      position:relative;width:48px;height:48px;border-radius:14px;
+      display:flex;align-items:center;justify-content:center;flex-shrink:0;
+      background:color-mix(in srgb,var(--c) 14%,transparent);
+      transition:transform .25s cubic-bezier(.34,1.56,.64,1);
     }
-    .cat-card:hover .cat-icon{transform:scale(1.1) rotate(-5deg);}
-    .cat-icon img{width:32px;height:32px;display:block;}
-    .cat-name{font-size:11px;font-weight:700;color:#222;line-height:1.35;margin-top:2px;}
-    body.dark .cat-name{color:#ddd;}
-    .cat-count{font-size:10px;color:#999;margin-top:4px;font-weight:500;}
-    body.dark .cat-count{color:#666;}
+    .cat-card:hover .cat-icon{transform:scale(1.08) rotate(-4deg)}
+    /* Ikonka aniq kategoriya rangida (SVG maska) */
+    .cat-glyph{width:26px;height:26px;background:var(--ci);
+      -webkit-mask:var(--icon) center/contain no-repeat;mask:var(--icon) center/contain no-repeat}
+    .cat-glyph.fallback{-webkit-mask:none;mask:none;background:none;color:var(--ci);font-size:20px;font-weight:800;display:flex;align-items:center;justify-content:center}
+    .cat-name{position:relative;font-size:13px;font-weight:700;color:var(--text-primary,#1a1a2e);line-height:1.3;
+      display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.6em;word-break:break-word}
+    body:not(.dark):not(.glass) .cat-name{color:#1a1a2e}
+    .cat-foot{position:relative;display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:auto}
+    .cat-count{font-size:11px;font-weight:700;color:var(--ci);background:color-mix(in srgb,var(--c) 10%,transparent);padding:3px 8px;border-radius:20px;white-space:nowrap}
+    .cat-count.empty{color:var(--text-faint,#aaa);background:var(--bg-tab,#f3f4f6)}
+    .cat-arrow{font-size:16px;color:var(--text-faint,#bbb);transition:transform .2s,color .2s}
+    .cat-card:hover .cat-arrow{color:var(--ci);transform:translateX(3px)}
+
+    /* Yuklanish skeleti */
+    .cat-skel{cursor:default;pointer-events:none}
+    .cat-skel .cat-icon,.cat-skel .sk-line{background:linear-gradient(90deg,var(--bg-tab,#f0f0f0) 25%,var(--border,#e6e6e6) 50%,var(--bg-tab,#f0f0f0) 75%);background-size:200% 100%;animation:catShimmer 1.2s infinite}
+    .cat-skel .sk-line{height:10px;border-radius:6px;width:80%}
+    .cat-skel .sk-line.short{width:45%}
+    @keyframes catShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    .cat-state{grid-column:1/-1;color:var(--text-muted,#888);font-size:13px;padding:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .cat-state button{background:#E24B4A;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer}
+
     /* ===== SECTION MODAL ===== */
     .section-modal-overlay{
       display:none;
       position:fixed;
       top:0;
       left:240px;
-      right:240px;
+      right:0;
       bottom:0;
       z-index:1000;
       background:rgba(0,0,0,0.45);
@@ -1198,15 +1246,14 @@
   <!-- KATEGORIYALAR -->
   <div class="categories-section">
     <div class="cat-header">
-      <div class="cat-title">📂 Asosiy kategoriyalar</div>
-      <button onclick="openAllCategoriesModal()" style="background:none;border:none;color:#E24B4A;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">Barchasini ko'rish →</button>
+      <div class="cat-title"><i class="ti ti-category"></i>Kategoriyalar <span class="cat-total" id="catTotal" style="display:none"></span></div>
+      <button class="cat-more" onclick="openAllCategoriesModal()">Barchasi <i class="ti ti-arrow-right"></i></button>
     </div>
     <div class="cat-scroll" id="catScroll">
-      <div class="cat-skeleton" style="display:flex;gap:12px">
-        <div style="width:100px;height:110px;background:#eee;border-radius:16px;flex-shrink:0"></div>
-        <div style="width:100px;height:110px;background:#eee;border-radius:16px;flex-shrink:0"></div>
-        <div style="width:100px;height:110px;background:#eee;border-radius:16px;flex-shrink:0"></div>
-      </div>
+      <div class="cat-card cat-skel"><div class="cat-icon"></div><div class="sk-line"></div><div class="sk-line short"></div></div>
+      <div class="cat-card cat-skel"><div class="cat-icon"></div><div class="sk-line"></div><div class="sk-line short"></div></div>
+      <div class="cat-card cat-skel"><div class="cat-icon"></div><div class="sk-line"></div><div class="sk-line short"></div></div>
+      <div class="cat-card cat-skel"><div class="cat-icon"></div><div class="sk-line"></div><div class="sk-line short"></div></div>
     </div>
   </div>
 
@@ -1468,7 +1515,7 @@
       <button class="section-modal-close" onclick="closeAllCategoriesModal()">✕</button>
     </div>
     <div class="section-modal-body">
-      <div id="allCatGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:12px;padding:4px 0"></div>
+      <div id="allCatGrid" class="cat-grid"></div>
     </div>
   </div>
 </div>
@@ -2189,60 +2236,97 @@ buildDrugCards();
 renderDrugTab('umumiy');
 
 // ===== KATEGORIYALAR =====
+const HOME_CAT_LIMIT = 16;
+
+function escHtml(v) {
+  return String(v ?? '').replace(/[&<>"']/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[ch]));
+}
+
+function catCardHtml(d, i) {
+  const c = /^#[0-9a-f]{3,8}$/i.test(d.color || '') ? d.color : '#e74c3c';
+  const name = escHtml(d.name || 'Nomsiz');
+  const icon = /^https:\/\//.test(d.icon || '')
+    ? `<span class="cat-glyph" style="--icon:url('${encodeURI(d.icon).replace(/'/g, '%27')}')"></span>`
+    : `<span class="cat-glyph fallback">${escHtml((d.name || '?').trim()[0] || '?')}</span>`;
+  const count = d.count > 0
+    ? `<span class="cat-count">${d.count} ta kasallik</span>`
+    : `<span class="cat-count empty">Tez orada</span>`;
+  return `
+    <button type="button" class="cat-card" style="--c:${c}" onclick="openCategory(${i})" title="${name}">
+      <div class="cat-icon">${icon}</div>
+      <div class="cat-name">${name}</div>
+      <div class="cat-foot">${count}<i class="ti ti-chevron-right cat-arrow"></i></div>
+    </button>`;
+}
+
+window.openCategory = function(i) {
+  const d = (window._allCatsData || [])[i];
+  if (!d) return;
+  if (document.getElementById('allCatModal').classList.contains('open')) {
+    closeAllCategoriesModal();
+    setTimeout(() => filterByCategory(d.name), 200);
+  } else {
+    filterByCategory(d.name);
+  }
+};
+
 async function loadCategories() {
+  const scroll = document.getElementById('catScroll');
   try {
     const { db } = await import('./firebase.js');
     const { collection, getDocs, query, orderBy } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
 
-    // Kasalliklar sonini hisoblaymiz
-    const diseaseSnap = await getDocs(collection(db, 'diseases'));
+    // Kasalliklar va kategoriyalarni parallel yuklaymiz
+    const [diseaseSnap, catSnap] = await Promise.all([
+      getDocs(collection(db, 'diseases')),
+      getDocs(query(collection(db, 'categories'), orderBy('createdAt', 'asc')))
+    ]);
+
+    // Har bir kategoriyadagi kasalliklar soni (nom katta-kichik harfga qaramay solishtiriladi)
     const catCounts = {};
     diseaseSnap.forEach(doc => {
-      const cat = (doc.data().category || '').trim();
-      catCounts[cat] = (catCounts[cat] || 0) + 1;
+      const key = normStr((doc.data().category || '').trim());
+      if (key) catCounts[key] = (catCounts[key] || 0) + 1;
     });
 
-    // Kategoriyalarni yuklaymiz
-    const catSnap = await getDocs(query(collection(db, 'categories'), orderBy('createdAt', 'asc')));
-    const scroll = document.getElementById('catScroll');
-
-    if (catSnap.empty) {
-      scroll.innerHTML = `<div style="color:#aaa;font-size:13px;padding:10px">Kategoriyalar hali qo'shilmagan</div>`;
-      return;
-    }
-
-    scroll.innerHTML = '';
     window._allCatsData = [];
     catSnap.forEach(doc => {
       const d = doc.data();
-      // Exact + normalized matching
-      const count = catCounts[d.name] ||
-        Object.entries(catCounts).reduce((sum, [k, v]) => {
-          return sum + (normStr(k) === normStr(d.name) ? v : 0);
-        }, 0);
-      const c = d.color || '#e74c3c';
-      const bg = d.bgColor || '#ffeaea';
-      const f = hexToIconFilter(c);
-      window._allCatsData = window._allCatsData || [];
-      window._allCatsData.push({ ...d, count });
-      scroll.innerHTML += `
-        <div class="cat-card" onclick="filterByCategory('${d.name}')" style="color:${c}">
-          <div class="cat-icon" style="background:${bg};box-shadow:0 6px 18px ${c}30,inset 0 1px 3px rgba(255,255,255,0.7)">
-            <img src="${d.icon}" alt="${d.name}" style="filter:${f}" onerror="this.style.display='none'">
-          </div>
-          <div class="cat-name">${d.name}</div>
-          <div class="cat-count">${count > 0 ? count + ' ta kasallik' : '—'}</div>
-        </div>`;
+      window._allCatsData.push({ ...d, count: catCounts[normStr(d.name || '')] || 0 });
     });
+    renderHomeCategories();
   } catch(e) {
     console.log('loadCategories error:', e.message);
-    const scroll = document.getElementById('catScroll');
-    if (scroll) scroll.innerHTML = `<div style="color:var(--text-muted);font-size:13px;padding:10px;display:flex;align-items:center;gap:10px">Kategoriyalarni yuklab bo'lmadi
-      <button onclick="this.parentElement.textContent='Yuklanmoqda...';loadCategories()" style="background:#E24B4A;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer">Qayta urinish</button></div>`;
+    scroll.innerHTML = `<div class="cat-state">Kategoriyalarni yuklab bo'lmadi
+      <button onclick="this.parentElement.textContent='Yuklanmoqda...';loadCategories()">Qayta urinish</button></div>`;
   }
 }
 
+function renderHomeCategories() {
+  const scroll = document.getElementById('catScroll');
+  const cats = window._allCatsData || [];
+  const total = document.getElementById('catTotal');
+  if (total) { total.textContent = cats.length; total.style.display = cats.length ? '' : 'none'; }
+  if (!cats.length) {
+    scroll.innerHTML = `<div class="cat-state">Kategoriyalar hali qo'shilmagan</div>`;
+    return;
+  }
+  scroll.innerHTML = cats.slice(0, HOME_CAT_LIMIT).map(catCardHtml).join('');
+  fitHomeCategories();
+}
 
+// Desktopda chala qator qolmasin: faqat to'liq qatorlarni ko'rsatamiz (ko'pi bilan 2 ta)
+function fitHomeCategories() {
+  const scroll = document.getElementById('catScroll');
+  const cards = scroll.querySelectorAll('.cat-card');
+  cards.forEach(c => c.style.display = '');
+  if (getComputedStyle(scroll).display !== 'grid') return;
+  const cols = getComputedStyle(scroll).gridTemplateColumns.split(' ').length;
+  if (cards.length <= cols) return;
+  const show = Math.min(2, Math.floor(cards.length / cols)) * cols;
+  cards.forEach((c, i) => { if (i >= show) c.style.display = 'none'; });
+}
+window.addEventListener('resize', () => { if (window._allCatsData) fitHomeCategories(); });
 
 window.filterByCategory = function(catName) {
   openSectionModal('kasalliklar');
@@ -2609,54 +2693,14 @@ async function loadSiteBg() {
 }
 loadSiteBg();
 
-// Hex rangdan CSS filter hisoblash (qora ikonni rangli qilish uchun)
-function hexToIconFilter(hex) {
-  hex = (hex||'#e74c3c').replace('#','');
-  const r=parseInt(hex.substr(0,2),16)/255;
-  const g=parseInt(hex.substr(2,2),16)/255;
-  const b=parseInt(hex.substr(4,2),16)/255;
-  const max=Math.max(r,g,b), min=Math.min(r,g,b);
-  const l=(max+min)/2;
-  let h=0, s=0;
-  if(max!==min){
-    const d=max-min;
-    s=l>0.5?d/(2-max-min):d/(max+min);
-    if(max===r) h=((g-b)/d+(g<b?6:0))*60;
-    else if(max===g) h=((b-r)/d+2)*60;
-    else h=((r-g)/d+4)*60;
-  }
-  s=Math.round(s*100); const bright=Math.round(l*100);
-  return `brightness(0) saturate(100%) invert(30%) sepia(90%) saturate(${s*4}%) hue-rotate(${Math.round(h)}deg) brightness(${Math.max(80,bright*1.4)}%)`;
-}
-
 // ===== BARCHA KATEGORIYALAR MODALI =====
 window.openAllCategoriesModal = function() {
   const modal = document.getElementById('allCatModal');
   const grid = document.getElementById('allCatGrid');
-  if (window._allCatsData && window._allCatsData.length > 0) {
-    grid.innerHTML = window._allCatsData.map(d => {
-      const c = d.color || '#e74c3c';
-      const bg = d.bgColor || '#ffeaea';
-      const f = hexToIconFilter(c);
-      return `
-        <div onclick="closeAllCategoriesModal();setTimeout(()=>filterByCategory('${d.name}'),200)"
-             style="background:#fff;border-radius:20px;padding:18px 10px 14px;text-align:center;
-                    cursor:pointer;box-shadow:0 3px 14px rgba(0,0,0,0.07);
-                    border:1.5px solid rgba(0,0,0,0.04);transition:transform .25s,box-shadow .25s"
-             onmouseover="this.style.transform='translateY(-5px)';this.style.boxShadow='0 14px 32px rgba(0,0,0,0.12)'"
-             onmouseout="this.style.transform='';this.style.boxShadow='0 3px 14px rgba(0,0,0,0.07)'">
-          <div style="width:62px;height:62px;border-radius:50%;display:flex;align-items:center;
-                      justify-content:center;margin:0 auto 10px;background:${bg};
-                      box-shadow:0 6px 18px ${c}30,inset 0 1px 3px rgba(255,255,255,0.7)">
-            <img src="${d.icon}" style="width:32px;height:32px;filter:${f}" onerror="this.style.display='none'">
-          </div>
-          <div style="font-size:11px;font-weight:700;color:#222;line-height:1.35">${d.name}</div>
-          <div style="font-size:10px;color:#999;margin-top:4px">${d.count>0?d.count+' ta kasallik':'—'}</div>
-        </div>`;
-    }).join('');
-  } else {
-    grid.innerHTML = '<div style="color:#aaa;font-size:13px;padding:20px;text-align:center;grid-column:1/-1">Yuklanmoqda...</div>';
-  }
+  const cats = window._allCatsData || [];
+  grid.innerHTML = cats.length
+    ? cats.map(catCardHtml).join('')
+    : '<div class="cat-state" style="justify-content:center">Yuklanmoqda...</div>';
   modal.classList.add('open');
   document.body.style.overflow = 'hidden';
 };
