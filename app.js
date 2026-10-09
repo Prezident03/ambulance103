@@ -1,48 +1,56 @@
 import { auth, db } from './firebase.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { collection, getDocs, setDoc, doc, serverTimestamp, orderBy, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { collection, getDocs, getDoc, setDoc, doc, serverTimestamp, orderBy, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const SUPER_ADMIN = "abdurasul1406z@gmail.com";
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) { window.location.href = 'login.html'; return; }
 
-  // Foydalanuvchini saqlash
-  await setDoc(doc(db, 'users', user.uid), {
-    name: user.displayName || '',
-    email: user.email,
-    photo: user.photoURL || '',
-    loginAt: serverTimestamp()
-  }, { merge: true });
+  // Profilni darhol ko'rsatamiz — Firestore javobini kutmaymiz
+  if (typeof window._setProfileUser === 'function') window._setProfileUser(user);
 
-  const name = user.displayName || user.email.split('@')[0];
-  const un = document.getElementById('userName');
-  if (un) un.textContent = name;
+  // Firestore so'rovlari bir-biriga bog'liq emas: biri xato bersa, qolganlari ishlayveradi
+  saveUserDoc(user);
+  loadUserPhoto(user);
+  checkAdmin(user);
+  loadFromFirestore();
+});
 
-  // Firestore dan avatar olish
+async function saveUserDoc(user) {
   try {
-    const userDoc = await getDocs(query(collection(db, 'users'), where('__name__', '==', user.uid)));
-    if (!userDoc.empty) {
-      const data = userDoc.docs[0].data();
-      if (data.photoBase64 && typeof window._setProfileUser === 'function') {
-        window._setProfileUser({ ...user, photoURL: data.photoBase64 });
-      } else if (typeof window._setProfileUser === 'function') {
-        window._setProfileUser(user);
-      }
-    } else if (typeof window._setProfileUser === 'function') {
-      window._setProfileUser(user);
-    }
-  } catch {
-    if (typeof window._setProfileUser === 'function') window._setProfileUser(user);
+    await setDoc(doc(db, 'users', user.uid), {
+      name: user.displayName || '',
+      email: user.email || '',
+      photo: user.photoURL || '',
+      loginAt: serverTimestamp()
+    }, { merge: true });
+  } catch (e) {
+    console.warn('users yozib bo\'lmadi:', e.code || e.message);
   }
+}
 
-  // Super admin yoki oddiy admin tekshirish
-  let isAdmin = false;
-  if (user.email === SUPER_ADMIN) {
-    isAdmin = true;
-  } else {
-    const snap = await getDocs(query(collection(db, 'admins'), where('email', '==', user.email)));
-    if (!snap.empty) isAdmin = true;
+async function loadUserPhoto(user) {
+  try {
+    const snap = await getDoc(doc(db, 'users', user.uid));
+    const data = snap.exists() ? snap.data() : {};
+    if (data.photoBase64 && typeof window._setProfileUser === 'function') {
+      window._setProfileUser(user, data.photoBase64);
+    }
+  } catch (e) {
+    console.warn('Profil rasmini yuklab bo\'lmadi:', e.code || e.message);
+  }
+}
+
+async function checkAdmin(user) {
+  let isAdmin = user.email === SUPER_ADMIN;
+  if (!isAdmin && user.email) {
+    try {
+      const snap = await getDocs(query(collection(db, 'admins'), where('email', '==', user.email)));
+      isAdmin = !snap.empty;
+    } catch (e) {
+      console.warn('Admin tekshiruvi xato:', e.code || e.message);
+    }
   }
   if (isAdmin) {
     const adminBtn = document.getElementById('adminBtn');
@@ -50,9 +58,7 @@ onAuthStateChanged(auth, async (user) => {
     const pdAdminBtn = document.getElementById('pdAdminBtn');
     if (pdAdminBtn) pdAdminBtn.style.display = 'flex';
   }
-
-  loadFromFirestore();
-});
+}
 
 document.getElementById('logoutBtn').addEventListener('click', async () => {
   await signOut(auth);
