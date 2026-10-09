@@ -552,19 +552,15 @@
   <!-- AI KITOBLAR (faqat super admin) -->
   <div class="section" id="section-aibooks">
     <div class="form-card" style="margin-bottom:16px">
-      <h2>🔑 Groq API Key</h2>
+      <h2>🔑 AI kaliti</h2>
       <div class="bg-info-box">
-        🔒 AI kaliti Vercel serverida sozlangan. Bu maydon eski Firebase sozlamasi uchun; yangi AI unga bog‘liq emas.<br>
-        🌐 <a href="https://console.groq.com" target="_blank" style="color:#378ADD">console.groq.com</a> dan oling — bepul!<br>
-        Key <b>gsk_...</b> bilan boshlanishi kerak
-      </div>
-      <div class="form-group">
-        <label>Groq API Key</label>
-        <input type="password" id="geminiKeyInput" class="form-input" placeholder="gsk_...">
+        🔒 AI kaliti faqat <b>Vercel → Settings → Environment Variables</b> bo'limida <b>GROQ_API_KEY</b> nomi bilan saqlanadi.<br>
+        Kalitni bu yerga, saytga yoki GitHub'ga hech qachon kiritmang — u brauzer orqali ko'rinib qolishi mumkin.<br>
+        Kalit olish: <a href="https://console.groq.com/keys" target="_blank" rel="noopener" style="color:#378ADD">console.groq.com/keys</a>
       </div>
       <div id="geminiKeyMsg" style="font-size:13px;margin-bottom:10px;min-height:18px;color:var(--text-secondary)"></div>
-      <button class="btn-primary" onclick="saveGeminiKey()" style="width:100%;padding:12px">
-        🔑 API Keyni saqlash
+      <button class="btn-primary" onclick="deleteOldAiConfig()" style="width:100%;padding:12px">
+        🧹 Firebase'dagi eski kalit yozuvini o'chirish
       </button>
     </div>
 
@@ -1319,15 +1315,14 @@ async function processPdfFile(file) {
   }
 }
 
-window.saveGeminiKey = async function() {
-  const key = document.getElementById('geminiKeyInput').value.trim();
+// Ilgari admin panel kalitni settings/aiConfig ga yozardi — endi kalit faqat Vercel'da; eski yozuvni o'chiramiz
+window.deleteOldAiConfig = async function() {
   const msg = document.getElementById('geminiKeyMsg');
-  if (!key) { msg.textContent = '⚠️ API keyni kiriting'; msg.style.color = '#E24B4A'; return; }
-  msg.textContent = '⏳ Saqlanmoqda...'; msg.style.color = 'var(--text-muted)';
+  if (!confirm("Firebase'dagi eski AI kaliti yozuvi (settings/aiConfig) o'chirilsinmi? Sayt AI'si bunga bog'liq emas.")) return;
+  msg.textContent = '⏳ O\'chirilmoqda...'; msg.style.color = 'var(--text-muted)';
   try {
-    await setDoc(doc(db, 'settings', 'aiConfig'), { groqKey: key, updatedAt: serverTimestamp() }, { merge: true });
-    msg.textContent = '✅ API key xavfsiz saqlandi!'; msg.style.color = '#27ae60';
-    document.getElementById('geminiKeyInput').value = '';
+    await deleteDoc(doc(db, 'settings', 'aiConfig'));
+    msg.textContent = '✅ Eski kalit yozuvi o\'chirildi (agar bo\'lgan bo\'lsa).'; msg.style.color = '#27ae60';
   } catch(e) { msg.textContent = '❌ ' + e.message; msg.style.color = '#E24B4A'; }
 };
 async function loadAiBookList() {
